@@ -22,6 +22,8 @@ include_directories(${PROJECT_SOURCE_DIR}/include)
 set(libtftt_SRCS
     treeid.h 
     treeid.cc
+    treecellref.h
+    treecellref.cc
 )
 
 # Declare the library
