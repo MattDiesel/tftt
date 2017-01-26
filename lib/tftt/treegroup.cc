@@ -26,10 +26,10 @@ TreeGroup::TreeGroup()
 		origin[i] = 0.0;
 	}
 
-	neighbours[0] = &CopyNeighbour;
-	neighbours[1] = &CopyNeighbour;
+	neighbours[0] = CellRef(true);
+	neighbours[1] = CellRef(true);
 	for (int i = 2; i < DIM*2; i++) {
-		neighbours[i] = &ReflectNeighbour;
+		neighbours[i] = CellRef(false);
 	}
 
 }

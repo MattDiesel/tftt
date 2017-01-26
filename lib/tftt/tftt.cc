@@ -24,13 +24,6 @@ void init(double w, double h) {
     // TODO: TFTT
     // gtree.root->next = nullptr;
     // gtree.root->prev = nullptr;
-
-    // Neighbours
-    gtree.root->neighbours[0] = &CopyNeighbour;
-    gtree.root->neighbours[1] = &CopyNeighbour;
-    for (int i = 2; i < 2*DIM; i++) {
-    	gtree.root->neighbours[i] = &ReflectNeighbour;
-    }
 }
 
 
