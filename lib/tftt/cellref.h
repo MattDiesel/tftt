@@ -91,6 +91,7 @@ public:
     double origin(int d) const;
     double centre(int d) const;
     double size(int d) const;
+    double vertex(int v, int d) const;
 
     bool operator==(const CellRef& rhs) const;
 };

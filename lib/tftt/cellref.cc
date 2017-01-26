@@ -116,6 +116,9 @@ double CellRef::centre(int d) const {
 	return origin(d) + size(d)*0.5;
 }
 
+double CellRef::vertex(int v, int d) const {
+	return origin(d) + (((v >> d) & 1) * size(d));
+}
 
 
 bool CellRef::operator==(const CellRef& rhs) const {
