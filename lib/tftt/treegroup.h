@@ -2,7 +2,7 @@
 #ifndef TFTT_TREEGROUP_H
 #define TFTT_TREEGROUP_H
 
-
+#include <iterator>
 #include <array>
 
 #include "tftt.h"
@@ -20,45 +20,66 @@ namespace tftt {
 //! TreeGroups should never be directly edited by the user.
 struct TreeGroup {
 
-	// Base Tree
-	TreeGroup();
-	TreeGroup(CellRef parent);
-	~TreeGroup();
+    // Base Tree
+    TreeGroup();
+    TreeGroup(CellRef parent);
+    ~TreeGroup();
 
-	//! The identifier of the group, equal to the identifier of the first cell.
-	//! The id of other cells in the group can be found by adding their index to this id.
-	ident_t id;
+    //! The identifier of the group, equal to the identifier of the first cell.
+    //! The id of other cells in the group can be found by adding their index to this id.
+    ident_t id;
 
-	//! The origin (top left corner in 2d) of the group.
-	double origin[DIM];
+    //! The origin (top left corner in 2d) of the group.
+    double origin[DIM];
 
-	//! The cells in this group
-	TreeCell cells[1<<DIM];
+    //! The cells in this group
+    std::array<TreeCell, 1<<DIM> cells;
 
-	// FTT
+    // FTT
 
-	//! Pointers to the neighbouring groups
-	std::array<CellRef,DIM*2> neighbours;
+    //! Pointers to the neighbouring groups
+    std::array<CellRef,DIM*2> neighbours;
 
-	//! Pointer to the parent group.
-	CellRef parent;
+    //! Pointer to the parent group.
+    CellRef parent;
 
-	// For Thread
+    // For Thread
 
-	//! The next group in the space filling curve.
-	// TreeGroup* next;
+    //! The next group in the space filling curve.
+    // TreeGroup* next;
 
-	//! The previous group in the space filling curve
-	// TreeGroup* prev;
+    //! The previous group in the space filling curve
+    // TreeGroup* prev;
 
-	// For parallel
+    // For parallel
 
-	//! The index of the processor this group is active on.
-	// int rank;
+    //! The index of the processor this group is active on.
+    // int rank;
 
-	bool isCopyBoundary() const;
-	bool isReflectBoundary() const;
-	bool isBoundary() const;
+    bool isCopyBoundary() const;
+    bool isReflectBoundary() const;
+    bool isBoundary() const;
+
+
+
+    class cell_iterator {
+    public:
+        CellRef cr;
+
+        cell_iterator(TreeGroup* gr, int ind)
+                : cr(gr, ind) {
+        }
+
+        cell_iterator operator++() { cell_iterator i = *this; cr.index++; return i; }
+        cell_iterator operator++(int junk) { cr.index++; return *this; }
+        CellRef& operator*() { return cr; }
+        CellRef* operator->() { return &cr; }
+        bool operator==(const cell_iterator& rhs) { return cr == rhs.cr; }
+        bool operator!=(const cell_iterator& rhs) { return !(cr == rhs.cr); }
+    };
+
+    cell_iterator begin() { return cell_iterator(this, 0); }
+    cell_iterator end() { return cell_iterator(this, 1<<DIM); }
 };
 
 
