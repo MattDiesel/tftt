@@ -60,11 +60,15 @@ CellRef CellRef::parent() const {
 }
 
 CellRef CellRef::child(int n) const {
-	return CellRef(group->cells[index].children, n);
+	return CellRef(children(), n);
 }
 
 bool CellRef::hasChildren() const {
-	return group && group->cells[index].children;
+	return group && children();
+}
+
+TreeGroup* CellRef::children() const {
+	return group->cells[index].children;
 }
 
 
