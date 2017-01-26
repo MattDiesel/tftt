@@ -67,6 +67,7 @@ TEST(TfttTest, cellRefBasics) {
     ASSERT_EQ(cl.centre(0), 1.0);
     ASSERT_EQ(cl.centre(1), 1.5);
     ASSERT_EQ(cl.hasChildren(), false);
+    ASSERT_EQ(cl.children(), nullptr);
 
     tftt::cell_t parcl = cl.parent();
 
@@ -74,6 +75,7 @@ TEST(TfttTest, cellRefBasics) {
 
     tftt::refine(cl);
 
+    ASSERT_EQ(cl.children(), cl.child(0).group);
     ASSERT_EQ(cl.hasChildren(), true);
 
     tftt::cell_t chc = tftt::find(cl.id().child(1));
