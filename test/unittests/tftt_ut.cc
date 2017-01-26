@@ -102,4 +102,14 @@ TEST(TfttTest, cellRefFtt) {
     ASSERT_EQ(cl.neighbour(2).id(), 0);
     ASSERT_EQ(cl.neighbour(3).isBoundary(), true);
     ASSERT_EQ(cl.neighbour(3).isReflectBoundary(), true);
+
+    if (!cl.hasChildren())
+        tftt::refine(cl);
+
+    tftt::cell_t chc = cl.child(1);
+
+    ASSERT_EQ(chc.neighbour(0), cl.child(0));
+    ASSERT_EQ(chc.neighbour(3), cl.child(3));
+    ASSERT_EQ(chc.neighbour(1), tftt::CellRef(tftt::gtree.root, 3));
+    ASSERT_EQ(chc.neighbour(2), tftt::CellRef(tftt::gtree.root, 0));
 }
