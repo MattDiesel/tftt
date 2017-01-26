@@ -7,7 +7,9 @@
 
 
 TEST(TfttTest, init) {
-    tftt::init(4.0, 2.0);
+    if (!tftt::gtree.root) {
+        tftt::init(4.0, 2.0);
+    }
 
     ASSERT_EQ(tftt::gtree.size[0], 4.0);
     ASSERT_EQ(tftt::gtree.size[1], 2.0);
