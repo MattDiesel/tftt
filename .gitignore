@@ -1,5 +1,4 @@
 
-
-build/
 include/
-docs/
+build/
+*.sublime-*
