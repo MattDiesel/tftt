@@ -14,7 +14,7 @@ struct TreeGroup;
 enum CellRefFlags {
     TCR_INVALID = 0,
     TCR_COPYBOUNDARY = 1,        //! If set, the cell is a copy boundary. 
-    TCR_REFLECTBOUNDARY = 2      //! Id set, the cell is a reflect boundary
+    TCR_REFLECTBOUNDARY = 2      //! If set, the cell is a reflect boundary
 };
 
 
