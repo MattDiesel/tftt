@@ -3,6 +3,7 @@
 
 #include "tftt/tftt.h"
 #include "tftt/tree.h"
+#include "tftt/treegroup.h"
 
 
 TEST(TfttTest, init) {
@@ -13,6 +14,21 @@ TEST(TfttTest, init) {
 
     ASSERT_NE(tftt::gtree.root, nullptr);
     ASSERT_EQ(tftt::gtree.root->id, 0);
+
+    ASSERT_EQ(tftt::gtree.root->neighbours[0].isBoundary(), true);
+    ASSERT_EQ(tftt::gtree.root->neighbours[1].isBoundary(), true);
+    ASSERT_EQ(tftt::gtree.root->neighbours[2].isBoundary(), true);
+    ASSERT_EQ(tftt::gtree.root->neighbours[3].isBoundary(), true);
+
+    ASSERT_EQ(tftt::gtree.root->neighbours[0].isCopyBoundary(), true);
+    ASSERT_EQ(tftt::gtree.root->neighbours[1].isCopyBoundary(), true);
+    ASSERT_EQ(tftt::gtree.root->neighbours[0].isReflectBoundary(), false);
+    ASSERT_EQ(tftt::gtree.root->neighbours[1].isReflectBoundary(), false);
+
+    ASSERT_EQ(tftt::gtree.root->neighbours[2].isReflectBoundary(), true);
+    ASSERT_EQ(tftt::gtree.root->neighbours[3].isReflectBoundary(), true);
+    ASSERT_EQ(tftt::gtree.root->neighbours[2].isCopyBoundary(), false);
+    ASSERT_EQ(tftt::gtree.root->neighbours[3].isCopyBoundary(), false);
 }
 
 
