@@ -32,6 +32,8 @@ set(libtftt_SRCS
     treecell.cc
     tree.h 
     tree.cc
+    gray.h
+    gray.cc
 )
 
 # Declare the library
