@@ -91,6 +91,7 @@ public:
     double centre(int d) const;
     double size(int d) const;
 
+    bool operator==(const CellRef& rhs) const;
 };
 
 

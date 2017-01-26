@@ -113,4 +113,9 @@ double CellRef::centre(int d) const {
 }
 
 
+
+bool CellRef::operator==(const CellRef& rhs) const {
+	return group == rhs.group && index == rhs.index;
+}
+
 } // namespace tftt
