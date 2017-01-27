@@ -36,6 +36,8 @@ set(libtftt_SRCS
     gray.cc
     leaves.h 
     leaves.cc
+    tfttio.h 
+    tfttio.cc
 )
 
 # Declare the library
