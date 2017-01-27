@@ -44,6 +44,8 @@ void twoToOne(CellRef cl);
 void drawMesh(std::string fname);
 void drawMesh(std::ostream& os);
 
+void drawMatrix(std::string fname);
+void drawMatrix(std::ostream& os);
 
 } // namespace tftt
 
