@@ -102,8 +102,10 @@ int CellRef::level() const {
     return group->id.level();
 }
 
+
 data_t& CellRef::data() {
-    return group->cells[index].data;
+    data_t& ret = group->cells[index].data;
+    return ret;
 }
 
 
@@ -128,6 +130,10 @@ double CellRef::vertex(int v, int d) const {
 
 bool CellRef::operator==(const CellRef& rhs) const {
     return group == rhs.group && index == rhs.index;
+}
+
+bool CellRef::operator<(const CellRef& rhs) const {
+    return group < rhs.group || index < rhs.index;
 }
 
 } // namespace tftt

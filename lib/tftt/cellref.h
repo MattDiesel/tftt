@@ -99,6 +99,7 @@ public:
     double vertex(int v, int d) const;
 
     bool operator==(const CellRef& rhs) const;
+    bool operator<(const CellRef& rhs) const;
 };
 
 
