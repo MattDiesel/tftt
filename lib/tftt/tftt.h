@@ -3,7 +3,11 @@
 #ifndef TFTT_PUBLIC_H
 #define TFTT_PUBLIC_H
 
+
 #include <cstdint>
+#include <string>
+#include <ostream>
+
 
 #ifndef DIM
 #define DIM 2
@@ -32,6 +36,10 @@ void init(double w, double h);
 
 cell_t find(ident_t id);
 void refine(CellRef cl);
+
+
+void drawMesh(std::string fname);
+void drawMesh(std::ostream& os);
 
 
 

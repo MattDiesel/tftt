@@ -1,4 +1,6 @@
 
+#include <string>
+#include <sstream>
 #include <gtest/gtest.h>
 
 #include "tftt/tftt.h"
@@ -117,3 +119,32 @@ TEST(TfttTest, cellRefFtt) {
     ASSERT_EQ(chc.neighbour(1), tftt::CellRef(tftt::gtree.root, 3));
     ASSERT_EQ(chc.neighbour(2), tftt::CellRef(tftt::gtree.root, 0));
 }
+
+
+TEST(TfttTest, drawMesh) {
+    if (!tftt::gtree.root) {
+        tftt::init(4.0, 2.0);
+    }
+
+    tftt::cell_t cl = tftt::CellRef(tftt::gtree.root, 2);
+
+    if (!cl.hasChildren())
+        tftt::refine(cl);
+
+    // Todo: Better test than just string comparison
+
+    std::ostringstream oss;
+    tftt::drawMesh(oss);
+
+    std::string shouldBe = 
+            "0 0\n2 0\n2 1\n0 1\n\n"
+            "2 0\n4 0\n4 1\n2 1\n\n"
+            "0 1\n1 1\n1 1.5\n0 1.5\n\n"
+            "1 1\n2 1\n2 1.5\n1 1.5\n\n"
+            "0 1.5\n1 1.5\n1 2\n0 2\n\n"
+            "1 1.5\n2 1.5\n2 2\n1 2\n\n"
+            "2 1\n4 1\n4 2\n2 2\n\n";
+
+    ASSERT_EQ(oss.str(), shouldBe);
+}
+
