@@ -39,13 +39,14 @@ TreeGroup::TreeGroup(CellRef p)
 		: parent(p) {
 
 	#ifdef TFTT_DEBUG
-		if (!p.isValid()) {
+		if (!p.isValid() || p.hasChildren()) {
 			throw std::argument_exception("Invalid cell ref for group parent.");
 		}
 	#endif
 
 
 	for (int i = 0; i < (1<<DIM); i++) {
+		cells[i].data = 1337;
 		cells[i].children = nullptr;
 	}
 
