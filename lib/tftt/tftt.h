@@ -45,8 +45,11 @@ void drawMesh(std::string fname);
 void drawMesh(std::ostream& os);
 
 
-
 } // namespace tftt
+
+
+// bring utilities into tftt namespace
+#include "leaves.h"
 
 
 #endif
