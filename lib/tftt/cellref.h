@@ -3,6 +3,9 @@
 #ifndef TFTT_CELLREF_H
 #define TFTT_CELLREF_H
 
+
+#include <ostream>
+
 #include "tftt.h"
 
 
@@ -100,6 +103,9 @@ public:
 
 
 } // namespace tftt
+
+
+std::ostream& operator<<(std::ostream& os, const tftt::CellRef& cr);
 
 
 #endif
