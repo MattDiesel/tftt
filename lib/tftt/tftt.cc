@@ -1,6 +1,7 @@
 
 #include <fstream>
 #include <stdexcept>
+#include <set>
 
 #include "tftt.h"
 #include "tree.h"
@@ -54,18 +55,52 @@ void refine(CellRef cl) {
 }
 
 
-void twoToOne(CellRef cl) {
+
+
+
+void twoToOne_Add(std::set<CellRef>& ls, CellRef cl, CellRef from) {
     int lvl = cl.level();
-    for (auto& nb : cl.children()->neighbours) {
+    CellRef nb;
+    for (int n = 0; n < 2*DIM; n++) {
+        nb = cl.neighbour(n);
+        if (nb == from)
+            continue;
+
         if (nb.isBoundary()) {
             continue;
         }
 
         if (nb.level() < lvl) {
-            refine(nb);
-            twoToOne(nb);
+            ls.insert(nb);
+            twoToOne_Add(ls, nb, cl);
         }
     }
+}
+
+void twoToOne(CellRef cl) {
+    std::set<CellRef> refList;
+    twoToOne_Add(refList, cl, CellRef());
+
+    for (auto& cr : refList) {
+        refine(cr);
+    }
+}
+
+std::set<CellRef> adaptList;
+
+void adaptBegin() {
+    adaptList.clear();
+}
+void adaptAdd(CellRef cr) {
+    adaptList.insert(cr);
+    twoToOne_Add(adaptList, cr, CellRef());
+}
+bool adaptCommit() {
+    for (auto& cr : adaptList) {
+        if (!cr.hasChildren())
+            refine(cr);
+    }
+    return adaptList.empty();
 }
 
 

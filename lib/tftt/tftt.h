@@ -7,6 +7,7 @@
 #include <cstdint>
 #include <string>
 #include <ostream>
+#include <set>
 
 
 #ifndef DIM
@@ -39,6 +40,12 @@ cell_t find(ident_t id);
 
 void refine(CellRef cl);
 void twoToOne(CellRef cl);
+
+
+extern std::set<cell_t> adaptList;
+void adaptBegin();
+void adaptAdd(CellRef cr);
+bool adaptCommit();
 
 
 } // namespace tftt
