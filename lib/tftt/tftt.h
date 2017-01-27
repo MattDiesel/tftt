@@ -33,9 +33,12 @@ typedef CellRef cell_t;
 
 //! Constructs the top level tree
 void init(double w, double h);
+void reset();
 
 cell_t find(ident_t id);
+
 void refine(CellRef cl);
+void twoToOne(CellRef cl);
 
 
 void drawMesh(std::string fname);

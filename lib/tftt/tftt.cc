@@ -1,5 +1,5 @@
 
-#include <fstream> // TODO: Remove
+#include <fstream>
 #include <stdexcept>
 
 #include "tftt.h"
@@ -27,6 +27,11 @@ void init(double w, double h) {
     // gtree.root->prev = nullptr;
 }
 
+void reset() {
+    delete gtree.root;
+    gtree.root = nullptr;
+}
+
 
 cell_t find(ident_t idt) {
     TreeGroup* gr = gtree.root;
@@ -46,6 +51,21 @@ cell_t find(ident_t idt) {
 
 void refine(CellRef cl) {
     cl.group->cells[cl.index].children = new TreeGroup(cl);
+}
+
+
+void twoToOne(CellRef cl) {
+    int lvl = cl.level();
+    for (auto& nb : cl.children()->neighbours) {
+        if (nb.isBoundary()) {
+            continue;
+        }
+
+        if (nb.level() < lvl) {
+            refine(nb);
+            twoToOne(nb);
+        }
+    }
 }
 
 
