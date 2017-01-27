@@ -9,9 +9,8 @@
 
 
 TEST(TfttTest, init) {
-    if (!tftt::gtree.root) {
-        tftt::init(4.0, 2.0);
-    }
+    tftt::reset();
+    tftt::init(4.0, 2.0);
 
     ASSERT_EQ(tftt::gtree.size[0], 4.0);
     ASSERT_EQ(tftt::gtree.size[1], 2.0);
@@ -37,9 +36,8 @@ TEST(TfttTest, init) {
 
 
 TEST(TfttTest, findTop) {
-	if (!tftt::gtree.root) {
-	    tftt::init(4.0, 2.0);
-	}
+    tftt::reset();
+    tftt::init(4.0, 2.0);
 
 	// Find cell {2}
     tftt::cell_t cl = tftt::find(2);
@@ -56,9 +54,8 @@ TEST(TfttTest, findTop) {
 
 
 TEST(TfttTest, cellRefBasics) {
-    if (!tftt::gtree.root) {
-        tftt::init(4.0, 2.0);
-    }
+    tftt::reset();
+    tftt::init(4.0, 2.0);
 
     // Find cell {2}
     tftt::cell_t cl = tftt::find(2);
@@ -88,9 +85,8 @@ TEST(TfttTest, cellRefBasics) {
 
 
 TEST(TfttTest, cellRefFtt) {
-    if (!tftt::gtree.root) {
-        tftt::init(4.0, 2.0);
-    }
+    tftt::reset();
+    tftt::init(4.0, 2.0);
 
     // Find cell {2}
     tftt::cell_t cl = tftt::find(2);
@@ -115,9 +111,8 @@ TEST(TfttTest, cellRefFtt) {
 
 
 TEST(TfttTest, drawMesh) {
-    if (!tftt::gtree.root) {
-        tftt::init(4.0, 2.0);
-    }
+    tftt::reset();
+    tftt::init(4.0, 2.0);
 
     tftt::cell_t cl = tftt::CellRef(tftt::gtree.root, 2);
 
@@ -141,3 +136,28 @@ TEST(TfttTest, drawMesh) {
     ASSERT_EQ(oss.str(), shouldBe);
 }
 
+TEST(TfttTest, TwoToOne) {
+    tftt::reset();
+    tftt::init(4.0, 2.0);
+
+    tftt::cell_t cl = tftt::CellRef(tftt::gtree.root, 2);
+    if (!cl.hasChildren()) {
+        tftt::refine(cl);
+    }
+
+    tftt::cell_t chc = cl.child(1);
+    if (!chc.hasChildren()) {
+        tftt::refine(chc);
+    }
+    tftt::twoToOne(chc);
+
+    // Should have refined 0 and 3 as well
+    ASSERT_EQ(tftt::CellRef(tftt::gtree.root, 0).hasChildren(), true);
+    ASSERT_EQ(tftt::CellRef(tftt::gtree.root, 1).hasChildren(), false);
+    ASSERT_EQ(tftt::CellRef(tftt::gtree.root, 3).hasChildren(), true);
+
+    ASSERT_EQ(tftt::CellRef(cl.children(), 0).hasChildren(), false);
+    ASSERT_EQ(tftt::CellRef(cl.children(), 2).hasChildren(), false);
+    ASSERT_EQ(tftt::CellRef(cl.children(), 3).hasChildren(), false);
+
+}
