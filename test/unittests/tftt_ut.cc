@@ -64,12 +64,6 @@ TEST(TfttTest, cellRefBasics) {
     tftt::cell_t cl = tftt::find(2);
 
     ASSERT_EQ(cl.id().id, 2);
-    ASSERT_EQ(cl.size(0), 2.0);
-    ASSERT_EQ(cl.size(1), 1.0);
-    ASSERT_EQ(cl.origin(0), 0.0);
-    ASSERT_EQ(cl.origin(1), 1.0);
-    ASSERT_EQ(cl.centre(0), 1.0);
-    ASSERT_EQ(cl.centre(1), 1.5);
     ASSERT_EQ(cl.hasChildren(), false);
     ASSERT_EQ(cl.children(), nullptr);
     ASSERT_EQ(cl.level(), 0);
@@ -87,10 +81,6 @@ TEST(TfttTest, cellRefBasics) {
     tftt::cell_t chc = tftt::find(cl.id().child(1));
 
     ASSERT_EQ(chc.isValid(), true);
-    ASSERT_EQ(chc.size(0), 1.0);
-    ASSERT_EQ(chc.size(1), 0.5);
-    ASSERT_EQ(chc.origin(0), 1.0);
-    ASSERT_EQ(chc.origin(1), 1.0);
     ASSERT_EQ(chc.hasChildren(), false);
     ASSERT_EQ(chc.level(), 1);
 }
