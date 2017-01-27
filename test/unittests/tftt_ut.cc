@@ -72,12 +72,14 @@ TEST(TfttTest, cellRefBasics) {
     ASSERT_EQ(cl.centre(1), 1.5);
     ASSERT_EQ(cl.hasChildren(), false);
     ASSERT_EQ(cl.children(), nullptr);
+    ASSERT_EQ(cl.level(), 0);
 
     tftt::cell_t parcl = cl.parent();
 
     ASSERT_EQ(parcl.isValid(), false);
 
-    tftt::refine(cl);
+    if (!cl.hasChildren())
+        tftt::refine(cl);
 
     ASSERT_EQ(cl.children(), cl.child(0).group);
     ASSERT_EQ(cl.hasChildren(), true);
@@ -90,6 +92,7 @@ TEST(TfttTest, cellRefBasics) {
     ASSERT_EQ(chc.origin(0), 1.0);
     ASSERT_EQ(chc.origin(1), 1.0);
     ASSERT_EQ(chc.hasChildren(), false);
+    ASSERT_EQ(chc.level(), 1);
 }
 
 

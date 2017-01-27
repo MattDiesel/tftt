@@ -96,6 +96,9 @@ ident_t CellRef::id() const {
 	return group->id.id | index;
 }
 
+int CellRef::level() const {
+	return group->id.level();
+}
 
 data_t& CellRef::data() {
 	return group->cells[index].data;
@@ -103,7 +106,7 @@ data_t& CellRef::data() {
 
 
 double CellRef::size(int d) const {
-	return gtree.size[d] / (2 << group->id.level());
+	return gtree.size[d] / (2 << level());
 }
 
 

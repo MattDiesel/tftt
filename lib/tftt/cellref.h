@@ -84,6 +84,8 @@ public:
     // //! The identifier of the cell
     ident_t id() const;
 
+    int level() const;
+
     //! The data associated with the cell.
     data_t& data();
 
