@@ -35,7 +35,8 @@ TreeGroup::TreeGroup()
 }
 
 
-TreeGroup::TreeGroup(CellRef p) {
+TreeGroup::TreeGroup(CellRef p)
+		: parent(p) {
 
 	#ifdef TFTT_DEBUG
 		if (!p.isValid()) {
