@@ -123,7 +123,7 @@ struct TreeId {
 //! The path is human readable, the resulting string will be unique within the tree.
 template<typename T>
 std::ostream& operator<<(
-            std::ostream& os,               //!< The output stream to write to
+            std::ostream& os,           //!< The output stream to write to
             tftt::TreeId<T> id          //!< The identifier to write
         ) {
     for (int i = 0; i < id.level(); i++) {
