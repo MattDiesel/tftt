@@ -9,4 +9,9 @@ namespace tftt {
 Tree gtree;
 
 
+Tree::~Tree() {
+    delete root;
+}
+
+
 } // namespace tftt

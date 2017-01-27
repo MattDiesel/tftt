@@ -18,6 +18,8 @@ struct Tree {
 
 	double size[DIM];
 
+    ~Tree();
+
 	// For thread
 	// TreeGroup* first;
 	// TreeGroup* last;
