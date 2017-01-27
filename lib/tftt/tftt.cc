@@ -68,31 +68,22 @@ void twoToOne(CellRef cl) {
     }
 }
 
-
-void _drawMeshSub(std::ostream& os, TreeGroup* gr) {
-    for (auto& c : *gr) {
-        if (c.hasChildren()) 
-            _drawMeshSub(os, c.children());
-        else {
-            for (int v = 0; v < 1<<DIM; v++) {
-                os << c.vertex(utils::toGray(v), 0);
-                for (int d = 1; d < DIM; d++) {
-                    os << " " << c.vertex(utils::toGray(v), d);
-                }
-                os << "\n";
-            }
-            os << "\n";
-        }
-    }
-}
-
 void drawMesh(std::string fname) {
     std::ofstream ofs(fname);
     drawMesh(ofs);
 }
 
 void drawMesh(std::ostream& os) {
-    _drawMeshSub(os, gtree.root);
+    for (auto& c : leaves) {
+        for (int v = 0; v < 1<<DIM; v++) {
+            os << c.vertex(utils::toGray(v), 0);
+            for (int d = 1; d < DIM; d++) {
+                os << " " << c.vertex(utils::toGray(v), d);
+            }
+            os << "\n";
+        }
+        os << "\n";
+    }
 }
 
 
