@@ -46,7 +46,6 @@ TreeGroup::TreeGroup(CellRef p)
 
 
 	for (int i = 0; i < (1<<DIM); i++) {
-		cells[i].data = 1337;
 		cells[i].children = nullptr;
 	}
 

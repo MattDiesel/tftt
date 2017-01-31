@@ -5,11 +5,15 @@
 
 #include "tftt.h"
 #include "tree.h"
+#include "treegroup.h"
 #include "cellref.h"
 #include "gray.h"
 
 
 namespace tftt {
+
+
+fnDataNorm dataNorm;
 
 
 void init(double w, double h) {
@@ -50,8 +54,41 @@ cell_t find(ident_t idt) {
 }
 
 
+cell_t atPos(double pos[DIM]) {
+    TreeGroup* gr = gtree.root;
+
+    int n;
+    if (gr) {
+        n = 0;
+        for (auto& cl : *gr) {
+            if (cl.containsPoint(pos)) {
+                if (cl.hasChildren()) {
+                    gr = cl.children();
+                    break;
+                }
+                return CellRef(gr, n);
+            }
+            n++;
+        }
+    }
+
+    return CellRef();
+}
+
+cell_t atVertex(int v) {
+    CellRef c(gtree.root, v);
+
+    while (c.hasChildren()) {
+        c = c.child(v);
+    }
+
+    return c;
+}
+
+
 void refine(CellRef cl) {
     cl.group->cells[cl.index].children = new TreeGroup(cl);
+    gtree.ccells += (1 << DIM) - 1;
 }
 
 

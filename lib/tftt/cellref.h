@@ -97,6 +97,7 @@ public:
     double centre(int d) const;
     double size(int d) const;
     double vertex(int v, int d) const;
+    bool containsPoint(double pt[DIM]) const;
 
     bool operator==(const CellRef& rhs) const;
     bool operator<(const CellRef& rhs) const;

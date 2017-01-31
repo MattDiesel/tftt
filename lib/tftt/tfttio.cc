@@ -49,7 +49,7 @@ void drawMatrix(std::ostream& os, int imgW, int imgH) {
 
         for (y = y1; y < y1+h; y++) {
             for (x = x1; x < x1 + w; x++) {
-                bmp[y*imgW+x] = (unsigned char)(cell.data() * 255.0);
+                bmp[y*imgW+x] = (unsigned char)(dataNorm(cell.data(), 255));
             }
         }
     }

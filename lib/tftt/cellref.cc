@@ -127,6 +127,14 @@ double CellRef::vertex(int v, int d) const {
     return origin(d) + (((v >> d) & 1) * size(d));
 }
 
+bool CellRef::containsPoint(double pt[DIM]) const {
+    for (int d = 0; d < DIM; d++) {
+        if (pt[d] < origin(d) || pt[d] > origin(d)+size(d))
+            return false;
+    }
+    return true;
+}
+
 
 bool CellRef::operator==(const CellRef& rhs) const {
     return group == rhs.group && index == rhs.index;
