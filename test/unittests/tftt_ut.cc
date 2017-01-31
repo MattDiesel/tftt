@@ -39,17 +39,50 @@ TEST(TfttTest, findTop) {
     tftt::reset();
     tftt::init(4.0, 2.0);
 
-	// Find cell {2}
+    // Find cell {2}
     tftt::cell_t cl = tftt::find(2);
 
     ASSERT_EQ(cl.isValid(), true);
     ASSERT_EQ(cl.group, tftt::gtree.root);
     ASSERT_EQ(cl.index, 2);
 
-	// Try find cell {5}
+    // Try find cell {5}
     cl = tftt::find(5);
 
     ASSERT_EQ(cl.isValid(), false);
+}
+
+
+TEST(TfttTest, atPosTop) {
+    tftt::reset();
+    tftt::init(4.0, 2.0);
+
+    double posValid[2] {1.0, 1.5};
+    double posInValid[2] {5.0, 1.5};
+
+    // Find cell {2}
+    tftt::cell_t cl = tftt::atPos(posValid);
+
+    ASSERT_EQ(cl.isValid(), true);
+    ASSERT_EQ(cl.group, tftt::gtree.root);
+    ASSERT_EQ(cl.index, 2);
+
+    cl = tftt::atPos(posInValid);
+
+    ASSERT_EQ(cl.isValid(), false);
+}
+
+
+TEST(TfttTest, atVertexTop) {
+    tftt::reset();
+    tftt::init(4.0, 2.0);
+
+    // Find cell {2}
+    tftt::cell_t cl = tftt::atVertex(2);
+
+    ASSERT_EQ(cl.isValid(), true);
+    ASSERT_EQ(cl.group, tftt::gtree.root);
+    ASSERT_EQ(cl.index, 2);
 }
 
 
