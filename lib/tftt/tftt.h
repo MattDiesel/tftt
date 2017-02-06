@@ -74,6 +74,7 @@ cell_t atPos(double pos[DIM]);
 cell_t atVertex(int v);
 
 void refine(CellRef cl);
+void coarsen(CellRef cl);
 void twoToOne(CellRef cl);
 
 

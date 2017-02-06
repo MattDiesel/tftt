@@ -58,19 +58,22 @@ cell_t atPos(double pos[DIM]) {
     TreeGroup* gr = gtree.root;
 
     int n;
-    if (gr) {
+    bool loop;
+    do {
         n = 0;
+        loop = false;
         for (auto& cl : *gr) {
             if (cl.containsPoint(pos)) {
                 if (cl.hasChildren()) {
                     gr = cl.children();
+                    loop = true;
                     break;
                 }
                 return CellRef(gr, n);
             }
             n++;
         }
-    }
+    } while (loop);
 
     return CellRef();
 }
@@ -89,6 +92,12 @@ cell_t atVertex(int v) {
 void refine(CellRef cl) {
     cl.group->cells[cl.index].children = new TreeGroup(cl);
     gtree.ccells += (1 << DIM) - 1;
+}
+
+
+void coarsen(CellRef cl) {
+    delete cl.group->cells[cl.index].children;
+    gtree.ccells -= (1 << DIM) - 1;
 }
 
 
