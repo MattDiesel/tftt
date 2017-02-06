@@ -32,6 +32,29 @@ struct tagLeaves {
 extern tagLeaves leaves;
 
 
+struct tagLeafOrthos {
+    class ortho_iterator {
+        CellRef cr;
+
+        void next();
+    public:
+        ortho_iterator(CellRef c);
+
+        ortho_iterator operator++();
+        ortho_iterator operator++(int junk);
+        CellRef& operator*();
+        CellRef* operator->();
+        bool operator==(const ortho_iterator& rhs);
+        bool operator!=(const ortho_iterator& rhs);
+    };
+
+    ortho_iterator begin();
+    ortho_iterator end();
+};
+
+extern tagLeafOrthos leaforthos;
+
+
 } // namespace tftt
 
 
