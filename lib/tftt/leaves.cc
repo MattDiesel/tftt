@@ -1,4 +1,6 @@
 
+#include <iostream>
+
 #include "tftt.h"
 #include "tree.h"
 
@@ -21,13 +23,14 @@ void tagLeaves::leaf_iterator::next() {
         }
         cr = cr.parent();
         next();
+        return;
     }
     else {
         cr.index++;
     }
 
-    while (cr.hasChildren()) {
-        cr = cr.child(0);
+    while (this->cr.hasChildren()) {
+        this->cr = this->cr.child(0);
     }
 }
 
@@ -81,35 +84,47 @@ tagLeaves::leaf_iterator tagLeaves::end() {
 
 tagLeafOrthos leaforthos;
 
-void tagLeafOrthos::ortho_iterator::next() {
-    // if (!cr.isValid()) {
-    //     return;
-    // }
 
+
+void nextLeaf(cell_t& cr) {
     if (cr.index+1 >= 2*DIM) {
         if (cr.group == gtree.root) {
             cr = CellRef();
             return;
         }
         cr = cr.parent();
-        next();
+        nextLeaf(cr);
+        return;
     }
     else {
         cr.index++;
     }
 
-    while (cr.child(0).hasChildren()) {
+    while (cr.hasChildren()) {
         cr = cr.child(0);
     }
+}
+
+void tagLeafOrthos::ortho_iterator::next() {
+    cell_t par = cr.parent();
+    do {
+        nextLeaf(cr);
+    } while (cr.isValid() && cr.parent() == par);
+
+    if (cr.isValid())
+        ortho = cr.parent();
+    else
+        ortho = CellRef();
 }
 
 tagLeafOrthos::ortho_iterator::ortho_iterator(CellRef c) : cr(c) {
     if (!cr.isValid()) {
         return;
     }
-    while (cr.child(0).hasChildren()) {
+    while (cr.hasChildren()) {
         cr = cr.child(0);
     }
+    ortho = cr.parent();
 }
 
 tagLeafOrthos::ortho_iterator tagLeafOrthos::ortho_iterator::operator++() {
@@ -124,19 +139,19 @@ tagLeafOrthos::ortho_iterator tagLeafOrthos::ortho_iterator::operator++(int junk
 }
 
 CellRef& tagLeafOrthos::ortho_iterator::operator*() {
-    return cr;
+    return ortho;
 }
 
 CellRef* tagLeafOrthos::ortho_iterator::operator->() {
-    return &cr;
+    return &ortho;
 }
 
 bool tagLeafOrthos::ortho_iterator::operator==(const tagLeafOrthos::ortho_iterator& rhs) {
-    return cr == rhs.cr;
+    return ortho == rhs.ortho;
 }
 
 bool tagLeafOrthos::ortho_iterator::operator!=(const tagLeafOrthos::ortho_iterator& rhs) {
-    return !(cr == rhs.cr);
+    return !(ortho == rhs.ortho);
 }
 
 tagLeafOrthos::ortho_iterator tagLeafOrthos::begin() {

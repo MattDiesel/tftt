@@ -35,6 +35,7 @@ extern tagLeaves leaves;
 struct tagLeafOrthos {
     class ortho_iterator {
         CellRef cr;
+        CellRef ortho;
 
         void next();
     public:
