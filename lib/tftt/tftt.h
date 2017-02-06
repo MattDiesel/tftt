@@ -83,6 +83,9 @@ void adaptBegin();
 void adaptAdd(CellRef cr);
 bool adaptCommit();
 
+void adaptAddCoarsen(CellRef cr);
+bool adaptCommitCoarsen();
+
 
 } // namespace tftt
 

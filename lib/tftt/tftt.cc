@@ -96,7 +96,16 @@ void refine(CellRef cl) {
 
 
 void coarsen(CellRef cl) {
+
+    cell_t nbc;
+    for (int nb = 0; nb < 2*DIM; nb++) {
+        if (cl.group->neighbours[nb] == cl) {
+            cl.group->neighbours[nb] == cl.parent();
+        }
+    }
+
     delete cl.group->cells[cl.index].children;
+    cl.group->cells[cl.index].children = nullptr;
     gtree.ccells -= (1 << DIM) - 1;
 }
 
@@ -145,6 +154,17 @@ bool adaptCommit() {
     for (auto& cr : adaptList) {
         if (!cr.hasChildren())
             refine(cr);
+    }
+    return adaptList.empty();
+}
+
+void adaptAddCoarsen(CellRef cr) {
+    cr.group->flaggedForCoarsening = true;
+    adaptList.insert(cr);
+}
+bool adaptCommitCoarsen() {
+    for (auto& cr : adaptList) {
+        coarsen(cr);
     }
     return adaptList.empty();
 }
