@@ -56,6 +56,10 @@ bool CellRef::isReflectBoundary() const {
     return isBoundary() && (index & TCR_REFLECTBOUNDARY);
 }
 
+bool CellRef::flaggedForCoarsening() const {
+    return group->flaggedForCoarsening;
+}
+
 
 CellRef CellRef::parent() const {
     return group->parent;

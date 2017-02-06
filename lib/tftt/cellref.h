@@ -65,6 +65,9 @@ public:
     //! Checks if the reference is to a reflect boundary
     bool isReflectBoundary() const;
 
+    //! Checks if the parent ortho is flagged to be coarsened.
+    bool flaggedForCoarsening() const;
+
     //! Reference to the parent cell
     CellRef parent() const;
 
