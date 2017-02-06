@@ -20,6 +20,8 @@ namespace tftt {
 //! TreeGroups should never be directly edited by the user.
 struct TreeGroup {
 
+    bool flaggedForCoarsening;
+
     // Base Tree
     TreeGroup();
     TreeGroup(CellRef parent);

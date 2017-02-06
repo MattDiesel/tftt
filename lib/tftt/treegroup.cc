@@ -32,6 +32,7 @@ TreeGroup::TreeGroup()
 		neighbours[i] = CellRef(false);
 	}
 
+	flaggedForCoarsening = false;
 }
 
 
