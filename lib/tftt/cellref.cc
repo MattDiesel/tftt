@@ -108,11 +108,19 @@ int CellRef::level() const {
 
 
 data_t& CellRef::data() {
+    if (hasChildren()) {
+        throw std::runtime_error("Attempt to access data from non-leaf");
+    }
+
     data_t& ret = group->cells[index].data;
     return ret;
 }
 
 data_t const& CellRef::data() const {
+    if (hasChildren()) {
+        throw std::runtime_error("Attempt to access data from non-leaf");
+    }
+
     data_t& ret = group->cells[index].data;
     return ret;
 }
@@ -165,10 +173,18 @@ bool CellRef::operator<(const CellRef& rhs) const {
 
 
 data_t* CellRef::operator->() {
+    if (hasChildren()) {
+        throw std::runtime_error("Attempt to access data from non-leaf");
+    }
+    
     return &group->cells[index].data;
 }
 
 data_t const* CellRef::operator->() const {
+    if (hasChildren()) {
+        throw std::runtime_error("Attempt to access data from non-leaf");
+    }
+
     return &group->cells[index].data;
 }
 
