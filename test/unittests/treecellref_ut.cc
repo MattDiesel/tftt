@@ -64,11 +64,16 @@ TEST(TreeCellRefTest, dataAccess) {
 
     cl.data().P = 1337;
 
+    ASSERT_EQ(cl.data().P, 1337);
     ASSERT_EQ(cl->P, 1337);
 
     tftt::cell_t const& cl_const = cl;
 
+    ASSERT_EQ(cl_const.data().P, 1337);
     ASSERT_EQ(cl_const->P, 1337);
 
+    // Face data
 
+    cl.facedata(0).poisCoef = 1337;
+    ASSERT_EQ(cl.facedata(0).poisCoef, 1337);
 }

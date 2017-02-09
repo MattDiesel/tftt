@@ -112,6 +112,21 @@ data_t& CellRef::data() {
     return ret;
 }
 
+data_t const& CellRef::data() const {
+    data_t& ret = group->cells[index].data;
+    return ret;
+}
+
+facedata_t& CellRef::facedata(int dir) {
+    facedata_t& ret = group->cells[index].facedata[dir];
+    return ret;
+}
+
+facedata_t const& CellRef::facedata(int dir) const {
+    facedata_t& ret = group->cells[index].facedata[dir];
+    return ret;
+}
+
 
 double CellRef::size(int d) const {
     return gtree.size[d] / (2 << level());

@@ -94,6 +94,11 @@ public:
 
     //! The data associated with the cell.
     data_t& data();
+    data_t const& data() const;
+
+    //! The data associated with a cell face. 
+    facedata_t& facedata(int dir);
+    facedata_t const& facedata(int dir) const;
 
 
     double origin(int d) const;
