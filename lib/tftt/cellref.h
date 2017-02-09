@@ -104,6 +104,9 @@ public:
 
     bool operator==(const CellRef& rhs) const;
     bool operator<(const CellRef& rhs) const;
+
+    data_t* operator->();
+    data_t const* operator->() const;
 };
 
 

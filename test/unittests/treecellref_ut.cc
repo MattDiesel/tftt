@@ -54,3 +54,21 @@ TEST(TreeCellRefTest, locations) {
     ASSERT_EQ(cl.vertex(3, 0), 2.0);
     ASSERT_EQ(cl.vertex(3, 1), 2.0);
 }
+
+TEST(TreeCellRefTest, dataAccess) {
+    if (!tftt::gtree.root) {
+        tftt::init(4.0, 2.0);
+    }
+
+    tftt::cell_t cl = tftt::find(2);
+
+    cl.data().P = 1337;
+
+    ASSERT_EQ(cl->P, 1337);
+
+    tftt::cell_t const& cl_const = cl;
+
+    ASSERT_EQ(cl_const->P, 1337);
+
+
+}

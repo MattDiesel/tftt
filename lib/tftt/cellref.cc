@@ -148,6 +148,16 @@ bool CellRef::operator<(const CellRef& rhs) const {
     return group < rhs.group || index < rhs.index;
 }
 
+
+data_t* CellRef::operator->() {
+    return &group->cells[index].data;
+}
+
+data_t const* CellRef::operator->() const {
+    return &group->cells[index].data;
+}
+
+
 } // namespace tftt
 
 
