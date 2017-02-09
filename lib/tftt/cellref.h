@@ -97,8 +97,8 @@ public:
     data_t const& data() const;
 
     //! Average values of all children (recursive)
-    double CellRef::avrChildren(fnData dt)
-    
+    double CellRef::avrChildren(fnData dt) const;
+
     //! Interpolate a "neighbours" data
     double ngbVal(int nb, fnData dt) const;
 
