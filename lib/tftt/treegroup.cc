@@ -60,6 +60,8 @@ TreeGroup::TreeGroup(CellRef p)
 	for (int n = 0; n < 2*DIM; n++) {
 		neighbours[n] = p.neighbour(n);
 	}
+
+	flaggedForCoarsening = false;
 }
 
 TreeGroup::~TreeGroup() {
