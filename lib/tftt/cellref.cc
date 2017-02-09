@@ -125,6 +125,39 @@ data_t const& CellRef::data() const {
     return ret;
 }
 
+
+double CellRef::avrChildren(fnData dt) {
+    double ret = 0.0;
+    for (int ch = 0; ch < 1<<DIM; ch++) {
+        if (child(ch).hasChildren())
+            ret += child(ch).avrChildren(dt);
+        else
+            ret += dt(child(ch).data());
+    }
+    return ret / (1<<DIM);
+}
+
+double CellRef::ngbVal(int nb, fnData dt) const {
+    cell_t ngb = neighbour(nb);
+
+    if (ngb->isBoundary()) {
+        throw std::runtime_error("Not Implemented: Automatic boundary condition");
+    }
+    else if (ngb.hasChildren()) {
+        // Neighbour more refined, average children
+        return ngb.avrChildren(dt);
+    }
+    else if (ngb.level() < level()) {
+        // Neighbour is less refined
+        return interpChild(ngb, index ^ (1 << (d nb >> 1)), nb ^ 1, dt);
+    }
+    else {
+        // Neighbour at same level
+        return dt(ngb.data());
+    }
+}
+
+
 facedata_t& CellRef::facedata(int dir) {
     facedata_t& ret = group->cells[index].facedata[dir];
     return ret;

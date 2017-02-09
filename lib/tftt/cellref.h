@@ -96,6 +96,12 @@ public:
     data_t& data();
     data_t const& data() const;
 
+    //! Average values of all children (recursive)
+    double CellRef::avrChildren(fnData dt)
+    
+    //! Interpolate a "neighbours" data
+    double ngbVal(int nb, fnData dt) const;
+
     //! The data associated with a cell face. 
     facedata_t& facedata(int dir);
     facedata_t const& facedata(int dir) const;
