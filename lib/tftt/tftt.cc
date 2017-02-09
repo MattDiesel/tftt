@@ -2,6 +2,7 @@
 #include <fstream>
 #include <stdexcept>
 #include <set>
+#include <cmath>
 
 #include "tftt.h"
 #include "tree.h"
@@ -54,6 +55,98 @@ cell_t find(ident_t idt) {
 }
 
 
+cell_t findmax(fnData dt, double* maxValRet) {
+    cell_t max;
+    double maxVal = 0.0;
+    double val;
+    for (auto& cl : leaves) {
+        val = dt(cl.data());
+        if (val > maxVal) {
+            max = cl;
+            maxVal = val;
+        }
+    }
+
+    if (maxValRet) *maxValRet = maxVal;
+    return max;
+}
+
+
+double interpChild(cell_t cl, int ch, int forDir, fnData dt) {
+    cell_t forNbCl = cl.neighbour(forDir);
+
+    // if (!forNbCl.hasChildren()) {
+    //     return cl.data();
+    // }
+
+    forNbCl = forNbCl.child(ch ^ (1 << (forDir >> 1)));
+
+    int awayDir;
+    cell_t awayNb;
+
+    double ret = dt(cl.data());
+    double intDir;
+
+    for (int d = 0; d < DIM; d++) {
+        if (d == forDir >> 1) continue; // Interpolate in desired direction last
+
+        awayDir = (d << 1);
+        if (ch & awayDir) awayDir++;
+
+        awayNb = cl.neighbour(awayDir);
+
+        if (awayNb.isBoundary()) {
+            continue; // Will just interpolate to the same.
+        }
+
+        if (awayNb.hasChildren()) {
+            // Interpolate between boundary children
+            // Todo: Generalise
+            int c1 = ch ^ (1 << d);
+            int c2 = c1 ^ (1 << (forDir >> 1));
+            intDir = (dt(awayNb.child(c1).data())
+                      + dt(awayNb.child(c2).data()))*0.5;
+
+            ret += (intDir - ret) / 3.0;
+        }
+        else {
+            intDir = dt(awayNb.data());
+            ret += (intDir - ret) / 4.0;
+        }
+    }
+
+    // Finally interpolate in desired direction
+    intDir = dt(forNbCl.data());
+    ret += (intDir - ret) / 3.0;
+
+    return ret;
+}
+
+double interpALEVertex(cell_t cl, int v, fnData dt) {
+    cell_t ngb = cl.neighbour(v | 1);
+    cell_t c2;
+    if (ngb.isBoundary()) {
+        // Boundary condition?
+        throw std::runtime_error("Not Implemented: Automatic BC.");
+    }
+    else if (ngb.hasChildren()) {
+        // Neighbour more refined, use child vertex
+        ngb = ngb.child(0);
+        return dt(ngb.data());
+    }
+    else if (ngb.level() < cl.level()) {
+        // Neighbour less refined, average two vertices
+        // Todo: Generalise to 3d
+        c2 = ngb.neighbour(v ^ 2);
+        return (dt(ngb.data()) + dt(c2.data()))*0.5;
+    }
+    else {
+        // Same level.
+        return dt(ngb.data());
+    }
+}
+
+
 cell_t atPos(double pos[DIM]) {
     TreeGroup* gr = gtree.root;
 
@@ -99,8 +192,11 @@ void coarsen(CellRef cl) {
 
     cell_t nbc;
     for (int nb = 0; nb < 2*DIM; nb++) {
-        if (cl.group->neighbours[nb] == cl) {
-            cl.group->neighbours[nb] == cl.parent();
+        nbc = cl.group->neighbours[nb];
+        if (nbc.isBoundary()) continue;
+
+        if (nbc.group->neighbours[nb ^ 1].group == cl.children()) {
+            nbc.group->neighbours[nb ^ 1] == cl;
         }
     }
 

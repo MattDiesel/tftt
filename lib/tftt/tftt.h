@@ -14,41 +14,75 @@
 #define DIM 2
 #endif
 
-struct deltawing_data {
+
+// Constants for children, vertices, neighbours
+
+// Neighbours. P = positive dir, N = negative
+enum {
+    NB_XN = 0,
+    NB_XP,
+    NB_YN,
+    NB_YP,
+    NB_ZN,
+    NB_ZP
+};
+
+// Vertices (2d)
+enum {
+    VT_BL = 0,
+    VT_BR = 1,
+    VT_TL = 2,
+    VT_TR = 3
+}
+
+// Children (2d)
+enum {
+    CH_BL = 0,
+    CH_BR = 1,
+    CH_TL = 2,
+    CH_TR = 3
+}
+
+
+
+struct rt_data {
     double cc;
-    double vof1;
-    double vof2;
-    double vof3;
-    double rho;
-    double u;
-    double v;
-    double p;
-    double U;
-    double F11;
-    double F21;
-    double D11;
-    double D21;
-    double V;
-    double F12;
-    double F22;
-    double D12;
-    double D22;
-    double dive;
-    double res;
+    // double vof1;
+    // double vof2;
+    // double vof3;
+    double P;
+    double Pstar;
+    double rhs;
     double cenCoef;
-    double xCoef;
-    double yCoef;
+    double res;
+
+    // double vof;
+    double rho;
+    double V[DIM];
+    double v[DIM];
+    double F1[DIM];
+    double F2[DIM];
+    double D1[DIM];
+    double D2[DIM];
+
+    double dive;
+};
+
+struct rt_facedata {
+    double poisCoef;
 };
 
 namespace tftt {
 	template<typename T> struct TreeId;
 
-	typedef deltawing_data data_t;
+    typedef rt_data data_t;
+    typedef rt_facedata facedata_t;
 	typedef TreeId<uint64_t> ident_t;
 
 
     // Functions to be supplied by user
     typedef double (*fnDataNorm)(data_t& d, int max);
+    typedef double (*fnData)(data_t& d);
 
     extern fnDataNorm dataNorm;
 }
@@ -69,6 +103,10 @@ void init(double w, double h);
 void reset();
 
 cell_t find(ident_t id);
+cell_t findmax(fnData dt);
+
+double interpChild(cell_t cl, int ch, int forNb, fnData dt);
+double interpALEVertex(cell_t cl, int v, fnData dt);
 
 cell_t atPos(double pos[DIM]);
 cell_t atVertex(int v);
