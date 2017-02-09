@@ -55,3 +55,4 @@ include_directories(../include)
 add_subdirectory(unittests)
 
 add_subdirectory(mandelbrot)
+add_subdirectory(circle)
