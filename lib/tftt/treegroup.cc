@@ -11,8 +11,7 @@
 
 namespace tftt {
 
-TreeGroup CopyNeighbour;
-TreeGroup ReflectNeighbour;
+TreeGroup BoundaryNeighbour;
 
 
 TreeGroup::TreeGroup()
@@ -68,20 +67,9 @@ TreeGroup::~TreeGroup() {
 }
 
 
-bool TreeGroup::isCopyBoundary() const {
-	return this == &CopyNeighbour;
-}
-
-
-bool TreeGroup::isReflectBoundary() const {
-	return this == &ReflectNeighbour;
-}
-
-
 bool TreeGroup::isBoundary() const {
-	return isCopyBoundary() || isReflectBoundary();
+	return this == &BoundaryNeighbour;
 }
-
 
 
 

@@ -58,8 +58,6 @@ struct TreeGroup {
     //! The index of the processor this group is active on.
     // int rank;
 
-    bool isCopyBoundary() const;
-    bool isReflectBoundary() const;
     bool isBoundary() const;
 
 
@@ -85,8 +83,7 @@ struct TreeGroup {
 };
 
 
-extern TreeGroup CopyNeighbour;
-extern TreeGroup ReflectNeighbour;
+extern TreeGroup BoundaryNeighbour;
 
 
 } // namespace tftt
