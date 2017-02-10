@@ -33,7 +33,7 @@ enum {
     VT_BR = 1,
     VT_TL = 2,
     VT_TR = 3
-}
+};
 
 // Children (2d)
 enum {
@@ -41,7 +41,7 @@ enum {
     CH_BR = 1,
     CH_TL = 2,
     CH_TR = 3
-}
+};
 
 
 
@@ -55,10 +55,10 @@ struct rt_data {
     double rhs;
     double cenCoef;
     double res;
+    double V[DIM];
 
     // double vof;
     double rho;
-    double V[DIM];
     double v[DIM];
     double F1[DIM];
     double F2[DIM];
@@ -103,7 +103,7 @@ void init(double w, double h);
 void reset();
 
 cell_t find(ident_t id);
-cell_t findmax(fnData dt);
+cell_t findmax(fnData dt, double* maxValRet);
 
 double interpChild(cell_t cl, int ch, int forNb, fnData dt);
 double interpALEVertex(cell_t cl, int v, fnData dt);
@@ -116,7 +116,26 @@ void coarsen(CellRef cl);
 void twoToOne(CellRef cl);
 
 
-extern std::set<cell_t> adaptList;
+struct crless {
+    bool operator()(const CellRef& a, const CellRef& b) {
+        if (a.level() < b.level())
+            return true;
+        else if (a.level() > b.level())
+            return false;
+        else
+            if (a.group < b.group)
+                return true;
+            else if (a.group > b.group)
+                return false;
+            else
+                if (a.index < b.index)
+                    return true;
+                else
+                    return false;
+    }
+};
+
+extern std::set<CellRef, crless> adaptList;
 void adaptBegin();
 void adaptAdd(CellRef cr);
 bool adaptCommit();

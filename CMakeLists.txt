@@ -13,7 +13,7 @@ set(TFTT_BRIEF "${TFTT_NAME} implements a parallel Threaded Fully-Threaded-Tree 
 
 set(COMMON_FLAGS "-std=c++11")
 set(DEBUG_FLAGS "${COMMON_FLAGS} -g -O0 -Wall")
-set(RELEASE_FLAGS "${COMMON_FLAGS} -O3")
+set(RELEASE_FLAGS "${COMMON_FLAGS} -O0")
 
 set(CMAKE_CXX_FLAGS ${RELEASE_FLAGS})
 set(CMAKE_C_FLAGS ${RELEASE_FLAGS})

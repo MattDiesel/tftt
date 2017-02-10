@@ -26,15 +26,33 @@ void init(double w, double h) {
     gtree.size[0] = w;
     gtree.size[1] = h;
 
+    for (int b = 0; b < 2*DIM; b++) {
+        gtree.boundGroups = new TreeGroup();
+    }
+
     // Init top level cells
     gtree.root = new TreeGroup();
     // TODO: TFTT
     // gtree.root->next = nullptr;
     // gtree.root->prev = nullptr;
+
+    cell_t cl;
+    cell_t bch;
+    TreeGroup* newGrp;
+    for (int b = 0; b < 2*DIM; b++) {
+        cl = CellRef(gtree.boundGroups, b);
+
+        newGrp = cl.group->cells[cl.index].children = new TreeGroup(cl);
+
+        newGrp->boundary = b;
+        newGrp->neighbours[b ^ 1] = CellRef(gtree.root, -1);
+        gtree.root->neighbours[b] = CellRef(gtree.boundGroups, b);
+    }
 }
 
 void reset() {
     delete gtree.root;
+    delete gtree.boundGroups;
     gtree.root = nullptr;
 }
 
@@ -125,11 +143,7 @@ double interpChild(cell_t cl, int ch, int forDir, fnData dt) {
 double interpALEVertex(cell_t cl, int v, fnData dt) {
     cell_t ngb = cl.neighbour(v | 1);
     cell_t c2;
-    if (ngb.isBoundary()) {
-        // Boundary condition?
-        throw std::runtime_error("Not Implemented: Automatic BC.");
-    }
-    else if (ngb.hasChildren()) {
+    if (ngb.hasChildren()) {
         // Neighbour more refined, use child vertex
         ngb = ngb.child(0);
         return dt(ngb.data());
@@ -138,6 +152,9 @@ double interpALEVertex(cell_t cl, int v, fnData dt) {
         // Neighbour less refined, average two vertices
         // Todo: Generalise to 3d
         c2 = ngb.neighbour(v ^ 2);
+        if (c2.hasChildren())
+            c2 = c2.child(0);
+
         return (dt(ngb.data()) + dt(c2.data()))*0.5;
     }
     else {
@@ -185,6 +202,15 @@ cell_t atVertex(int v) {
 void refine(CellRef cl) {
     cl.group->cells[cl.index].children = new TreeGroup(cl);
     gtree.ccells += (1 << DIM) - 1;
+
+    // Refine boundary as needed.
+    cell_t ngb;
+    for (int nb = 0; nb < 2*DIM; nb++) {
+        ngb = cl.neighbour(nb);
+        if (ngb.isBoundary()) {
+            ngb.group->cells[ngb.index].children = new TreeGroup(ngb);
+        }
+    }
 }
 
 
@@ -193,7 +219,10 @@ void coarsen(CellRef cl) {
     cell_t nbc;
     for (int nb = 0; nb < 2*DIM; nb++) {
         nbc = cl.group->neighbours[nb];
-        if (nbc.isBoundary()) continue;
+        if (nbc.isBoundary()) {
+            delete nbc.group->cells[nbc.index].children;
+            nbc.group->cells[nbc.index].children = nullptr;
+        };
 
         if (nbc.group->neighbours[nb ^ 1].group == cl.children()) {
             nbc.group->neighbours[nb ^ 1] == cl;
@@ -209,7 +238,7 @@ void coarsen(CellRef cl) {
 
 
 
-void twoToOne_Add(std::set<CellRef>& ls, CellRef cl, CellRef from) {
+void twoToOne_Add(std::set<CellRef, crless>& ls, CellRef cl, CellRef from) {
     int lvl = cl.level();
     CellRef nb;
     for (int n = 0; n < 2*DIM; n++) {
@@ -229,7 +258,7 @@ void twoToOne_Add(std::set<CellRef>& ls, CellRef cl, CellRef from) {
 }
 
 void twoToOne(CellRef cl) {
-    std::set<CellRef> refList;
+    std::set<CellRef, crless> refList;
     twoToOne_Add(refList, cl, CellRef());
 
     for (auto& cr : refList) {
@@ -237,7 +266,7 @@ void twoToOne(CellRef cl) {
     }
 }
 
-std::set<CellRef> adaptList;
+std::set<CellRef, crless> adaptList;
 
 void adaptBegin() {
     adaptList.clear();

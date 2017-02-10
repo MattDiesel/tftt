@@ -23,15 +23,10 @@ TEST(TfttTest, init) {
     ASSERT_EQ(tftt::gtree.root->neighbours[2].isBoundary(), true);
     ASSERT_EQ(tftt::gtree.root->neighbours[3].isBoundary(), true);
 
-    ASSERT_EQ(tftt::gtree.root->neighbours[0].isCopyBoundary(), true);
-    ASSERT_EQ(tftt::gtree.root->neighbours[1].isCopyBoundary(), true);
-    ASSERT_EQ(tftt::gtree.root->neighbours[0].isReflectBoundary(), false);
-    ASSERT_EQ(tftt::gtree.root->neighbours[1].isReflectBoundary(), false);
-
-    ASSERT_EQ(tftt::gtree.root->neighbours[2].isReflectBoundary(), true);
-    ASSERT_EQ(tftt::gtree.root->neighbours[3].isReflectBoundary(), true);
-    ASSERT_EQ(tftt::gtree.root->neighbours[2].isCopyBoundary(), false);
-    ASSERT_EQ(tftt::gtree.root->neighbours[3].isCopyBoundary(), false);
+    ASSERT_EQ(tftt::gtree.root->neighbours[0].boundary(), 0);
+    ASSERT_EQ(tftt::gtree.root->neighbours[1].boundary(), 1);
+    ASSERT_EQ(tftt::gtree.root->neighbours[2].boundary(), 2);
+    ASSERT_EQ(tftt::gtree.root->neighbours[3].boundary(), 3);
 }
 
 
@@ -125,11 +120,9 @@ TEST(TfttTest, cellRefFtt) {
     tftt::cell_t cl = tftt::find(2);
 
     ASSERT_EQ(cl.neighbour(0).isBoundary(), true);
-    ASSERT_EQ(cl.neighbour(0).isCopyBoundary(), true);
     ASSERT_EQ(cl.neighbour(1).id(), 3);
     ASSERT_EQ(cl.neighbour(2).id(), 0);
     ASSERT_EQ(cl.neighbour(3).isBoundary(), true);
-    ASSERT_EQ(cl.neighbour(3).isReflectBoundary(), true);
 
     if (!cl.hasChildren())
         tftt::refine(cl);

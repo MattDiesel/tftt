@@ -10,28 +10,6 @@
 using namespace tftt;
 
 
-TEST(TreeCellRefTest, isBoundaryTest) {
-    CellRef ref(false); // reflect
-    CellRef cp(true); // copy
-    CellRef norm(reinterpret_cast<TreeGroup*>(0x1234), 3); // A "normal" reference
-
-    // Check isBoundary
-    ASSERT_EQ(ref.isBoundary(), true);
-    ASSERT_EQ(cp.isBoundary(), true);
-    ASSERT_EQ(norm.isBoundary(), false);
-
-    // Check isCopyBoundary
-    ASSERT_EQ(ref.isCopyBoundary(), false);
-    ASSERT_EQ(cp.isCopyBoundary(), true);
-    ASSERT_EQ(norm.isCopyBoundary(), false);
-
-    // Check isReflectBoundary
-    ASSERT_EQ(ref.isReflectBoundary(), true);
-    ASSERT_EQ(cp.isReflectBoundary(), false);
-    ASSERT_EQ(norm.isReflectBoundary(), false);
-}
-
-
 TEST(TreeCellRefTest, locations) {
     if (!tftt::gtree.root) {
         tftt::init(4.0, 2.0);
@@ -100,11 +78,26 @@ TEST(TreeCellRefTest, interpChild) {
     cl2->P = 2.0;
     cl3->P = 3.0;
 
+    // for (int b = 0; b < 4; b++) {
+    //     std::cout << "Boundary " << b << '\n';
+    //     for (auto& cl : tftt::boundaryCells(b)) {
+    //         std::cout << '\t' << cl << "\n";
+    //     }
+    // }
+
     double c12 = tftt::interpChild(cl1, 2, 0, [](tftt::data_t& dt) {
         return dt.P;
     });
 
     ASSERT_LE(std::abs(c12 - 1.1), 1e-4);
+
+    ASSERT_LE(std::abs(cl1.ngbVal(0, [](tftt::data_t& dt) {
+        return dt.P; 
+    }) - 0.15), 1e-4);
+
+    ASSERT_LE(std::abs(cl0.child(3).ngbVal(1, [](tftt::data_t& dt) {
+        return dt.P; 
+    }) - 1.1), 1e-4);
 
 
     tftt::refine(cl3);

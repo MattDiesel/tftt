@@ -16,8 +16,7 @@ struct TreeGroup;
 //! Flags for a CellRef structure
 enum CellRefFlags {
     TCR_INVALID = 0,
-    TCR_COPYBOUNDARY = 1,        //! If set, the cell is a copy boundary. 
-    TCR_REFLECTBOUNDARY = 2      //! If set, the cell is a reflect boundary
+    TCR_ROOT = 1
 };
 
 
@@ -48,25 +47,19 @@ public:
     //! Ctor for an invalid cell ref
     CellRef();
 
-    //! Ctor for a reference to a boundary cell.
-    CellRef(
-            bool copy               //!< If true, the cell is a copy boundary, otherwise the cell is a reflect boundary.
-        );
+    //! Ctor for a cell ref with flags
+    //! e.g. CellRef(1) gives the root cell.
+    CellRef(int flag);
 
     //! Checks if the reference is valid.
     bool isValid() const;
 
+    //! Checks if the reference is valid.
+    bool isRoot() const;
+
     //! Checks if the reference is to a boundary
     bool isBoundary() const;
-
-    //! Checks if the reference is to a copy boundary
-    bool isCopyBoundary() const;
-
-    //! Checks if the reference is to a reflect boundary
-    bool isReflectBoundary() const;
-
-    //! Checks if the parent ortho is flagged to be coarsened.
-    bool flaggedForCoarsening() const;
+    int boundary() const;
 
     //! Reference to the parent cell
     CellRef parent() const;
@@ -75,6 +68,8 @@ public:
     CellRef child(int n) const;
     bool hasChildren() const;
     TreeGroup* children() const;
+    // TreeGroup* group() const;
+    // TreeBoundaryGroup* bgroup() const;
 
     CellRef neighbour(int n) const;
 
@@ -97,10 +92,10 @@ public:
     data_t const& data() const;
 
     //! Average values of all children (recursive)
-    double CellRef::avrChildren(fnData dt) const;
+    double avrChildren(fnData dt) const;
 
     //! Interpolate a "neighbours" data
-    double ngbVal(int nb, fnData dt) const;
+    double ngbVal(int nb, fnData dt, double* ifBoundary = nullptr) const;
 
     //! The data associated with a cell face. 
     facedata_t& facedata(int dir);

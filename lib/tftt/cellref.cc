@@ -18,9 +18,13 @@ CellRef::CellRef()
         : group(nullptr), index(0) {
 }
 
+CellRef::CellRef(int flag)
+        : group(nullptr), index(flag) {
+}
+
 
 CellRef::CellRef(TreeGroup* gr, int ind)
-        : group(gr), index(ind){
+        : group(gr), index(ind) {
     #ifdef TFTT_DEBUG
         if (!gr) throw std::invalid_argument("Null TreeGroup given.");
         if (ind < 0 || ind > (1 << DIM)) throw std::invalid_argument("Child index is invalid for dimension of problem.");
@@ -28,36 +32,24 @@ CellRef::CellRef(TreeGroup* gr, int ind)
 }
 
 
-CellRef::CellRef(bool copy)
-        : group(nullptr), index(0) {
-    if (copy)
-        index = TCR_COPYBOUNDARY;
-    else
-        index = TCR_REFLECTBOUNDARY;
-}
-
-
 bool CellRef::isValid() const {
     return group || index;
 }
 
+bool CellRef::isRoot() const {
+    return index == -1;
+}
+
 
 bool CellRef::isBoundary() const {
-    return !group && index;
+    return (group == gtree.boundGroups || group->isBoundary());
 }
 
-
-bool CellRef::isCopyBoundary() const {
-    return isBoundary() && (index & TCR_COPYBOUNDARY);
-}
-
-
-bool CellRef::isReflectBoundary() const {
-    return isBoundary() && (index & TCR_REFLECTBOUNDARY);
-}
-
-bool CellRef::flaggedForCoarsening() const {
-    return group->flaggedForCoarsening;
+int CellRef::boundary() const {
+    if (group == gtree.boundGroups) {
+        return children()->boundary;
+    }
+    return group->boundary;
 }
 
 
@@ -70,13 +62,36 @@ CellRef CellRef::child(int n) const {
 }
 
 bool CellRef::hasChildren() const {
-    return group && children();
+    return isRoot() || (group && children());
 }
 
 TreeGroup* CellRef::children() const {
-    return group->cells[index].children;
+    if (isRoot())
+        return group;
+    else
+        return group->cells[index].children;
 }
 
+
+// TreeGroup* CellRef::group() const {
+//     #ifdef TFTT_DEBUG
+//         if (isBoundary()) {
+//             throw std::runtime_error("Using boundary group as standard group");
+//         }
+//     #endif
+
+//     return reinterpret_cast<TreeGroup*>(group);
+// }
+
+// TreeGroup* CellRef::bgroup() const {
+//     #ifdef TFTT_DEBUG
+//         if (!isBoundary()) {
+//             throw std::runtime_error("Using standard group as boundary group");
+//         }
+//     #endif
+
+//     return reinterpret_cast<TreeBoundaryGroup*>(group);
+// }
 
 bool nbInParent(int ch, int nb) {
     // Explanation:
@@ -91,7 +106,7 @@ CellRef CellRef::neighbour(int n) const {
         return CellRef(group, index ^ (1 << (n >> 1)));
 
     CellRef cr = group->neighbours[n];
-    if (cr.isBoundary() || !cr.hasChildren())
+    if (!cr.hasChildren())
         return cr;
 
     return cr.child(index ^ (1 << (n >> 1)));
@@ -126,7 +141,7 @@ data_t const& CellRef::data() const {
 }
 
 
-double CellRef::avrChildren(fnData dt) {
+double CellRef::avrChildren(fnData dt) const {
     double ret = 0.0;
     for (int ch = 0; ch < 1<<DIM; ch++) {
         if (child(ch).hasChildren())
@@ -137,19 +152,24 @@ double CellRef::avrChildren(fnData dt) {
     return ret / (1<<DIM);
 }
 
-double CellRef::ngbVal(int nb, fnData dt) const {
+
+double CellRef::ngbVal(int nb, fnData dt, double* ifBoundary) const {
     cell_t ngb = neighbour(nb);
 
-    if (ngb->isBoundary()) {
-        throw std::runtime_error("Not Implemented: Automatic boundary condition");
-    }
-    else if (ngb.hasChildren()) {
+    // if (ngb.isBoundary()) {
+    //     if (ifBoundary)
+    //         return *ifBoundary;
+    //     else
+    //         throw std::runtime_error("Not Implemented: Automatic boundary condition");
+    // }
+    // else
+    if (ngb.hasChildren()) {
         // Neighbour more refined, average children
         return ngb.avrChildren(dt);
     }
     else if (ngb.level() < level()) {
         // Neighbour is less refined
-        return interpChild(ngb, index ^ (1 << (d nb >> 1)), nb ^ 1, dt);
+        return interpChild(ngb, index ^ (1 << (nb >> 1)), nb ^ 1, dt);
     }
     else {
         // Neighbour at same level
@@ -228,10 +248,8 @@ data_t const* CellRef::operator->() const {
 std::ostream& operator<<(std::ostream& os, const tftt::CellRef& cr) {
     if (!cr.isValid())
         os << "{null}";
-    else if (cr.isCopyBoundary())
-        os << "{copy}";
-    else if (cr.isReflectBoundary())
-        os << "{reflect}";
+    else if (cr.isBoundary())
+        os << "{boundary(" << cr.boundary() << ") " << cr.id() << "}";
     else
         os << "{" << cr.id() << "}";
 }

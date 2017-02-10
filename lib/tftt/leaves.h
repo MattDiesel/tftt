@@ -56,6 +56,33 @@ struct tagLeafOrthos {
 extern tagLeafOrthos leaforthos;
 
 
+struct tagBoundaryLeaves {
+    int b;
+
+    class bleaf_iterator {
+        CellRef cr;
+        int b;
+
+
+        void next();
+    public:
+        bleaf_iterator(CellRef c, int bnd);
+
+        bleaf_iterator operator++();
+        bleaf_iterator operator++(int junk);
+        CellRef& operator*();
+        CellRef* operator->();
+        bool operator==(const bleaf_iterator& rhs);
+        bool operator!=(const bleaf_iterator& rhs);
+    };
+
+    bleaf_iterator begin();
+    bleaf_iterator end();
+};
+
+tagBoundaryLeaves boundaryCells(int b);
+
+
 } // namespace tftt
 
 

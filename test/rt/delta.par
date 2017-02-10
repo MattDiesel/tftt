@@ -1,0 +1,30 @@
+# numerical parameters
+tau=.01
+tmax=100000
+nx=256
+ny=128
+
+# geometry parameters
+Lx=40.0
+Ly=10.0
+wingHeight=8
+wingWidth=8
+
+  # phyiscal parameters
+rho1=1.0
+rho2=1.0
+mu1=.005;
+mu2=.005;
+sigma=0.0;
+
+
+# print out parameters
+tprint=10
+tvelo=100
+
+#multigrid
+npre=5
+npost=5
+omega=1.5
+MinEps=1.0e-6
+

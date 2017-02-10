@@ -20,10 +20,14 @@ namespace tftt {
 //! TreeGroups should never be directly edited by the user.
 struct TreeGroup {
 
+    int boundary;
+    bool isBoundary() const { return boundary != -1; };
+
     bool flaggedForCoarsening;
 
     // Base Tree
     TreeGroup();
+    TreeGroup(int b);
     TreeGroup(CellRef parent);
     ~TreeGroup();
 
@@ -58,7 +62,6 @@ struct TreeGroup {
     //! The index of the processor this group is active on.
     // int rank;
 
-    bool isBoundary() const;
 
 
 
@@ -81,9 +84,6 @@ struct TreeGroup {
     cell_iterator begin() { return cell_iterator(this, 0); }
     cell_iterator end() { return cell_iterator(this, 1<<DIM); }
 };
-
-
-extern TreeGroup BoundaryNeighbour;
 
 
 } // namespace tftt

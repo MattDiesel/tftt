@@ -17,6 +17,8 @@ struct Tree {
 
 	double size[DIM];
 
+    TreeGroup* boundGroups;
+
     ~Tree();
 
 	// For thread

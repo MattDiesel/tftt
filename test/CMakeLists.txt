@@ -56,3 +56,4 @@ add_subdirectory(unittests)
 
 add_subdirectory(mandelbrot)
 add_subdirectory(circle)
+add_subdirectory(rt)
