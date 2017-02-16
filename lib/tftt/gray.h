@@ -4,13 +4,14 @@
 #define TFTT_GRAY_H
 
 
-namespace tftt::utils {
+namespace tftt {
+namespace utils {
 
 
 int toGray(int n);
 
 
-} // namespace tftt
+}} // namespace tftt::utils
 
 
 #endif

@@ -2,7 +2,8 @@
 #include "gray.h"
 
 
-namespace tftt::utils {
+namespace tftt {
+namespace utils {
 
 
 int toGray(int n) {
@@ -10,4 +11,4 @@ int toGray(int n) {
 }
     
 
-} // namespace tftt::utils
+}} // namespace tftt::utils
