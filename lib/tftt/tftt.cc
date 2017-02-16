@@ -3,12 +3,15 @@
 #include <stdexcept>
 #include <set>
 #include <cmath>
+#include <iostream> // TODO: Remove
 
 #include "tftt.h"
 #include "tree.h"
 #include "treegroup.h"
 #include "cellref.h"
 #include "gray.h"
+#include "formatstring.h"
+#include "hilbert.h"
 
 
 namespace tftt {
@@ -47,7 +50,21 @@ void init(double w, double h) {
         newGrp->boundary = b;
         newGrp->neighbours[b ^ 1] = CellRef(gtree.root, -1);
         gtree.root->neighbours[b] = CellRef(gtree.boundGroups, b);
+
+        newGrp->id = 0;
+        for (int d = 0; d < DIM; d++) {
+            newGrp->origin[d] = 0.0;
+
+            if (d*2 == b)
+                newGrp->origin[d] -= gtree.size[d];
+            else if (d*2 == (b^1))
+                newGrp->origin[d] += gtree.size[d];
+
+            std::cout << "(" << b << "," << d << ") @ " << newGrp->origin[d] << std::endl;
+        }
     }
+
+    gtree.destroying = false;
 }
 
 void reset() {
@@ -211,6 +228,10 @@ void refine(CellRef cl) {
             ngb.group->cells[ngb.index].children = new TreeGroup(ngb);
         }
     }
+
+    // TFTT
+
+    
 }
 
 
@@ -288,8 +309,13 @@ void adaptAddCoarsen(CellRef cr) {
     adaptList.insert(cr);
 }
 bool adaptCommitCoarsen() {
-    for (auto& cr : adaptList) {
-        coarsen(cr);
+
+    // int inter = 0;
+    // Do it reverse order so that 2-1 is maintained.
+    for (auto cr = adaptList.rbegin(); cr != adaptList.rend(); cr++) {
+        coarsen(*cr);
+
+        // drawCurve(tftt::utils::formatString("coarsen.{0}.dat", inter++));
     }
     return adaptList.empty();
 }
