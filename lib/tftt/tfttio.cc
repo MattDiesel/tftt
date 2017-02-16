@@ -32,6 +32,54 @@ void drawMesh(std::ostream& os) {
 }
 
 
+
+void drawCurve(std::string fname) {
+    std::ofstream ofs(fname);
+    drawCurve(ofs);
+}
+
+void drawCurve(std::ostream& os) {
+    int lim = 1000;
+    for (auto& c : curve) {
+        if (!lim--) break;
+
+        
+        os << c.centre(0);
+        for (int d = 1; d < DIM; d++) {
+            os << " " << c.centre(d);
+        }
+        
+        os << "\n";
+    }
+}
+
+
+void drawBoundaries(std::string fname) {
+    std::ofstream ofs(fname);
+    for (int b = 0; b < 2*DIM; b++) {
+        drawBoundary(ofs, b);
+    }
+}
+
+void drawBoundary(std::ostream& os, int b) {
+    for (auto& c : boundaryCells(b)) {
+        for (int v = 0; v < 1<<DIM; v++) {
+            os << c.vertex(utils::toGray(v), 0);
+            for (int d = 1; d < DIM; d++) {
+                os << " " << c.vertex(utils::toGray(v), d);
+            }
+            os << "\n";
+        }
+
+        os << c.vertex(0, 0);
+        for (int d = 1; d < DIM; d++) {
+            os << " " << c.vertex(0, d);
+        }
+        os << "\n\n";
+    }
+}
+
+
 void drawMatrix(std::string fname, int imgW, int imgH, fnDataNorm dataNorm) {
     std::ofstream ofs(fname, std::ios::binary);
     drawMatrix(ofs, imgW, imgH, dataNorm);
