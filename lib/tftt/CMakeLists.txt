@@ -37,7 +37,9 @@ set(libtftt_SRCS
     leaves.h 
     leaves.cc
     tfttio.h 
-    tfttio.cc
+    tfttio.cc 
+    hilbert.h 
+    hilbert.cc 
 )
 
 # Declare the library
