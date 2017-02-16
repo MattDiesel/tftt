@@ -83,6 +83,34 @@ struct tagBoundaryLeaves {
 tagBoundaryLeaves boundaryCells(int b);
 
 
+
+
+
+struct tagCurve {
+    class curve_iterator {
+        CellRef cr;
+
+        void next();
+    public:
+        curve_iterator(CellRef c);
+
+        curve_iterator operator++();
+        curve_iterator operator++(int junk);
+        CellRef& operator*();
+        CellRef* operator->();
+        bool operator==(const curve_iterator& rhs);
+        bool operator!=(const curve_iterator& rhs);
+    };
+
+    curve_iterator begin();
+    curve_iterator end();
+};
+
+extern tagCurve curve;
+
+
+
+
 } // namespace tftt
 
 

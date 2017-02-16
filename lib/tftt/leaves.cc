@@ -247,4 +247,53 @@ tagBoundaryLeaves::bleaf_iterator tagBoundaryLeaves::end() {
 
 
 
+
+
+tagCurve curve;
+
+void tagCurve::curve_iterator::next() {
+    cr = cr.next();
+}
+
+tagCurve::curve_iterator::curve_iterator(CellRef c) : cr(c) {
+}
+
+tagCurve::curve_iterator tagCurve::curve_iterator::operator++() {
+    auto i = *this;
+    next();
+    return i;
+}
+
+tagCurve::curve_iterator tagCurve::curve_iterator::operator++(int junk) {
+    next();
+    return *this;
+}
+
+CellRef& tagCurve::curve_iterator::operator*() {
+    return cr;
+}
+
+CellRef* tagCurve::curve_iterator::operator->() {
+    return &cr;
+}
+
+bool tagCurve::curve_iterator::operator==(const tagCurve::curve_iterator& rhs) {
+    return cr == rhs.cr;
+}
+
+bool tagCurve::curve_iterator::operator!=(const tagCurve::curve_iterator& rhs) {
+    return !(cr == rhs.cr);
+}
+
+tagCurve::curve_iterator tagCurve::begin() {
+    return tagCurve::curve_iterator(gtree.first);
+}
+
+tagCurve::curve_iterator tagCurve::end() {
+    return tagCurve::curve_iterator(CellRef());
+}
+
+
+
+
 } // namespace tftt
