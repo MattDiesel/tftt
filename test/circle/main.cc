@@ -45,7 +45,7 @@ int main(int argc, char const *argv[])
 {
 
     int minDepth = 2;
-    int maxDepth = 7;
+    int maxDepth = 6;
     int iterations = 100;
 
     circle c;
@@ -59,11 +59,16 @@ int main(int argc, char const *argv[])
 
     // Init tree to min depth
     tftt::init(1.0, 1.0);
+
     for (int d = 0; d < minDepth; d++) {
         for (auto& cl : tftt::leaves) {
             tftt::refine(cl);
         }
     }
+
+    tftt::drawMesh("circledata/mesh.min.dat");
+    tftt::drawCurve("circledata/hilb.min.dat");
+    tftt::drawBoundaries("circledata/bound.min.dat");
 
     // Refine to circle. 
     for (int d = minDepth; d < maxDepth; d++) {
@@ -78,6 +83,8 @@ int main(int argc, char const *argv[])
     }
 
     tftt::drawMesh("circledata/mesh.init.dat");
+    tftt::drawCurve("circledata/hilb.init.dat");
+    tftt::drawBoundaries("circledata/bound.init.dat");
 
     int coarsened;
     bool cantCoarsen;
@@ -130,6 +137,8 @@ int main(int argc, char const *argv[])
         std::cout << "\tCell Count: " << tftt::gtree.ccells << "\n";
 
         tftt::drawMesh(formatString("circledata/mesh.{0}.dat", ITER));
+        tftt::drawCurve(formatString("circledata/hilb.{0}.dat", ITER));
+        tftt::drawBoundaries(formatString("circledata/bound.{0}.dat", ITER));
     }
 
     return 0;
