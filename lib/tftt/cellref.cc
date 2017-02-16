@@ -7,6 +7,7 @@
 
 #include "tree.h"
 #include "treecell.h"
+#include "hilbert.h"
 
 #include "cellref.h"
 
@@ -110,6 +111,56 @@ CellRef CellRef::neighbour(int n) const {
         return cr;
 
     return cr.child(index ^ (1 << (n >> 1)));
+}
+
+int CellRef::orientation() const {
+    // = f(index, group->orientation)
+
+    return hilbOrient(group->orientation, index);
+}
+
+
+CellRef CellRef::next() const {
+    int hch = hilbInvChild(group->orientation, index);
+
+    if (hch == (1<<DIM)-1) { // Last in group
+        return group->next;
+    }
+
+    CellRef ret = CellRef(group, hilbChild(group->orientation, hch+1));
+
+    while (ret.hasChildren()) {
+        ret = ret.child(hilbChild(ret.orientation(), 0));
+    }
+
+    return ret;
+}
+
+
+CellRef CellRef::prev() const {
+    int hch = hilbInvChild(group->orientation, index);
+
+    if (hch == 0) { // First in group
+        return group->prev;
+    }
+
+    CellRef ret = CellRef(group, hilbChild(group->orientation, hch-1));
+
+    while (ret.hasChildren()) {
+        ret = ret.child(hilbChild(ret.orientation(), (1<<DIM)-1));
+    }
+
+    return ret;
+}
+
+
+bool CellRef::isLastInGroup() const {
+    return hilbIsLast(group->orientation, index);
+}
+
+
+bool CellRef::isFirstInGroup() const {
+    return hilbIsFirst(group->orientation, index);
 }
 
 

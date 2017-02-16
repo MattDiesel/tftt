@@ -10,6 +10,7 @@ Tree gtree;
 
 
 Tree::~Tree() {
+    destroying = true;
     delete root;
 }
 

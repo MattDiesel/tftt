@@ -73,11 +73,17 @@ public:
 
     CellRef neighbour(int n) const;
 
-    // //! The next cell in the space filling curve
-    // CellRef next() const;
+    //! The orientation of the space filling curve at this cell. 
+    int orientation() const;
 
-    // //! The previous cell in the space filling curve
-    // CellRef prev() const;
+    //! The next cell in the space filling curve
+    CellRef next() const;
+
+    //! The previous cell in the space filling curve
+    CellRef prev() const;
+
+    bool isLastInGroup() const;
+    bool isFirstInGroup() const;
 
     // //! The processor this cell will be evaluated on
     // int rank();

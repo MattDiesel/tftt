@@ -19,11 +19,12 @@ struct Tree {
 
     TreeGroup* boundGroups;
 
+    bool destroying;
     ~Tree();
 
 	// For thread
-	// TreeGroup* first;
-	// TreeGroup* last;
+	cell_t first;
+	cell_t last;
 
 	//! The set of ghost groups on this processor
 	// std::set<TreeGroup*> ghosts;

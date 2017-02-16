@@ -51,11 +51,14 @@ struct TreeGroup {
 
     // For Thread
 
+    //! The Hilbert orientation of this group
+    int orientation;
+
     //! The next group in the space filling curve.
-    // TreeGroup* next;
+    CellRef next;
 
     //! The previous group in the space filling curve
-    // TreeGroup* prev;
+    CellRef prev;
 
     // For parallel
 
