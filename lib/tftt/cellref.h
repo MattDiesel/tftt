@@ -85,8 +85,9 @@ public:
     bool isLastInGroup() const;
     bool isFirstInGroup() const;
 
-    // //! The processor this cell will be evaluated on
-    // int rank();
+    //! The processor this cell will be evaluated on
+    node_t& rank();
+    node_t const& rank() const;
 
     // //! The identifier of the cell
     ident_t id() const;

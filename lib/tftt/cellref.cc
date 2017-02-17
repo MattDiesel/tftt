@@ -68,7 +68,7 @@ bool CellRef::hasChildren() const {
 
 TreeGroup* CellRef::children() const {
     if (isRoot())
-        return group;
+        return gtree.root;
     else
         return group->cells[index].children;
 }
@@ -164,19 +164,32 @@ bool CellRef::isFirstInGroup() const {
 }
 
 
+node_t& CellRef::rank() {
+    return group->cells[index].rank;
+}
+
+node_t const& CellRef::rank() const {
+    return group->cells[index].rank;
+}
+
+
 ident_t CellRef::id() const {
+    if (isRoot()) return 0;
     return group->id.id | index;
 }
 
 int CellRef::level() const {
+    if (isRoot()) return -1;
     return group->id.level();
 }
 
 
 data_t& CellRef::data() {
+#ifdef TFTT_DEBUG
     if (hasChildren()) {
         throw std::runtime_error("Attempt to access data from non-leaf");
     }
+#endif
 
     data_t& ret = group->cells[index].data;
     return ret;
