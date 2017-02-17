@@ -78,6 +78,7 @@ namespace tftt {
     typedef rt_data data_t;
     typedef rt_facedata facedata_t;
 	typedef TreeId<uint64_t> ident_t;
+    typedef int8_t node_t;
 
 
     // Functions to be supplied by user
@@ -103,10 +104,14 @@ void init(double w, double h);
 void reset();
 
 cell_t find(ident_t id);
+cell_t insert(ident_t id);
 cell_t findmax(fnData dt, double* maxValRet);
 
 double interpChild(cell_t cl, int ch, int forNb, fnData dt);
 double interpALEVertex(cell_t cl, int v, fnData dt);
+
+//! Distribute cells across processors
+void distribute(int n);
 
 cell_t atPos(double pos[DIM]);
 cell_t atVertex(int v);

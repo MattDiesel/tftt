@@ -35,9 +35,6 @@ void init(double w, double h) {
 
     // Init top level cells
     gtree.root = new TreeGroup();
-    // TODO: TFTT
-    // gtree.root->next = nullptr;
-    // gtree.root->prev = nullptr;
 
     cell_t cl;
     cell_t bch;
@@ -60,7 +57,7 @@ void init(double w, double h) {
             else if (d*2 == (b^1))
                 newGrp->origin[d] += gtree.size[d];
 
-            std::cout << "(" << b << "," << d << ") @ " << newGrp->origin[d] << std::endl;
+            // std::cout << "(" << b << "," << d << ") @ " << newGrp->origin[d] << std::endl;
         }
     }
 
@@ -68,6 +65,7 @@ void init(double w, double h) {
 }
 
 void reset() {
+    gtree.destroying = true;
     delete gtree.root;
     delete gtree.boundGroups;
     gtree.root = nullptr;
@@ -87,6 +85,26 @@ cell_t find(ident_t idt) {
     }
 
     return CellRef();
+}
+
+cell_t insert(ident_t idt) {
+    cell_t ret = CellRef(-1);
+
+    while (ret.id().id != idt.id) {
+        if (idt.level() <= ret.level())
+            throw std::runtime_error("Badly formatted ID.");
+
+        if (!ret.hasChildren()) {
+            twoToOne(ret);
+            refine(ret);
+        }
+
+        // std::cout << idt.orthant(ret.level() + 1) << std::endl;
+
+        ret = ret.child(idt.orthant(ret.level() + 1));
+    }
+
+    return ret;
 }
 
 
@@ -181,6 +199,30 @@ double interpALEVertex(cell_t cl, int v, fnData dt) {
 }
 
 
+void distribute(int n) {
+    int cpernode = (gtree.ccells / n)+1;
+
+    // std::string fmt = "mesh.r{0}.init.dat";
+
+    // std::ofstream ofs(tftt::utils::formatString(fmt, 0));
+
+    int cc = cpernode;
+    int node = 0;
+    for (auto& cl : curve) {
+        if (!--cc) {
+            cc = cpernode;
+            node++;
+
+            // ofs.close();
+            // ofs.open(tftt::utils::formatString(fmt, node));
+        }
+
+        cl.rank() = node;
+        // drawCell(ofs, cl);
+    } 
+}
+
+
 cell_t atPos(double pos[DIM]) {
     TreeGroup* gr = gtree.root;
 
@@ -228,10 +270,6 @@ void refine(CellRef cl) {
             ngb.group->cells[ngb.index].children = new TreeGroup(ngb);
         }
     }
-
-    // TFTT
-
-    
 }
 
 
@@ -254,9 +292,6 @@ void coarsen(CellRef cl) {
     cl.group->cells[cl.index].children = nullptr;
     gtree.ccells -= (1 << DIM) - 1;
 }
-
-
-
 
 
 void twoToOne_Add(std::set<CellRef, crless>& ls, CellRef cl, CellRef from) {
