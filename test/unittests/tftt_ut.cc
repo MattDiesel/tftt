@@ -1,11 +1,38 @@
 
 #include <string>
 #include <sstream>
+#include <fstream>
+#include <iterator>
+#include <algorithm>
 #include <gtest/gtest.h>
 
 #include "tftt/tftt.h"
 #include "tftt/tree.h"
 #include "tftt/treegroup.h"
+
+#include "formatstring.h"
+
+
+bool compareFiles(const std::string& p1, const std::string& p2) {
+    std::ifstream f1(p1, std::ifstream::binary|std::ifstream::ate);
+    std::ifstream f2(p2, std::ifstream::binary|std::ifstream::ate);
+
+    if (f1.fail() || f2.fail()) {
+        return false; //file problem
+    }
+
+    if (f1.tellg() != f2.tellg()) {
+        return false; //size mismatch
+    }
+
+    //seek back to beginning and use std::equal to compare contents
+    f1.seekg(0, std::ifstream::beg);
+    f2.seekg(0, std::ifstream::beg);
+    return std::equal(std::istreambuf_iterator<char>(f1.rdbuf()),
+                    std::istreambuf_iterator<char>(),
+                    std::istreambuf_iterator<char>(f2.rdbuf()));
+}
+
 
 
 TEST(TfttTest, init) {
@@ -151,13 +178,13 @@ TEST(TfttTest, drawMesh) {
     tftt::drawMesh(oss);
 
     std::string shouldBe = 
-            "0 0\n2 0\n2 1\n0 1\n\n"
-            "2 0\n4 0\n4 1\n2 1\n\n"
-            "0 1\n1 1\n1 1.5\n0 1.5\n\n"
-            "1 1\n2 1\n2 1.5\n1 1.5\n\n"
-            "0 1.5\n1 1.5\n1 2\n0 2\n\n"
-            "1 1.5\n2 1.5\n2 2\n1 2\n\n"
-            "2 1\n4 1\n4 2\n2 2\n\n";
+            "0 0\n2 0\n2 1\n0 1\n0 0\n\n"
+            "2 0\n4 0\n4 1\n2 1\n2 0\n\n"
+            "0 1\n1 1\n1 1.5\n0 1.5\n0 1\n\n"
+            "1 1\n2 1\n2 1.5\n1 1.5\n1 1\n\n"
+            "0 1.5\n1 1.5\n1 2\n0 2\n0 1.5\n\n"
+            "1 1.5\n2 1.5\n2 2\n1 2\n1 1.5\n\n"
+            "2 1\n4 1\n4 2\n2 2\n2 1\n\n";
 
     ASSERT_EQ(oss.str(), shouldBe);
 }
@@ -186,4 +213,77 @@ TEST(TfttTest, TwoToOne) {
     ASSERT_EQ(tftt::CellRef(cl.children(), 2).hasChildren(), false);
     ASSERT_EQ(tftt::CellRef(cl.children(), 3).hasChildren(), false);
 
+}
+
+
+TEST(TfttTest, insert) {
+    tftt::reset();
+    tftt::init(4.0, 2.0);
+
+    tftt::ident_t idt = 0;
+    for (int i = 0; i < 4; i++) {
+        idt = idt.child(3);
+    }
+
+    // Find cell {2}
+    tftt::cell_t cl = tftt::insert(idt);
+
+    ASSERT_EQ(cl.isValid(), true);
+
+    tftt::drawMesh("testInsert.dat");
+}
+
+
+
+TEST(TfttTest, saveLoad) {
+    std::string fileBefore = "testTree.before.dat";
+    std::string fileAfter = "testTree.after.dat";
+
+    tftt::reset();
+    tftt::init(4.0, 2.0);
+
+    tftt::ident_t idt = 0;
+    for (int i = 0; i < 5; i++) {
+        idt = idt.child(3);
+    }
+
+    tftt::cell_t cl = tftt::insert(idt);
+    ASSERT_EQ(cl.isValid(), true);
+
+    tftt::saveTree("testTree.tr");
+    tftt::drawMesh(fileBefore);
+    tftt::reset();
+    tftt::loadTree("testTree.tr");
+    tftt::drawMesh(fileAfter);
+
+    ASSERT_EQ(compareFiles(fileBefore, fileAfter), true);
+}
+
+TEST(TfttTest, splitToDisk) {
+    std::string fileBefore = "testPartTree.before.dat";
+
+    tftt::reset();
+    tftt::init(4.0, 2.0);
+
+    tftt::ident_t idt = 0;
+    for (int i = 0; i < 8; i++) {
+        idt = idt.child(3);
+    }
+
+    tftt::cell_t cl = tftt::insert(idt);
+    ASSERT_EQ(cl.isValid(), true);
+
+    tftt::drawMesh(fileBefore);
+
+    tftt::distribute(4);
+    tftt::splitToDisk("testPartTree.r{0}.tr");
+
+    for (int n = 0; n < 4; n++) {
+        std::cout << "n = " << n << "\n";
+        tftt::reset();
+        tftt::loadTree(formatString("testPartTree.r{0}.tr", n));
+        tftt::drawMesh(formatString("testPartTree.r{0}.dat", n));
+    }
+
+    // ASSERT_EQ(compareFiles(fileBefore, fileAfter), true);
 }
