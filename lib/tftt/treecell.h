@@ -16,6 +16,7 @@ struct TreeGroup;
 struct TreeCell {
 	data_t data;
     std::array<facedata_t, DIM*2> facedata;
+    node_t rank;
 	TreeGroup* children;
 };
 
