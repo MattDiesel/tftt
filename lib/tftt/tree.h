@@ -23,11 +23,15 @@ struct Tree {
     ~Tree();
 
 	// For thread
-	cell_t first;
-	cell_t last;
+    cell_t first;
+    cell_t last;
+    cell_t firstActive;
+    cell_t lastActive;
 
 	//! The set of ghost groups on this processor
 	// std::set<TreeGroup*> ghosts;
+
+    node_t rank;
 
 };
 

@@ -118,6 +118,13 @@ TreeGroup::TreeGroup(CellRef p)
         else {
             gtree.last = CellRef(this, hilbChild(orientation, (1<<DIM)-1));
         }
+
+        if (gtree.firstActive == p) {
+            gtree.firstActive = CellRef(this, hilbChild(orientation, 0));
+        }
+        if (gtree.lastActive == p) {
+            gtree.lastActive = CellRef(this, hilbChild(orientation, (1<<DIM)-1));
+        }
     }
 }
 

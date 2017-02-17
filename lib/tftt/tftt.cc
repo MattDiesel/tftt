@@ -24,6 +24,8 @@ void init(double w, double h) {
     if (gtree.root)
         throw std::runtime_error("Attempt to initialise tree twice.");
 
+    gtree.rank = -1;
+
     gtree.ccells = 1<<DIM;
 
     gtree.size[0] = w;
