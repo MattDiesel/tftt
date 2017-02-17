@@ -109,6 +109,12 @@ struct tagCurve {
 extern tagCurve curve;
 
 
+struct tagActiveCurve : public tagCurve {
+    curve_iterator begin();
+    curve_iterator end();
+};
+
+extern tagActiveCurve activecurve;
 
 
 } // namespace tftt
