@@ -65,17 +65,42 @@ void drawPartialMesh(std::ostream& os, cell_t from, cell_t to) {
 }
 
 
+void drawGhosts(std::string fname) {
+    std::ofstream ofs(fname);
+    drawGhosts(ofs);
+}
+
+void drawGhosts(std::ostream& os) {
+    for (auto& c : gtree.ghosts) {
+        drawCell(os, c);
+    }
+}
+
+
 void drawCurve(std::string fname) {
     std::ofstream ofs(fname);
     drawCurve(ofs);
 }
 
 void drawCurve(std::ostream& os) {
-    int lim = 1000;
     for (auto& c : curve) {
-        if (!lim--) break;
-
+        os << c.centre(0);
+        for (int d = 1; d < DIM; d++) {
+            os << " " << c.centre(d);
+        }
         
+        os << "\n";
+    }
+}
+
+
+void drawPartialCurve(std::string fname) {
+    std::ofstream ofs(fname);
+    drawPartialCurve(ofs);
+}
+
+void drawPartialCurve(std::ostream& os) {
+    for (auto& c : activecurve) {
         os << c.centre(0);
         for (int d = 1; d < DIM; d++) {
             os << " " << c.centre(d);
@@ -190,13 +215,35 @@ void saveTree(std::ostream& os) {
 }
 
 
+void addChildren(std::set<cell_t>& ghosts, cell_t ngb, node_t node) {
+    for (auto& ngbCh : *ngb.children()) {
+        if (ngbCh.hasChildren()) {
+            addChildren(ghosts, ngbCh, node);
+        }
+        else if (ngbCh.rank() != node) {
+            if (!ngb.isBoundary())
+                ghosts.insert(ngbCh);
+        }
+    }
+}
+
 void splitToDisk(std::string fnameFmt) {
     int node = 0;
     std::ofstream ofs(tftt::utils::formatString(fnameFmt, 0), std::ios::binary);
     writeHeader(ofs);
 
+    std::set<cell_t> ghosts;
+    cell_t ngb;
+
     for (auto const& cl : curve) {
         if (cl.rank() != node) {
+
+            // Write all ghosts
+            for (auto& gh : ghosts) {
+                writeCell(ofs, gh);
+            }
+            ghosts.clear();
+
             ofs.close();
             node++;
             ofs.open(tftt::utils::formatString(fnameFmt, node), std::ios::binary);
@@ -204,7 +251,26 @@ void splitToDisk(std::string fnameFmt) {
         }
 
         writeCell(ofs, cl);
+
+        for (int nb = 0; nb < 2*DIM; nb++) {
+            ngb = cl.neighbour(nb);
+            if (ngb.isBoundary()) continue;
+
+            if (ngb.hasChildren()) {
+                addChildren(ghosts, ngb, node);
+            }
+            else if (ngb.rank() != node) {
+                ghosts.insert(ngb);
+            }
+        }
     }
+
+    for (auto& gh : ghosts) {
+        writeCell(ofs, gh);
+    }
+    ghosts.clear();
+
+    ofs.close();
 }
 
 
@@ -268,19 +334,35 @@ void loadTree(std::string fname, int n) {
     }
 
 
-    bool first = false;
-    for (auto& cl : curve) {
-        if (cl.rank() == gtree.rank) {
-            if (!first) {
-                first = true;
-                gtree.firstActive = cl;
-            }
+    if (n != -1) {
+        bool first = false;
+        bool nonRank = false;
+        for (auto& cl : curve) {
+            if (cl.rank() == gtree.rank) {
+                if (!first) {
+                    first = true;
+                    gtree.firstActive = cl;
+                }
+                else {
+                    if (nonRank) {
+                        std::cout << "Warning: Non-contigous range\n";
+                    }
+                }
 
-            gtree.lastActive = cl;
+                gtree.lastActive = cl;
+            }
+            else {
+                if (first) {
+                    nonRank = true;
+                }
+
+                if (cl.rank() != -1) {
+                    gtree.ghosts.insert(cl);
+                }
+            }
         }
     }
 }
-
 
 
 } // namespace tftt
