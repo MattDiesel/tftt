@@ -71,6 +71,7 @@ void reset() {
     delete gtree.root;
     delete gtree.boundGroups;
     gtree.root = nullptr;
+    gtree.ghosts.clear();
 }
 
 
