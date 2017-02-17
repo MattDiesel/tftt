@@ -7,9 +7,10 @@
 
 #include "tftt/tftt.h"
 #include "tftt/tree.h"
-
 #include "tftt/treegroup.h"
+
 #include "formatstring.h"
+#include "pars.h"
 
 
 int escape_iterations(double re, double im, int max_iterations) {
@@ -73,6 +74,20 @@ int main(int argc, char const *argv[])
     int minDepth = 3;
     int maxDepth = 8;
 
+    if (argc > 1) {
+        std::cout << "Reading parameters from: " << argv[1] << "\n";
+        getpars(argv[1]);
+        tfetch("minDepth", minDepth);
+        tfetch("maxDepth", maxDepth);
+        tfetch("cnodes", cnodes);
+    }
+
+    std::cout << "Using configuration:\n"
+            << "\tminDepth = " << minDepth << "\n"
+            << "\tmaxDepth = " << maxDepth << "\n"
+            << "\tcnodes = " << cnodes << std::endl;
+
+
 	std::cout << "Init Tree" << std::endl;
 
 	tftt::init(4.0, 2.0);
@@ -85,8 +100,7 @@ int main(int argc, char const *argv[])
         }
     }
 
-    tftt::drawMesh("minDepth.dat");
-
+    // tftt::drawMesh("minDepth.dat");
 
     std::cout << "Refinement" << std::endl;
 
