@@ -19,6 +19,7 @@ TreeGroup::TreeGroup()
         : parent(), boundary(-1) {
     for (int i = 0; i < (1<<DIM); i++) {
         cells[i].children = nullptr;
+        cells[i].rank = -1;
     }
 
     id = 0;
@@ -43,6 +44,7 @@ TreeGroup::TreeGroup(int b)
 
     for (int i = 0; i < (1<<DIM); i++) {
         cells[i].children = nullptr;
+        cells[i].rank = -1;
     }
 
     id = 0;
@@ -76,6 +78,7 @@ TreeGroup::TreeGroup(CellRef p)
 
     for (int i = 0; i < (1<<DIM); i++) {
         cells[i].children = nullptr;
+        cells[i].rank = p.rank();
     }
 
     id = p.id().firstchild();

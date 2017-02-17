@@ -60,13 +60,6 @@ struct TreeGroup {
     //! The previous group in the space filling curve
     CellRef prev;
 
-    // For parallel
-
-    //! The index of the processor this group is active on.
-    // int rank;
-
-
-
 
     class cell_iterator {
     public:
