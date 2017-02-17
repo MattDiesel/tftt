@@ -6,6 +6,7 @@
 #include <set>
 
 #include "tftt/tftt.h"
+#include "tftt/tree.h"
 
 #include "tftt/treegroup.h"
 #include "formatstring.h"
@@ -32,28 +33,35 @@ double mbrot(double re, double im) {
 }
 
 
+double avrChildren(tftt::cell_t cl) {
+    double ret = 0.0;
+    for (auto& ch : *cl.children()) {
+        if (ch.hasChildren()) {
+            ret += avrChildren(ch);
+        }
+        else {
+            ret += ch->P;
+        }
+    }
+
+    return ret*0.25;
+}
+
 double faceFlux(tftt::cell_t cl, tftt::cell_t nb) {
 
     double nbDat = 0.0;
     if (nb.hasChildren()) {
-        for (auto& ch : *nb.children()) {
-            nbDat += ch.data();
-
-            if (ch.data() == 1337) {
-                throw;
-            }
-        }
-        nbDat *= 0.25;
+        nbDat = avrChildren(nb);
     }
     else {
-        nbDat = nb.data();
+        nbDat = nb->P;
 
         if (nbDat == 1337) {
             throw;
         }
     }
 
-    return cl.data() - nbDat;
+    return cl->P - nbDat;
 }
 
 
@@ -61,13 +69,16 @@ double faceFlux(tftt::cell_t cl, tftt::cell_t nb) {
 
 int main(int argc, char const *argv[])
 {
+    int cnodes = 4;
+    int minDepth = 3;
+    int maxDepth = 8;
+
 	std::cout << "Init Tree" << std::endl;
 
 	tftt::init(4.0, 2.0);
 
     std::cout << "Min Depth" << std::endl;
 
-    int minDepth = 3;
     for (int i = 0; i < minDepth; i++) {
         for (auto& cl : tftt::leaves) {
             refine(cl);
@@ -80,15 +91,13 @@ int main(int argc, char const *argv[])
     std::cout << "Refinement" << std::endl;
 
     for (auto& cl : tftt::leaves) {
-        cl.data() = (mbrot(cl.centre(0) - 2.0, cl.centre(1) - 1.0));
+        cl->P = (mbrot(cl.centre(0) - 2.0, cl.centre(1) - 1.0));
     }
-
 
     int iter = 0;
     do {
         tftt::adaptBegin();
 
-        int maxDepth = 10;
         double eps;
         tftt::cell_t nb;
         for (auto& cl : tftt::leaves) {
@@ -114,7 +123,7 @@ int main(int argc, char const *argv[])
         // Reprocess new cells
         for (auto& cl : tftt::adaptList) {
             for (auto& ch : *cl.children()) {
-                ch.data() = (mbrot(ch.centre(0) - 2.0, ch.centre(1) - 1.0));
+                ch->P = (mbrot(ch.centre(0) - 2.0, ch.centre(1) - 1.0));
             }
         }
 
@@ -126,11 +135,31 @@ int main(int argc, char const *argv[])
 
     } while (!tftt::adaptList.empty());
 
-    tftt::drawMesh(formatString("refined{0}.dat", iter));
-    tftt::drawMatrix(formatString("refined{0}.pgm", iter), 1024, 512);
+    std::cout << "Refined to depth " << maxDepth << "\n";
+    std::cout << "Total Cells: " << tftt::gtree.ccells << "\n";
 
+    tftt::drawMesh("mbrot.mesh.init.dat");
+    tftt::drawCurve("mbrot.hilb.init.dat");
+    tftt::drawBoundaries("mbrot.bound.init.dat");
+    tftt::drawMatrix("mbrot.init.pgm", 1024, 512, [](tftt::data_t& dt, int max) {
+        return dt.P;
+    });
 
+    tftt::distribute(cnodes);
+    tftt::splitToDisk("mbrot.r{0}.tr");
 
+    for (int n = 0; n < cnodes; n++) {
+        std::cout << "Node = " << n << "\n";
+        tftt::reset();
+        tftt::loadTree(formatString("mbrot.r{0}.tr", n), n);
+
+        tftt::drawPartialMesh(formatString("mbrot.mesh.r{0}.dat", n));
+        tftt::drawPartialCurve(formatString("mbrot.hilb.r{0}.dat", n));
+        tftt::drawGhosts(formatString("mbrot.ghosts.r{0}.dat", n));
+        tftt::drawBoundaries(formatString("mbrot.bound.r{0}.dat", n));
+
+        std::cout << "\tGhosts: " << tftt::gtree.ghosts.size() << "\n";
+    }
 
 	return 0;
 }
