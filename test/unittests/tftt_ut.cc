@@ -279,10 +279,11 @@ TEST(TfttTest, splitToDisk) {
     tftt::splitToDisk("testPartTree.r{0}.tr");
 
     for (int n = 0; n < 4; n++) {
-        std::cout << "n = " << n << "\n";
+        // std::cout << "n = " << n << "\n";
         tftt::reset();
-        tftt::loadTree(formatString("testPartTree.r{0}.tr", n));
-        tftt::drawMesh(formatString("testPartTree.r{0}.dat", n));
+        tftt::loadTree(formatString("testPartTree.r{0}.tr", n), n);
+
+        tftt::drawPartialMesh(formatString("testPartTree.r{0}.dat", n));
     }
 
     // ASSERT_EQ(compareFiles(fileBefore, fileAfter), true);
