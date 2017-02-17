@@ -44,6 +44,26 @@ void drawCell(std::ostream& os, cell_t const& c) {
 }
 
 
+void drawPartialMesh(std::string fname, cell_t from, cell_t to) {
+    std::ofstream ofs(fname);
+    drawPartialMesh(ofs, from, to);
+}
+
+void drawPartialMesh(std::string fname) {
+    std::ofstream ofs(fname);
+    drawPartialMesh(ofs, gtree.firstActive, gtree.lastActive);
+}
+
+void drawPartialMesh(std::ostream& os, cell_t from, cell_t to) {
+    auto bgn = tagCurve::curve_iterator(from);
+    auto end = tagCurve::curve_iterator(to);
+    end++;
+
+    for (auto& cl = bgn; cl != end; cl++) {
+        drawCell(os, *cl);
+    }
+}
+
 
 void drawCurve(std::string fname) {
     std::ofstream ofs(fname);
@@ -194,7 +214,7 @@ void readVal(std::istream& ist, T& ret) {
 }
 
 
-void loadTree(std::string fname) {
+void loadTree(std::string fname, int n) {
     std::ifstream ifs(fname, std::ios::binary);
 
     // Read and check header
@@ -230,6 +250,7 @@ void loadTree(std::string fname) {
         throw std::runtime_error("ID size in file does not match structure.");
 
     init(w, h);
+    gtree.rank = n;
 
     ident_t toInsert;
     cell_t newcl;
@@ -244,6 +265,19 @@ void loadTree(std::string fname) {
 
         readVal(ifs, newcl.rank());
         readVal(ifs, newcl.data());
+    }
+
+
+    bool first = false;
+    for (auto& cl : curve) {
+        if (cl.rank() == gtree.rank) {
+            if (!first) {
+                first = true;
+                gtree.firstActive = cl;
+            }
+
+            gtree.lastActive = cl;
+        }
     }
 }
 
