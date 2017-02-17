@@ -138,25 +138,25 @@ int main(int argc, char const *argv[])
     std::cout << "Refined to depth " << maxDepth << "\n";
     std::cout << "Total Cells: " << tftt::gtree.ccells << "\n";
 
-    tftt::drawMesh("mbrot.mesh.init.dat");
-    tftt::drawCurve("mbrot.hilb.init.dat");
-    tftt::drawBoundaries("mbrot.bound.init.dat");
-    tftt::drawMatrix("mbrot.init.pgm", 1024, 512, [](tftt::data_t& dt, int max) {
+    tftt::drawMesh("mbrot/mesh.init.dat");
+    tftt::drawCurve("mbrot/hilb.init.dat");
+    tftt::drawBoundaries("mbrot/bound.init.dat");
+    tftt::drawMatrix("mbrot/init.pgm", 1024, 512, [](tftt::data_t& dt, int max) {
         return dt.P;
     });
 
     tftt::distribute(cnodes);
-    tftt::splitToDisk("mbrot.r{0}.tr");
+    tftt::splitToDisk("mbrot/r{0}.tr");
 
     for (int n = 0; n < cnodes; n++) {
         std::cout << "Node = " << n << "\n";
         tftt::reset();
-        tftt::loadTree(formatString("mbrot.r{0}.tr", n), n);
+        tftt::loadTree(formatString("mbrot/r{0}.tr", n), n);
 
-        tftt::drawPartialMesh(formatString("mbrot.mesh.r{0}.dat", n));
-        tftt::drawPartialCurve(formatString("mbrot.hilb.r{0}.dat", n));
-        tftt::drawGhosts(formatString("mbrot.ghosts.r{0}.dat", n));
-        tftt::drawBoundaries(formatString("mbrot.bound.r{0}.dat", n));
+        tftt::drawPartialMesh(formatString("mbrot/mesh.r{0}.dat", n));
+        tftt::drawPartialCurve(formatString("mbrot/hilb.r{0}.dat", n));
+        tftt::drawGhosts(formatString("mbrot/ghosts.r{0}.dat", n));
+        tftt::drawBoundaries(formatString("mbrot/bound.r{0}.dat", n));
 
         std::cout << "\tGhosts: " << tftt::gtree.ghosts.size() << "\n";
     }
