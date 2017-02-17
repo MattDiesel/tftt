@@ -29,7 +29,7 @@ struct Tree {
     cell_t lastActive;
 
 	//! The set of ghost groups on this processor
-	// std::set<TreeGroup*> ghosts;
+	std::set<cell_t> ghosts;
 
     node_t rank;
 
