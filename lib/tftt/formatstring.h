@@ -18,7 +18,7 @@ namespace utils {
  * @author Diesel
  */
 template<typename T>
-bool fmtprint(std::ostream& os, int N, T v) {
+inline bool fmtprint(std::ostream& os, int N, T v) {
     if (!N) {
         os << v;
         return true;
@@ -31,7 +31,7 @@ bool fmtprint(std::ostream& os, int N, T v) {
  * @author Diesel
  */
 template<>
-bool fmtprint(std::ostream& os, int N, int v) {
+inline bool fmtprint(std::ostream& os, int N, int v) {
     if (!N) {
         os << std::setfill('0') << std::setw(5) << v;
         return true;
@@ -44,7 +44,7 @@ bool fmtprint(std::ostream& os, int N, int v) {
  * @author Diesel
  */
 template<typename T, typename... Args>
-bool fmtprint(std::ostream& os, int N, T first, Args... args) {
+inline bool fmtprint(std::ostream& os, int N, T first, Args... args) {
     if (!N) {
         os << first;
         return true;
@@ -59,7 +59,7 @@ bool fmtprint(std::ostream& os, int N, T first, Args... args) {
  * @author Diesel
  */
 template<class ...TA>
-std::string formatString(std::string f, TA... pargs) {
+inline std::string formatString(std::string f, TA... pargs) {
     std::ostringstream oss;
 
     std::string::size_type c = 0, p, n;
