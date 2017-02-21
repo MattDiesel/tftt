@@ -284,6 +284,12 @@ bool CellRef::operator==(const CellRef& rhs) const {
     return group == rhs.group && index == rhs.index;
 }
 
+
+bool CellRef::operator!=(const CellRef& rhs) const {
+    return group != rhs.group || index != rhs.index;
+}
+
+
 bool CellRef::operator<(const CellRef& rhs) const {
     return group < rhs.group || index < rhs.index;
 }

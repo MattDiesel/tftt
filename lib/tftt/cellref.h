@@ -116,6 +116,7 @@ public:
     bool containsPoint(double pt[DIM]) const;
 
     bool operator==(const CellRef& rhs) const;
+    bool operator!=(const CellRef& rhs) const;
     bool operator<(const CellRef& rhs) const;
 
     data_t* operator->();
