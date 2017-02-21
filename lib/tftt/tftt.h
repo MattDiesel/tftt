@@ -84,6 +84,10 @@ namespace tftt {
     // Functions to be supplied by user
     typedef double (*fnDataNorm)(data_t& d, int max);
     typedef double (*fnData)(data_t& d);
+
+    extern struct {
+        int ghostsFlag; // 0 - Minimum, 1 - Children of neighbour groups
+    } options;
 }
 
 
