@@ -202,23 +202,15 @@ double interpALEVertex(cell_t cl, int v, fnData dt) {
 void distribute(int n) {
     int cpernode = (gtree.ccells / n)+1;
 
-    // std::string fmt = "mesh.r{0}.init.dat";
-
-    // std::ofstream ofs(tftt::utils::formatString(fmt, 0));
-
     int cc = cpernode;
     int node = 0;
     for (auto& cl : curve) {
         if (!--cc) {
             cc = cpernode;
             node++;
-
-            // ofs.close();
-            // ofs.open(tftt::utils::formatString(fmt, node));
         }
 
         cl.rank() = node;
-        // drawCell(ofs, cl);
     } 
 }
 
