@@ -215,17 +215,36 @@ void saveTree(std::ostream& os) {
 }
 
 
-void addChildren(std::set<cell_t>& ghosts, cell_t ngb, node_t node) {
+void addChildren(std::set<cell_t>& ghosts, cell_t cl, cell_t ngb, int nb, node_t node) {
     for (auto& ngbCh : *ngb.children()) {
+        if (options.ghostsFlag == 0 && ngbCh.neighbour(nb ^ 1) != cl)
+            continue; // Minimal - only take bordering children
+
         if (ngbCh.hasChildren()) {
-            addChildren(ghosts, ngbCh, node);
+            addChildren(ghosts, cl, ngbCh, nb, node);
         }
         else if (ngbCh.rank() != node) {
-            if (!ngb.isBoundary())
-                ghosts.insert(ngbCh);
+            ghosts.insert(ngbCh);
         }
     }
 }
+
+
+void addGhosts(std::set<cell_t>& ghosts, cell_t cl, node_t node) {
+    cell_t ngb;
+    for (int nb = 0; nb < 2*DIM; nb++) {
+        ngb = cl.neighbour(nb);
+        if (ngb.isBoundary()) continue;
+
+        if (ngb.hasChildren()) {
+            addChildren(ghosts, cl, ngb, nb, node);
+        }
+        else if (ngb.rank() != node) {
+            ghosts.insert(ngb);
+        }
+    }
+}
+
 
 void splitToDisk(std::string fnameFmt) {
     int node = 0;
@@ -252,17 +271,7 @@ void splitToDisk(std::string fnameFmt) {
 
         writeCell(ofs, cl);
 
-        for (int nb = 0; nb < 2*DIM; nb++) {
-            ngb = cl.neighbour(nb);
-            if (ngb.isBoundary()) continue;
-
-            if (ngb.hasChildren()) {
-                addChildren(ghosts, ngb, node);
-            }
-            else if (ngb.rank() != node) {
-                ghosts.insert(ngb);
-            }
-        }
+        addGhosts(ghosts, cl, node);
     }
 
     for (auto& gh : ghosts) {

@@ -17,6 +17,9 @@
 namespace tftt {
 
 
+TFTTOPTIONS options;
+
+
 void init(double w, double h) {
     if (gtree.root)
         throw std::runtime_error("Attempt to initialise tree twice.");
