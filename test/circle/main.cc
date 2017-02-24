@@ -152,11 +152,9 @@ int main(int argc, char const *argv[])
         tftt::drawGhosts(formatString("parcircle/ghosts.r{0}.dat", n));
         tftt::drawBoundaries(formatString("parcircle/bound.r{0}.dat", n));
 
+        std::cout << "\tCells: " << tftt::gtree.ccells << "\n";
         std::cout << "\tGhosts: " << tftt::gtree.ghosts.size() << "\n";
     }
-
-
-    return 0;
 
     int coarsened;
     bool cantCoarsen;
@@ -182,24 +180,23 @@ int main(int argc, char const *argv[])
             if (c.intersects(cl))
                 continue;
 
-            cantCoarsen = false;
-            for (int ch = 0; ch < 1<<DIM; ch++) {
-                if (cl.child(ch).hasChildren()) {
-                    cantCoarsen = true;
-                    break;
-                }
-                for (int nb = 0; nb < 2*DIM; nb++) {
-                    tmp = cl.child(ch).neighbour(nb);
-                    if (tmp.hasChildren()) {
+            if (cl.level() > minDepth) {
+                cantCoarsen = false;
+                for (int ch = 0; ch < 1<<DIM; ch++) {
+                    if (cl.child(ch).hasChildren()) {
                         cantCoarsen = true;
                         break;
                     }
+                    cantCoarsen = tftt::findAround(cl, tftt::options.two2oneFlag,
+                        [](tftt::cell_t& cl) {
+                            return cl.hasGrandChildren();
+                        });
+                    if (cantCoarsen) break;
                 }
-                if (cantCoarsen) break;
-            }
 
-            if (!cantCoarsen) {
-                tftt::adaptAddCoarsen(cl);
+                if (!cantCoarsen) {
+                    tftt::adaptAddCoarsen(cl);
+                }
             }
         }
         tftt::adaptCommitCoarsen();
