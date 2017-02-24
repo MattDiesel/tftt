@@ -68,8 +68,7 @@ int main(int argc, char const *argv[])
     // Read from file:
     if (argc > 1) {
         try {
-            std::cout << "Reading parameters from " << argv[1] << std::endl;
-            getpars(argv[1]);
+            getpars(argc, argv);
 
             tfetch("minDepth", minDepth);
             tfetch("maxDepth", maxDepth);
