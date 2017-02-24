@@ -29,17 +29,28 @@ void drawMesh(std::ostream& os) {
 }
 
 void drawCell(std::ostream& os, cell_t const& c) {
+    double vtc[1<<DIM][DIM];
+
+    c.vertices(vtc);
+
+    int vg;
     for (int v = 0; v < 1<<DIM; v++) {
-        os << c.vertex(utils::toGray(v), 0);
+        vg = utils::toGray(v);
+
+        // os << c.vertex(utils::toGray(v), 0);
+        os << vtc[vg][0];
         for (int d = 1; d < DIM; d++) {
-            os << " " << c.vertex(utils::toGray(v), d);
+            // os << " " << c.vertex(vg, d);
+            os << ' ' << vtc[vg][d];
         }
-        os << "\n";
+        os << '\n';
     }
 
-    os << c.vertex(0, 0);
+    // os << c.vertex(0, 0);
+    os << vtc[0][0];
     for (int d = 1; d < DIM; d++) {
-        os << " " << c.vertex(0, d);
+        // os << " " << c.vertex(0, d);
+        os << ' ' << vtc[0][d];
     }
     os << "\n\n";
 }
