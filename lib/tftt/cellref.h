@@ -121,6 +121,8 @@ public:
 
     data_t* operator->();
     data_t const* operator->() const;
+
+    std::string path() const;
 };
 
 

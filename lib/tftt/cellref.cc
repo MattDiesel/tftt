@@ -3,6 +3,7 @@
     #include <stdexcept>
 #endif
 
+#include <sstream>
 #include <ostream>
 
 #include "tree.h"
@@ -122,12 +123,21 @@ int CellRef::orientation() const {
 
 CellRef CellRef::next() const {
     int hch = hilbInvChild(group->orientation, index);
+    CellRef ret;
 
     if (hch == (1<<DIM)-1) { // Last in group
-        return group->next;
+        ret = group->next;
+
+#ifdef TFTT_DEBUG
+        if (ret.hasChildren()) {
+            throw std::runtime_error("Curve broken, next element has children.");
+        }
+#endif
+
+        return ret;
     }
 
-    CellRef ret = CellRef(group, hilbChild(group->orientation, hch+1));
+    ret = CellRef(group, hilbChild(group->orientation, hch+1));
 
     while (ret.hasChildren()) {
         ret = ret.child(hilbChild(ret.orientation(), 0));
@@ -309,6 +319,13 @@ data_t const* CellRef::operator->() const {
     }
 
     return &group->cells[index].data;
+}
+
+
+std::string CellRef::path() const {
+    std::ostringstream oss;
+    oss << *this;
+    return oss.str();
 }
 
 
