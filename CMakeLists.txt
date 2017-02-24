@@ -27,10 +27,5 @@ set(CMAKE_EXE_LINKER_FLAGS_DEBUG ${GCOV_FLAGS})
 set(CMAKE_CONFIGURATION_TYPES Debug Release)
 
 
-
-include_directories(./include)
-
 add_subdirectory(lib)
-
-include_directories(./include)
 add_subdirectory(test)
