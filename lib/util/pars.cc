@@ -1,7 +1,4 @@
 
-#define PARS_DEBUG
-
-
 #include <string>
 #include <map>
 #include <fstream>
@@ -49,7 +46,9 @@ void getpars(std::string parfile) {
             ifs.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
         }
 
-        ifs >> std::ws; std::getline(ifs, key, '=');
+        if (!(ifs >> std::ws)) break;
+
+        std::getline(ifs, key, '=');
         ifs >> std::ws; std::getline(ifs, val, '\n');
 
         pars[rtrim(key)] = val;
@@ -58,6 +57,52 @@ void getpars(std::string parfile) {
         std::cout << "   '" << key << "' = '" << val << "'\n";
 #endif
     }
+}
+
+
+// A bit naive
+bool isFile(char const* str) {
+    char const* comp = ".par";
+    int n = 0;
+
+    for (; *str != '\0'; str++) {
+        if (*str == comp[n]) {
+            n++;
+            if (comp[n] == '\0') return true;
+        }
+    }
+    return false;
+}
+
+
+void getpars(int argc, char const* argv[]) {
+
+    char const** arg = &argv[1];
+
+    char const* key;
+    char const* val;
+
+    for (int i = 1; i < argc; i++) {
+        if (isFile(*arg)) 
+            getpars(*arg);
+        else {
+            if ((*arg)[0] == '+') {
+                if (i == argc-1)
+                    return; // Ignore argument at end
+                
+                key = &(*arg)[1];
+                val = *++arg; i++;
+                pars[key] = val;
+
+#ifdef PARS_DEBUG
+        std::cout << "   '" << key << "' = '" << val << "'\n";
+#endif
+            }
+        }
+
+        arg++;
+    }
+
 }
 
 

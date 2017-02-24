@@ -14,7 +14,10 @@ namespace util {
 extern std::map<std::string, std::string> pars;
 
 void getpars(std::string parfile);
+void getpars(int argc, char const *argv[]);
+
 bool sfetch(std::string s, std::string& ret);
+
 
 template<typename T>
 inline bool tfetch(std::string s, T& ret) {
