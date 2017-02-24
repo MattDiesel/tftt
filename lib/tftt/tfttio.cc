@@ -5,10 +5,11 @@
 
 #include <iostream> // Todo: Remove
 
+#include "util/formatstring.h"
+
 #include "tftt.h"
 #include "tree.h"
 #include "gray.h"
-#include "formatstring.h"
 
 #include "tfttio.h"
 
@@ -248,7 +249,7 @@ void addGhosts(std::set<cell_t>& ghosts, cell_t cl, node_t node) {
 
 void splitToDisk(std::string fnameFmt) {
     int node = 0;
-    std::ofstream ofs(tftt::utils::formatString(fnameFmt, 0), std::ios::binary);
+    std::ofstream ofs(::util::formatString(fnameFmt, 0), std::ios::binary);
     writeHeader(ofs);
 
     std::set<cell_t> ghosts;
@@ -265,7 +266,7 @@ void splitToDisk(std::string fnameFmt) {
 
             ofs.close();
             node++;
-            ofs.open(tftt::utils::formatString(fnameFmt, node), std::ios::binary);
+            ofs.open(::util::formatString(fnameFmt, node), std::ios::binary);
             writeHeader(ofs);
         }
 

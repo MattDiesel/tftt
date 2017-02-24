@@ -5,12 +5,13 @@
 #include <cmath>
 #include <iostream> // TODO: Remove
 
+#include "util/formatstring.h"
+
 #include "tftt.h"
 #include "tree.h"
 #include "treegroup.h"
 #include "cellref.h"
 #include "gray.h"
-#include "formatstring.h"
 #include "hilbert.h"
 
 
@@ -385,7 +386,7 @@ bool adaptCommitCoarsen() {
     for (auto cr = adaptList.rbegin(); cr != adaptList.rend(); cr++) {
         coarsen(*cr);
 
-        // drawCurve(tftt::utils::formatString("coarsen.{0}.dat", inter++));
+        // drawCurve(::util::formatString("coarsen.{0}.dat", inter++));
     }
     return adaptList.empty();
 }
