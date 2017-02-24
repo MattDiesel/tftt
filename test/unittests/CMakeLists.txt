@@ -12,4 +12,4 @@ set(test_sources
     gray_ut.cc
 )
 add_executable(alltests ${test_sources})
-target_link_libraries(alltests libgtest libtftt)
+target_link_libraries(alltests libgtest libtftt util)

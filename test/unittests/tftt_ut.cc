@@ -10,7 +10,10 @@
 #include "tftt/tree.h"
 #include "tftt/treegroup.h"
 
-#include "formatstring.h"
+#include "util/formatstring.h"
+
+
+using namespace util;
 
 
 bool compareFiles(const std::string& p1, const std::string& p2) {
