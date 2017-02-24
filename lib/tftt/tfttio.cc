@@ -342,28 +342,34 @@ void loadTree(std::string fname, int n) {
         readVal(ifs, newcl.data());
     }
 
-
+    // Check
     if (n != -1) {
         bool first = false;
         bool nonRank = false;
+
         for (auto& cl : curve) {
             if (cl.rank() == gtree.rank) {
                 if (!first) {
                     first = true;
                     gtree.firstActive = cl;
                 }
+#ifdef TFTT_DEBUG
                 else {
                     if (nonRank) {
-                        std::cout << "Warning: Non-contigous range\n";
+                        std::cout << "Warning: Non-contigous range " << cl << "\n";
+                        nonRank = false;
                     }
                 }
+#endif
 
                 gtree.lastActive = cl;
             }
             else {
+#ifdef TFTT_DEBUG
                 if (first) {
                     nonRank = true;
                 }
+#endif
 
                 if (cl.rank() != -1) {
                     gtree.ghosts.insert(cl);
