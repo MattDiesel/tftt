@@ -129,6 +129,36 @@ cell_t findmax(fnData dt, double* maxValRet) {
 }
 
 
+bool checkAround(cell_t cl, int dist, fnCheckCell check) {
+    cell_t tmp;
+    for (int nb = 0; nb < 2*DIM; nb++) {
+        tmp = cl;
+        for (int p = 0; p < dist; p++) {
+            tmp = tmp.neighbour(nb);
+            if (tmp.isBoundary()) break;
+            if (!check(tmp)) return false;
+        }
+    }
+
+    return true;
+}
+
+
+bool findAround(cell_t cl, int dist, fnCheckCell check) {
+    cell_t tmp;
+    for (int nb = 0; nb < 2*DIM; nb++) {
+        tmp = cl;
+        for (int p = 0; p < dist; p++) {
+            tmp = tmp.neighbour(nb);
+            if (tmp.isBoundary()) break;
+            if (check(tmp)) return true;
+        }
+    }
+
+    return false;
+}
+
+
 double interpChild(cell_t cl, int ch, int forDir, fnData dt) {
     cell_t forNbCl = cl.neighbour(forDir);
 
@@ -270,11 +300,10 @@ void refine(CellRef cl) {
 
 
 void coarsen(CellRef cl) {
-
     cell_t nbc;
     for (int nb = 0; nb < 2*DIM; nb++) {
         nbc = cl.group->neighbours[nb];
-        if (nbc.isBoundary()) {
+        if (nbc.isBoundary() && nbc.level() >= cl.level()) {
             delete nbc.group->cells[nbc.index].children;
             nbc.group->cells[nbc.index].children = nullptr;
         };
@@ -295,22 +324,23 @@ void twoToOne_Add(std::set<CellRef, crless>& ls, CellRef cl, CellRef from) {
 
     int lvl = cl.level();
     CellRef nb;
-    for (int n = 0; n < 2*DIM; n++) {
-        nb = cl.neighbour(n);
-        if (nb == from)
-            continue;
 
-        if (nb.isBoundary()) {
-            continue;
+    if (options.two2oneFlag == -1) {
+        for (int n = 0; n < 2*DIM; n++) {
+            nb = cl.neighbour(n);
+            if (nb == from)
+                break;
+
+            if (nb.isBoundary()) {
+                break;
+            }
+
+            if (nb.level() < lvl) {
+                ls.insert(nb);
+                twoToOne_Add(ls, nb, cl);
+            }
         }
 
-        if (nb.level() < lvl) {
-            ls.insert(nb);
-            twoToOne_Add(ls, nb, cl);
-        }
-    }
-
-    if (options.two2oneFlag == 2) {
         // Include corners
         cell_t nb2;
         for (int n = 0; n < DIM-1; n++) {
@@ -340,6 +370,29 @@ void twoToOne_Add(std::set<CellRef, crless>& ls, CellRef cl, CellRef from) {
                             twoToOne_Add(ls, nb2, cl);
                         }
                     }
+                }
+            }
+        }
+    }
+    else {
+        // Propagate in each direction p times
+
+        for (int n = 0; n < 2*DIM; n++) {
+            nb = cl;
+
+            // Propagate in given direction
+            for (int p = 0; p < options.two2oneFlag; p++) {
+                nb = nb.neighbour(n);
+                if (nb == from)
+                    break;
+
+                if (nb.isBoundary()) {
+                    break;
+                }
+
+                if (nb.level() < lvl) {
+                    ls.insert(nb);
+                    twoToOne_Add(ls, nb, cl);
                 }
             }
         }

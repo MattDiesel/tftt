@@ -101,10 +101,14 @@ namespace tftt {
 struct CellRef;
 typedef CellRef cell_t;
 
+typedef bool (*fnCheckCell)(cell_t& cl);
 
 //! Constructs the top level tree
 void init(double w, double h);
 void reset();
+
+bool checkAround(cell_t cl, int dist, fnCheckCell check);
+bool findAround(cell_t cl, int dist, fnCheckCell check);
 
 cell_t find(ident_t id);
 cell_t insert(ident_t id);
