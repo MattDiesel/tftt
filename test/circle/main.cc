@@ -1,9 +1,14 @@
 
 #include <iostream>
 
-#include "formatstring.h"
+#include "util/formatstring.h"
+#include "util/pars.h"
+
 #include "tftt/tftt.h"
 #include "tftt/tree.h"
+
+using namespace util; // for formatString
+
 
 int ITER = 0;
 
@@ -43,7 +48,7 @@ struct circle {
 
 int main(int argc, char const *argv[])
 {
-
+    // Defaults:
     int minDepth = 2;
     int maxDepth = 6;
     int iterations = 100;
@@ -56,6 +61,46 @@ int main(int argc, char const *argv[])
     c.r = 0.2;
     c.pos[0] = startPos[0];
     c.pos[1] = startPos[1];
+
+    tftt::options.ghostsFlag = 0;
+    tftt::options.two2oneFlag = 2;
+
+    // Read from file:
+    if (argc > 1) {
+        try {
+            std::cout << "Reading parameters from " << argv[1] << std::endl;
+            getpars(argv[1]);
+
+            tfetch("minDepth", minDepth);
+            tfetch("maxDepth", maxDepth);
+            tfetch("iterations", iterations);
+            tfetch("circle.start[0]", startPos[0]);
+            tfetch("circle.start[1]", startPos[1]);
+            tfetch("circle.end[0]", endPos[0]);
+            tfetch("circle.end[1]", endPos[1]);
+            tfetch("circle.radius", c.r);
+            tfetch("tftt.ghosts", tftt::options.ghostsFlag);
+            tfetch("tftt.two2one", tftt::options.two2oneFlag);
+        }
+        catch (std::exception& e) {
+            std::cout << "Error reading parameter file: " << e.what() << std::endl;
+        }
+    }
+    else {
+        std::cout << "Using default parameters" << std::endl;
+    }
+
+    std::cout << "Using Parameters: \n"
+            << "\tminDepth = " << minDepth << "\n"
+            << "\tmaxDepth = " << maxDepth << "\n"
+            << "\titerations = " << iterations << "\n"
+            << "\tcircle.start[0] = " << startPos[0] << "\n"
+            << "\tcircle.start[1] = " << startPos[1] << "\n"
+            << "\tcircle.end[0] = " << endPos[0] << "\n"
+            << "\tcircle.end[1] = " << endPos[1] << "\n"
+            << "\tcircle.radius = " << c.r << "\n"
+            << "\ttftt.ghosts = " << tftt::options.ghostsFlag << "\n"
+            << "\ttftt.two2one = " << tftt::options.two2oneFlag << std::endl;
 
     // Init tree to min depth
     tftt::init(1.0, 1.0);
@@ -85,6 +130,34 @@ int main(int argc, char const *argv[])
     tftt::drawMesh("circledata/mesh.init.dat");
     tftt::drawCurve("circledata/hilb.init.dat");
     tftt::drawBoundaries("circledata/bound.init.dat");
+
+    tftt::distribute(4);
+    tftt::splitToDisk("circle.r{0}.tr");
+
+    // for (auto& cl : tftt::leaves) {
+    //     if (cl.rank() == -1) {
+    //         // Why?
+    //         std::cout << cl << " = -1\n";
+    //     }
+    // }
+
+    for (int n = 0; n < 4; n++) {
+        std::cout << "Node = " << n << "\n";
+        tftt::reset();
+        tftt::loadTree(formatString("circle.r{0}.tr", n), n);
+
+        tftt::drawPartialMesh(formatString("parcircle/mesh.r{0}.dat", n));
+        tftt::drawPartialCurve(formatString("parcircle/hilb.r{0}.dat", n));
+        tftt::drawMesh(formatString("parcircle/mesh.r{0}.full.dat", n));
+        tftt::drawCurve(formatString("parcircle/hilb.r{0}.full.dat", n));
+        tftt::drawGhosts(formatString("parcircle/ghosts.r{0}.dat", n));
+        tftt::drawBoundaries(formatString("parcircle/bound.r{0}.dat", n));
+
+        std::cout << "\tGhosts: " << tftt::gtree.ghosts.size() << "\n";
+    }
+
+
+    return 0;
 
     int coarsened;
     bool cantCoarsen;
@@ -135,6 +208,18 @@ int main(int argc, char const *argv[])
         std::cout << "\tCoarsened: " << tftt::adaptList.size() << "\n";
 
         std::cout << "\tCell Count: " << tftt::gtree.ccells << "\n";
+
+        // int ccells = 0;
+        // for (auto& cl : tftt::leaves) {
+        //     ccells++;
+        // }
+        // std::cout << "\tCell Count (from leaves): " << ccells << "\n";
+
+        // ccells = 0;
+        // for (auto& cl : tftt::curve) {
+        //     ccells++;
+        // }
+        // std::cout << "\tCell Count (from curve): " << ccells << "\n";
 
         tftt::drawMesh(formatString("circledata/mesh.{0}.dat", ITER));
         tftt::drawCurve(formatString("circledata/hilb.{0}.dat", ITER));
