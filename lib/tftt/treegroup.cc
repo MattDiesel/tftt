@@ -104,7 +104,7 @@ TreeGroup::TreeGroup(CellRef p)
         prev = p.prev();
 
         if (prev.isValid()) {
-            if (prev.group != p.group)
+            if (prev.group->next == p)
                 prev.group->next = CellRef(this, hilbChild(orientation, 0));
         }
         else {
@@ -112,7 +112,7 @@ TreeGroup::TreeGroup(CellRef p)
         }
 
         if (next.isValid()) {
-            if (next.group != p.group)
+            if (next.group->prev == p)
                 next.group->prev = CellRef(this, hilbChild(orientation, (1<<DIM)-1));
         }
         else {
