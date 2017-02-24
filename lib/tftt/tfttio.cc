@@ -17,16 +17,39 @@
 namespace tftt {
 
 
+void drawMeshSub2d(std::ostream& os, TreeGroup* gr, double w, double h, double x, double y) {
+    if (!gr) {
+        os << x << ' ' << y << '\n'
+            << (x+w) << ' ' << y << '\n'
+            << (x+w) << ' ' << (y+h) << '\n'
+            << x << ' ' << (y+h) << '\n'
+            << x << ' ' << y << "\n\n";
+    }
+    else {
+        drawMeshSub2d(os, gr->cells[0].children, w*0.5, h*0.5, x, y);
+        drawMeshSub2d(os, gr->cells[1].children, w*0.5, h*0.5, x+w*0.5, y);
+        drawMeshSub2d(os, gr->cells[2].children, w*0.5, h*0.5, x, y+h*0.5);
+        drawMeshSub2d(os, gr->cells[3].children, w*0.5, h*0.5, x+w*0.5, y+h*0.5);
+    }
+}
+
+
 void drawMesh(std::string fname) {
     std::ofstream ofs(fname);
     drawMesh(ofs);
 }
 
 void drawMesh(std::ostream& os) {
-    for (auto& c : leaves) {
-        drawCell(os, c);
+    if (DIM == 2) {
+        drawMeshSub2d(os, gtree.root, gtree.size[0], gtree.size[1], 0.0, 0.0);
+    }
+    else {
+        for (auto& c : leaves) {
+            drawCell(os, c);
+        }
     }
 }
+
 
 void drawCell(std::ostream& os, cell_t const& c) {
     double vtc[1<<DIM][DIM];
