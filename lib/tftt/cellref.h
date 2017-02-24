@@ -66,6 +66,7 @@ public:
 
     //! Returns the reference to the nth index child.
     CellRef child(int n) const;
+    CellRef childOnFace(int fc, int n) const;
     bool hasChildren() const;
     bool hasGrandChildren() const;
     TreeGroup* children() const;

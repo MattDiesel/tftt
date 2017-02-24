@@ -63,6 +63,13 @@ CellRef CellRef::child(int n) const {
     return CellRef(children(), n);
 }
 
+CellRef CellRef::childOnFace(int fc, int n) const {
+    int start = (fc & 1) << (fc >> 1);
+    int step = 1 << (((fc >> 1) + 1) % DIM);
+
+    return child((start + n*step) % (1 << DIM));
+}
+
 bool CellRef::hasChildren() const {
     return isRoot() || (group && children());
 }
