@@ -290,6 +290,8 @@ void coarsen(CellRef cl) {
 
 
 void twoToOne_Add(std::set<CellRef, crless>& ls, CellRef cl, CellRef from) {
+    if (!options.two2oneFlag) return; // No 2-2-1
+
     int lvl = cl.level();
     CellRef nb;
     for (int n = 0; n < 2*DIM; n++) {
@@ -306,14 +308,52 @@ void twoToOne_Add(std::set<CellRef, crless>& ls, CellRef cl, CellRef from) {
             twoToOne_Add(ls, nb, cl);
         }
     }
+
+    if (options.two2oneFlag == 2) {
+        // Include corners
+        cell_t nb2;
+        for (int n = 0; n < DIM-1; n++) {
+            for (int b = 0; b <= 1; b++) {
+                nb = cl.neighbour(n << 1 | b);
+                if (nb == from)
+                    continue;
+
+                if (nb.isBoundary()) {
+                    continue;
+                }
+
+                for (int a = 0; a < DIM; a++) {
+                    if (a == n) continue;
+
+                    for (int dir = 0; dir <= 1; dir++) {
+                        if (nb.level() < lvl && (dir != (cl.index >> a) & 1)) {
+                            // If neighbour is at a lower level, its neighbour
+                            // won't be on the corner unless it's in the same direction
+                            continue;
+                        }
+
+                        nb2 = nb.neighbour(a << 1 | dir);
+
+                        if (nb2.level() < lvl) {
+                            ls.insert(nb2);
+                            twoToOne_Add(ls, nb2, cl);
+                        }
+                    }
+                }
+            }
+        }
+    }
 }
 
 void twoToOne(CellRef cl) {
+    if (!options.two2oneFlag) return; // No 2-2-1
+
     std::set<CellRef, crless> refList;
     twoToOne_Add(refList, cl, CellRef());
 
     for (auto& cr : refList) {
-        refine(cr);
+        if (!cr.hasChildren())
+            refine(cr);
     }
 }
 

@@ -87,6 +87,7 @@ namespace tftt {
 
     extern struct TFTTOPTIONS {
         int ghostsFlag; // 0 - Minimum, 1 - Children of neighbour groups
+        int two2oneFlag; // 0 - None, 1 - strict, 2 - incl. corners, 3 - 3-2-1
     } options;
 }
 
