@@ -193,6 +193,8 @@ TEST(TfttTest, TwoToOne) {
     tftt::reset();
     tftt::init(4.0, 2.0);
 
+    tftt::options.two2oneFlag = 1;
+
     tftt::cell_t cl = tftt::CellRef(tftt::gtree.root, 2);
     if (!cl.hasChildren()) {
         tftt::refine(cl);
@@ -226,6 +228,7 @@ TEST(TfttTest, insert) {
     }
 
     // Find cell {2}
+    tftt::options.two2oneFlag = 1;
     tftt::cell_t cl = tftt::insert(idt);
 
     ASSERT_EQ(cl.isValid(), true);
@@ -247,6 +250,7 @@ TEST(TfttTest, saveLoad) {
         idt = idt.child(3);
     }
 
+    tftt::options.two2oneFlag = 1;
     tftt::cell_t cl = tftt::insert(idt);
     ASSERT_EQ(cl.isValid(), true);
 
@@ -265,8 +269,10 @@ TEST(TfttTest, splitToDisk) {
     tftt::reset();
     tftt::init(4.0, 2.0);
 
+    tftt::options.two2oneFlag = 2;
+
     tftt::ident_t idt = 0;
-    for (int i = 0; i < 8; i++) {
+    for (int i = 0; i < 4; i++) {
         idt = idt.child(3);
     }
 
