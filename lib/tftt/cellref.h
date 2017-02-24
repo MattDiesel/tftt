@@ -67,6 +67,7 @@ public:
     //! Returns the reference to the nth index child.
     CellRef child(int n) const;
     bool hasChildren() const;
+    bool hasGrandChildren() const;
     TreeGroup* children() const;
     // TreeGroup* group() const;
     // TreeBoundaryGroup* bgroup() const;
@@ -114,6 +115,10 @@ public:
     double size(int d) const;
     double vertex(int v, int d) const;
     bool containsPoint(double pt[DIM]) const;
+
+    void sizes(double ret[DIM]) const;
+    void origins(double ret[DIM]) const;
+    void vertices(double ret[1<<DIM][DIM]) const;
 
     bool operator==(const CellRef& rhs) const;
     bool operator!=(const CellRef& rhs) const;

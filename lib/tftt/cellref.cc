@@ -67,6 +67,15 @@ bool CellRef::hasChildren() const {
     return isRoot() || (group && children());
 }
 
+bool CellRef::hasGrandChildren() const {
+    if (!hasChildren()) return false;
+
+    for (auto& ch : children()->cells) {
+        if (ch.children) return true;
+    }
+    return false;
+}
+
 TreeGroup* CellRef::children() const {
     if (isRoot())
         return gtree.root;
@@ -189,7 +198,7 @@ ident_t CellRef::id() const {
 }
 
 int CellRef::level() const {
-    if (isRoot()) return -1;
+    if (isRoot()) return -1; // Todo: Needed? 
     return group->id.level();
 }
 
@@ -280,6 +289,41 @@ double CellRef::centre(int d) const {
 double CellRef::vertex(int v, int d) const {
     return origin(d) + (((v >> d) & 1) * size(d));
 }
+
+
+void CellRef::sizes(double ret[DIM]) const {
+    int lvl = level();
+
+    for (int d = 0; d < DIM; d++) {
+        ret[d] = gtree.size[d] / (2 << lvl);
+    }
+}
+
+void CellRef::origins(double ret[DIM]) const {
+    int lvl = level();
+
+    for (int d = 0; d < DIM; d++) {
+        ret[d] = group->origin[d]
+            + (((index >> d) & 1) * (gtree.size[d] / (2 << lvl)));
+    }
+}
+
+void CellRef::vertices(double ret[1<<DIM][DIM]) const {
+    int lvl = level();
+    double siz;
+    double org;
+
+    for (int d = 0; d < DIM; d++) {
+        siz = gtree.size[d] / (2 << lvl);
+        org = group->origin[d] + (((index >> d) & 1) * siz);
+
+        for (int v = 0; v < 1 << DIM; v++) {
+            ret[v][d] = org + (((v >> d) & 1) * siz);
+        }
+    }
+}
+
+
 
 bool CellRef::containsPoint(double pt[DIM]) const {
     for (int d = 0; d < DIM; d++) {
