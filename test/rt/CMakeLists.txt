@@ -9,8 +9,6 @@ set(rt_sources
     computePoisCoef.h 
     init.cc 
     init.h 
-    pars.cc 
-    pars.h 
     phys.cc 
     phys.h 
     relax.cc 
@@ -21,4 +19,4 @@ set(rt_sources
     resid.cc 
 )
 add_executable(rt ${rt_sources})
-target_link_libraries(rt libtftt)
+target_link_libraries(rt libtftt util)

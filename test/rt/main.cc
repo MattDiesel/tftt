@@ -2,13 +2,17 @@
 #include <iostream>
 
 #include "tftt/tftt.h"
+#include "util/pars.h"
 
 #include "readData.h"
-#include "pars.h"
 #include "phys.h"
 #include "init.h"
 #include "compute.h"
 #include "solve.h"
+
+
+using namespace util; // getpars
+
 
 int t;
 
@@ -69,13 +73,7 @@ void timestep() {
 
     computePoisCoef();
 
-    for (int i = 0; i < npre; i++) {
-        relax();
-    }
-    resid();
-    rstrct();
 
-    slvsml();
 
     correctVelo();
     correctFlux();

@@ -3,11 +3,14 @@
 #include <iostream>
 
 #include "tftt/tftt.h"
+#include "util/pars.h"
 
-#include "pars.h"
 #include "readData.h"
 
 #include "phys.h"
+
+
+using namespace util; // tfetch
 
 
 // Globals
@@ -16,28 +19,28 @@ int npre, npost;
 
 
 void physReadData() {
-    if(!dfetch("rho1", rho1)) 
+    if(!tfetch("rho1", rho1)) 
         throw std::out_of_range("missing rho1");
-    if(!dfetch("rho2", rho2)) 
+    if(!tfetch("rho2", rho2)) 
         throw std::out_of_range("missing rho2");
-    if(!dfetch("mu1", mu1)) 
+    if(!tfetch("mu1", mu1)) 
         throw std::out_of_range("missing mu1");
-    if(!dfetch("mu2", mu2)) 
+    if(!tfetch("mu2", mu2)) 
         throw std::out_of_range("missing mu2");
 
     // Gravity defaults to 0.0
     g[0] = 0.0;
     g[1] = 9.81;
-    dfetch("gravity", g[1]);
+    tfetch("gravity", g[1]);
 
     omega = 1.3;
-    dfetch("omega", omega);
+    tfetch("omega", omega);
 
     MinEps = 1.0e-6;
-    dfetch("MinEps", MinEps);
+    tfetch("MinEps", MinEps);
     
-    ifetch("npre", npre);
-    ifetch("npost", npost);
+    tfetch("npre", npre);
+    tfetch("npost", npost);
 }
 
 

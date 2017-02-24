@@ -3,11 +3,13 @@
 #include <iostream>
 
 #include "tftt/tftt.h"
+#include "util/pars.h"
 
-#include "pars.h"
 #include "boundarycond.h"
 #include "readData.h"
 
+
+using namespace util; // tfetch
 
 
 void initCondition() {
@@ -16,8 +18,8 @@ void initCondition() {
     int i;
 
 
-    dfetch("amplitude", ampl);
-    dfetch("wavenr", wavenr);
+    tfetch("amplitude", ampl);
+    tfetch("wavenr", wavenr);
     alpha = 2.0*wavenr*pi;
 
     std::cout << "Initial condition for Rayleigh-Taylor Instability" << std::endl;
@@ -34,8 +36,8 @@ void initCondition() {
 
     // Refine to mininum mesh size. Default = 2
     int mindepth = 2, maxdepth = 8;
-    ifetch("mindepth", mindepth);
-    ifetch("mindepth", maxdepth);
+    tfetch("mindepth", mindepth);
+    tfetch("mindepth", maxdepth);
 
     for (i = 0; i < mindepth; i++) {
         for (auto& cl : tftt::leaves) {
