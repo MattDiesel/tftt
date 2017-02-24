@@ -300,3 +300,68 @@ TEST(TfttTest, splitToDisk) {
 
     // ASSERT_EQ(compareFiles(fileBefore, fileAfter), true);
 }
+
+TEST(TfttTest, interpFace) {
+    tftt::fnData dtP = [](tftt::data_t& dt) {
+        return dt.P;
+    };
+    double test;
+
+    tftt::reset();
+    tftt::init(1.0, 1.0);
+
+    tftt::cell_t cl0 = tftt::find(0);
+    tftt::cell_t cl1 = tftt::find(1);
+    tftt::cell_t cl2 = tftt::find(2);
+    tftt::cell_t cl3 = tftt::find(3);
+
+    tftt::refine(cl0);
+    tftt::refine(cl3);
+
+    tftt::cell_t cl00 = cl0.child(0);
+    tftt::refine(cl00);
+
+    cl00.child(0)->P = 0;
+    cl00.child(1)->P = 1;
+    cl00.child(2)->P = 2;
+    cl00.child(3)->P = 3;
+
+    cl0.child(1)->P = 10;
+    cl0.child(2)->P = 20;
+    cl0.child(3)->P = 30;
+
+    cl1->P = 100;
+    cl2->P = 200;
+
+    cl3.child(0)->P = 300;
+    cl3.child(1)->P = 310;
+    cl3.child(2)->P = 320;
+    cl3.child(3)->P = 330;
+
+
+    tftt::drawMesh("interpFace.mesh.dat");
+    tftt::drawMatrix("interpFace.matrix.pgm", 400, 400, [](tftt::data_t& dt, int max) {
+        return (dt.P / 400)*max;
+    });
+
+    // Case 1 - {3-2} to {3-3}
+    test = tftt::interpFace(cl3.child(2), 1, dtP); 
+    std::cout << "\t= " << test << "\n";
+
+    // Case 2 - {2} to {3-*}
+    test = tftt::interpFace(cl2, 1, dtP);
+    std::cout << "\t= " << test << "\n";
+
+    // Case 3 - {0-0-3} to {0-1}
+    test = tftt::interpFace(cl00.child(3), 1, dtP);
+    std::cout << "\t= " << test << "\n";
+
+    // Case 4 - {0-3} to {1}
+    test = tftt::interpFace(cl0.child(3), 1, dtP);
+    std::cout << "\t= " << test << "\n";
+
+    // Case 2 - {2} to {0-*}
+    test = tftt::interpFace(cl2, 2, dtP);
+    std::cout << "\t= " << test << "\n";
+
+}
