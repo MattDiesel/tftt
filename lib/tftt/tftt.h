@@ -114,6 +114,9 @@ cell_t find(ident_t id);
 cell_t insert(ident_t id);
 cell_t findmax(fnData dt, double* maxValRet);
 
+
+double interpFace(cell_t cl, int fc, fnData dt);
+
 double interpChild(cell_t cl, int ch, int forNb, fnData dt);
 double interpALEVertex(cell_t cl, int v, fnData dt);
 

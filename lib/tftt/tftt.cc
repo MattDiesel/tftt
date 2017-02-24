@@ -159,6 +159,62 @@ bool findAround(cell_t cl, int dist, fnCheckCell check) {
 }
 
 
+double interpFace(cell_t cl, int fc, fnData dt) {
+    cell_t ngb = cl.neighbour(fc);
+    int clLvl = cl.level();
+    int ngbLvl = ngb.level();
+    double ret;
+
+    if (ngb.hasChildren()) {
+        // Neighbour more refined
+        // Average children on that face
+        // Todo: Generalise to 3d
+        std::cout << "2\n";
+
+        ret = 0.0;
+        for (int n = 0; n < 2; n++) {
+            ret += dt(ngb.childOnFace(fc ^ 1, n).data()) / 3.0;
+        }
+
+        ret += dt(cl.data()) / 3.0;
+    }
+    else if (clLvl == ngbLvl) {
+        // Same level
+        std::cout << "1\n";
+
+        ret = 0.5*(dt(cl.data()) + dt(ngb.data()));
+    }
+    else {
+        // Neighbour less refined
+
+        int awayDir = fc ^ 2;
+        if (!(cl.index & (1<<(awayDir >> 1)))) awayDir ^= 1;
+
+        cell_t ngbngb = ngb.neighbour(awayDir);
+
+        ret = 0.0;
+        if (ngbngb.hasChildren()) {
+            std::cout << "4\n";
+
+            for (int n = 0; n < 2; n++) {
+                ret += dt(ngbngb.childOnFace(awayDir ^ 1, n).data()) / 18.0;
+            }
+            ret += dt(ngb.data()) * 2.0 / 9.0;
+            ret += dt(cl.data()) * 2.0 / 3.0;
+        }
+        else {
+            std::cout << "3\n";
+
+            ret += dt(ngbngb.data()) / 12.0;
+            ret += dt(ngb.data()) / 4.0;
+            ret += dt(cl.data()) * 2.0 / 3.0;
+        }
+    }
+
+    return ret;
+}
+
+
 double interpChild(cell_t cl, int ch, int forDir, fnData dt) {
     cell_t forNbCl = cl.neighbour(forDir);
 
