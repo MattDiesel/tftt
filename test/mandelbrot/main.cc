@@ -5,12 +5,15 @@
 #include <iostream>
 #include <set>
 
+#include "util/formatstring.h"
+#include "util/pars.h"
+
 #include "tftt/tftt.h"
 #include "tftt/tree.h"
 #include "tftt/treegroup.h"
 
-#include "formatstring.h"
-#include "pars.h"
+
+using namespace util; // getpars, tfetch, formatString
 
 
 int escape_iterations(double re, double im, int max_iterations) {
