@@ -6,16 +6,18 @@
 #include <array>
 
 #include "tftt.h"
+#include "treeface.h"
 
 
 namespace tftt {
 
 struct TreeGroup;
+struct TreeFace;
 
 
 struct TreeCell {
 	data_t data;
-    std::array<facedata_t, DIM*2> facedata;
+    std::array<TreeFace*, DIM*2> faces;
     node_t rank;
 	TreeGroup* children;
 };
