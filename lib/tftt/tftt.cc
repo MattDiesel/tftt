@@ -169,7 +169,7 @@ double interpFace(cell_t cl, int fc, fnData dt) {
         // Neighbour more refined
         // Average children on that face
         // Todo: Generalise to 3d
-        std::cout << "2\n";
+        // std::cout << "2\n";
 
         ret = 0.0;
         for (int n = 0; n < 2; n++) {
@@ -180,7 +180,7 @@ double interpFace(cell_t cl, int fc, fnData dt) {
     }
     else if (clLvl == ngbLvl) {
         // Same level
-        std::cout << "1\n";
+        // std::cout << "1\n";
 
         ret = 0.5*(dt(cl.data()) + dt(ngb.data()));
     }
@@ -194,7 +194,7 @@ double interpFace(cell_t cl, int fc, fnData dt) {
 
         ret = 0.0;
         if (ngbngb.hasChildren()) {
-            std::cout << "4\n";
+            // std::cout << "4\n";
 
             for (int n = 0; n < 2; n++) {
                 ret += dt(ngbngb.childOnFace(awayDir ^ 1, n).data()) / 18.0;
@@ -203,7 +203,7 @@ double interpFace(cell_t cl, int fc, fnData dt) {
             ret += dt(cl.data()) * 2.0 / 3.0;
         }
         else {
-            std::cout << "3\n";
+            // std::cout << "3\n";
 
             ret += dt(ngbngb.data()) / 12.0;
             ret += dt(ngb.data()) / 4.0;
