@@ -4,6 +4,7 @@
 #include <fstream>
 #include <iterator>
 #include <algorithm>
+#include <cmath>
 #include <gtest/gtest.h>
 
 #include "tftt/tftt.h"
@@ -346,22 +347,44 @@ TEST(TfttTest, interpFace) {
 
     // Case 1 - {3-2} to {3-3}
     test = tftt::interpFace(cl3.child(2), 1, dtP); 
-    std::cout << "\t= " << test << "\n";
+    ASSERT_EQ(test, 325);
 
     // Case 2 - {2} to {3-*}
     test = tftt::interpFace(cl2, 1, dtP);
-    std::cout << "\t= " << test << "\n";
+    ASSERT_LT(std::abs(double(test - 820.0/3.0)), 0.001);
 
     // Case 3 - {0-0-3} to {0-1}
     test = tftt::interpFace(cl00.child(3), 1, dtP);
-    std::cout << "\t= " << test << "\n";
+    ASSERT_EQ(test, 7);
 
     // Case 4 - {0-3} to {1}
     test = tftt::interpFace(cl0.child(3), 1, dtP);
-    std::cout << "\t= " << test << "\n";
+    ASSERT_LT(std::abs(double(test - 685.0 / 9.0)), 0.001);
 
     // Case 2 - {2} to {0-*}
     test = tftt::interpFace(cl2, 2, dtP);
-    std::cout << "\t= " << test << "\n";
+    ASSERT_LT(std::abs(double(test - 250.0 / 3.0)), 0.001);
+
+}
+
+TEST(TfttTest, facedata) {
+    tftt::reset();
+    tftt::init(1.0, 1.0);
+
+    tftt::cell_t cl0 = tftt::find(0);
+    tftt::cell_t cl1 = tftt::find(1);
+    tftt::cell_t cl2 = tftt::find(2);
+    tftt::cell_t cl3 = tftt::find(3);
+
+    tftt::refine(cl0);
+    tftt::refine(cl3);
+
+    tftt::cell_t cl00 = cl0.child(0);
+    tftt::refine(cl00);
+
+    cl2.face(1)->poisCoef = 2.0;
+
+    ASSERT_EQ(cl3.face(0)->poisCoef, 2.0);
+
 
 }

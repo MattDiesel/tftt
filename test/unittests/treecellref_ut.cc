@@ -53,8 +53,8 @@ TEST(TreeCellRefTest, dataAccess) {
 
     // Face data
 
-    cl.facedata(0).poisCoef = 1337;
-    ASSERT_EQ(cl.facedata(0).poisCoef, 1337);
+    cl.face(0)->poisCoef = 1337;
+    ASSERT_EQ(cl.face(0)->poisCoef, 1337);
 }
 
 TEST(TreeCellRefTest, interpChild) {
