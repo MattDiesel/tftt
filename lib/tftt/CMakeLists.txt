@@ -40,6 +40,10 @@ set(libtftt_SRCS
     tfttio.cc 
     hilbert.h 
     hilbert.cc 
+    faceref.h 
+    faceref.cc 
+    treeface.h 
+    treeface.cc 
 )
 
 # Declare the library
