@@ -11,7 +11,9 @@
 
 namespace tftt {
 
+
 struct TreeGroup;
+struct FaceRef;
 
 //! Flags for a CellRef structure
 enum CellRefFlags {
@@ -107,8 +109,11 @@ public:
     double ngbVal(int nb, fnData dt, double* ifBoundary = nullptr) const;
 
     //! The data associated with a cell face. 
-    facedata_t& facedata(int dir);
-    facedata_t const& facedata(int dir) const;
+    // facedata_t& facedata(int dir);
+    // facedata_t const& facedata(int dir) const;
+
+    //! The cell faces
+    FaceRef face(int dir) const;
 
 
     double origin(int d) const;

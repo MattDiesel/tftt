@@ -268,14 +268,19 @@ double CellRef::ngbVal(int nb, fnData dt, double* ifBoundary) const {
 }
 
 
-facedata_t& CellRef::facedata(int dir) {
-    facedata_t& ret = group->cells[index].facedata[dir];
-    return ret;
-}
+// facedata_t& CellRef::facedata(int dir) {
+//     facedata_t& ret = group->cells[index].facedata[dir];
+//     return ret;
+// }
 
-facedata_t const& CellRef::facedata(int dir) const {
-    facedata_t& ret = group->cells[index].facedata[dir];
-    return ret;
+// facedata_t const& CellRef::facedata(int dir) const {
+//     facedata_t& ret = group->cells[index].facedata[dir];
+//     return ret;
+// }
+
+
+face_t CellRef::face(int dir) const {
+    return group->cells[index].faces[dir];
 }
 
 
