@@ -55,15 +55,9 @@ struct rt_data {
     double rhs;
     double cenCoef;
     double res;
-    double V[DIM];
 
     // double vof;
     double rho;
-    double v[DIM];
-    double F1[DIM];
-    double F2[DIM];
-    double D1[DIM];
-    double D2[DIM];
 
     double dive;
 };
@@ -72,11 +66,21 @@ struct rt_facedata {
     double poisCoef;
 };
 
+struct rt_vertexdata {
+    double V[DIM];
+    double v[DIM];
+    double F1[DIM];
+    double F2[DIM];
+    double D1[DIM];
+    double D2[DIM];
+};
+
 namespace tftt {
 	template<typename T> struct TreeId;
 
     typedef rt_data data_t;
     typedef rt_facedata facedata_t;
+    typedef rt_vertexdata vertexdata_t;
 	typedef TreeId<uint64_t> ident_t;
     typedef int8_t node_t;
 
@@ -95,6 +99,7 @@ namespace tftt {
 #include "cellref.h" // Todo:Only public interface
 #include "treeid.h"
 #include "faceref.h"
+#include "vertexref.h"
 
 
 namespace tftt {
@@ -102,6 +107,7 @@ namespace tftt {
 struct CellRef;
 typedef CellRef cell_t;
 typedef FaceRef face_t;
+typedef VertexRef vertex_t;
 
 typedef bool (*fnCheckCell)(cell_t& cl);
 
