@@ -44,6 +44,10 @@ set(libtftt_SRCS
     faceref.cc 
     treeface.h 
     treeface.cc 
+    vertexref.h 
+    vertexref.cc 
+    treevertex.cc 
+    treevertex.h
 )
 
 # Declare the library
