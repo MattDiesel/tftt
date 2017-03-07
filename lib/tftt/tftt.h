@@ -92,14 +92,16 @@ namespace tftt {
 }
 
 
-#include "cellref.h" // Only public interface
+#include "cellref.h" // Todo:Only public interface
 #include "treeid.h"
+#include "faceref.h"
 
 
 namespace tftt {
 
 struct CellRef;
 typedef CellRef cell_t;
+typedef FaceRef face_t;
 
 typedef bool (*fnCheckCell)(cell_t& cl);
 
