@@ -24,14 +24,14 @@ TEST(TreeCellRefTest, locations) {
     ASSERT_EQ(cl.centre(1), 1.5);
     ASSERT_EQ(cl.size(0), 2.0);
     ASSERT_EQ(cl.size(1), 1.0);
-    ASSERT_EQ(cl.vertex(0, 0), 0.0);
-    ASSERT_EQ(cl.vertex(0, 1), 1.0);
-    ASSERT_EQ(cl.vertex(1, 0), 2.0);
-    ASSERT_EQ(cl.vertex(1, 1), 1.0);
-    ASSERT_EQ(cl.vertex(2, 0), 0.0);
-    ASSERT_EQ(cl.vertex(2, 1), 2.0);
-    ASSERT_EQ(cl.vertex(3, 0), 2.0);
-    ASSERT_EQ(cl.vertex(3, 1), 2.0);
+    ASSERT_EQ(cl.vertexPoint(0, 0), 0.0);
+    ASSERT_EQ(cl.vertexPoint(0, 1), 1.0);
+    ASSERT_EQ(cl.vertexPoint(1, 0), 2.0);
+    ASSERT_EQ(cl.vertexPoint(1, 1), 1.0);
+    ASSERT_EQ(cl.vertexPoint(2, 0), 0.0);
+    ASSERT_EQ(cl.vertexPoint(2, 1), 2.0);
+    ASSERT_EQ(cl.vertexPoint(3, 0), 2.0);
+    ASSERT_EQ(cl.vertexPoint(3, 1), 2.0);
 }
 
 TEST(TreeCellRefTest, dataAccess) {

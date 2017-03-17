@@ -353,6 +353,9 @@ TEST(TfttTest, interpFace) {
     test = tftt::interpFace(cl2, 1, dtP);
     ASSERT_LT(std::abs(double(test - 820.0/3.0)), 0.001);
 
+    tftt::calcFaceCoefs(cl2);
+    tftt::drawPoissonNeighbourhood("test.dat", cl2);
+
     // Case 3 - {0-0-3} to {0-1}
     test = tftt::interpFace(cl00.child(3), 1, dtP);
     ASSERT_EQ(test, 7);
