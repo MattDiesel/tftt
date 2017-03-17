@@ -75,12 +75,12 @@ bool isFile(char const* str) {
 }
 
 
-void getpars(int argc, char const* argv[]) {
+void getpars(int argc, char* argv[]) {
 
-    char const** arg = &argv[1];
+    char** arg = &argv[1];
 
-    char const* key;
-    char const* val;
+    char* key;
+    char* val;
 
     for (int i = 1; i < argc; i++) {
         if (isFile(*arg)) 
