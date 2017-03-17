@@ -14,6 +14,7 @@ namespace tftt {
 
 struct TreeGroup;
 struct FaceRef;
+struct VertexRef;
 
 //! Flags for a CellRef structure
 enum CellRefFlags {
@@ -69,6 +70,7 @@ public:
     //! Returns the reference to the nth index child.
     CellRef child(int n) const;
     CellRef childOnFace(int fc, int n) const;
+    static int childIndexOnFace(int fc, int n);
     bool hasChildren() const;
     bool hasGrandChildren() const;
     TreeGroup* children() const;
@@ -76,6 +78,7 @@ public:
     // TreeBoundaryGroup* bgroup() const;
 
     CellRef neighbour(int n) const;
+    CellRef diagonal(int n) const;
 
     //! The orientation of the space filling curve at this cell. 
     int orientation() const;
@@ -115,11 +118,13 @@ public:
     //! The cell faces
     FaceRef face(int dir) const;
 
+    VertexRef vertex(int v) const;
+
 
     double origin(int d) const;
     double centre(int d) const;
     double size(int d) const;
-    double vertex(int v, int d) const;
+    double vertexPoint(int v, int d) const;
     bool containsPoint(double pt[DIM]) const;
 
     void sizes(double ret[DIM]) const;

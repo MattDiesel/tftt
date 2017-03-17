@@ -64,10 +64,14 @@ CellRef CellRef::child(int n) const {
 }
 
 CellRef CellRef::childOnFace(int fc, int n) const {
+    return child(childIndexOnFace(fc, n));
+}
+
+int CellRef::childIndexOnFace(int fc, int n) {
     int start = (fc & 1) << (fc >> 1);
     int step = 1 << (((fc >> 1) + 1) % DIM);
 
-    return child((start + n*step) % (1 << DIM));
+    return ((start + n*step) % (1 << DIM));
 }
 
 bool CellRef::hasChildren() const {
@@ -128,6 +132,33 @@ CellRef CellRef::neighbour(int n) const {
         return cr;
 
     return cr.child(index ^ (1 << (n >> 1)));
+}
+
+
+CellRef CellRef::diagonal(int n) const {
+    int ch = ~index & (2*DIM-1);
+    CellRef cr = *this;
+
+    if (ch == n) {
+        // In parent
+        cr = CellRef(group, ch);
+
+        if (cr.hasChildren())
+            cr = cr.child(~n & (2*DIM-1));
+
+        return cr;
+    }
+
+    int x;
+    for (int i = 0; i < DIM; i++) {
+        x = (i << 1) | ((n >> i) & 1);
+        cr = cr.neighbour(x);
+
+        if (cr.hasChildren())
+            cr = cr.child(~n & (2*DIM-1));
+    }
+
+    return cr;
 }
 
 int CellRef::orientation() const {
@@ -284,6 +315,11 @@ face_t CellRef::face(int dir) const {
 }
 
 
+vertex_t CellRef::vertex(int v) const {
+    return group->cells[index].vertices[v];
+}
+
+
 double CellRef::size(int d) const {
     return gtree.size[d] / (2 << level());
 }
@@ -298,7 +334,7 @@ double CellRef::centre(int d) const {
     return origin(d) + size(d)*0.5;
 }
 
-double CellRef::vertex(int v, int d) const {
+double CellRef::vertexPoint(int v, int d) const {
     return origin(d) + (((v >> d) & 1) * size(d));
 }
 
@@ -393,7 +429,9 @@ std::ostream& operator<<(std::ostream& os, const tftt::CellRef& cr) {
         os << "{null}";
     else if (cr.isBoundary())
         os << "{boundary(" << cr.boundary() << ") " << cr.id() << "}";
-    else
-        os << "{" << cr.id() << "}";
+    else {
+        // os << "{" << cr.id() << "}";
+        os << "{" << cr.centre(0) << "," << cr.centre(1) << "}";
+    }
 }
 
