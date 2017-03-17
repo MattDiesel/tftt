@@ -88,10 +88,12 @@ namespace tftt {
     // Functions to be supplied by user
     typedef double (*fnDataNorm)(data_t& d, int max);
     typedef double (*fnData)(data_t& d);
+    typedef double& (*fnDataRef)(data_t& d);
 
     extern struct TFTTOPTIONS {
         int ghostsFlag; // 0 - Minimum, 1 - Children of neighbour groups
         int two2oneFlag; // 0 - None, 1 - strict, 2 - incl. corners, 3 - 3-2-1
+        bool isNeuman;
     } options;
 }
 
@@ -110,6 +112,7 @@ typedef FaceRef face_t;
 typedef VertexRef vertex_t;
 
 typedef bool (*fnCheckCell)(cell_t& cl);
+typedef double (*fnCell)(cell_t& cl);
 
 //! Constructs the top level tree
 void init(double w, double h);
@@ -122,6 +125,7 @@ cell_t find(ident_t id);
 cell_t insert(ident_t id);
 cell_t findmax(fnData dt, double* maxValRet);
 
+void calcFaceCoefs(cell_t cl);
 
 double interpFace(cell_t cl, int fc, fnData dt);
 
@@ -165,6 +169,12 @@ bool adaptCommit();
 
 void adaptAddCoarsen(CellRef cr);
 bool adaptCommitCoarsen();
+
+
+cell_t   max(fnData dfn);
+
+void relax(double omega, fnDataRef datafn, fnCell cellfn);
+double resid(fnDataRef datafn, fnCell cellfn);
 
 
 } // namespace tftt
