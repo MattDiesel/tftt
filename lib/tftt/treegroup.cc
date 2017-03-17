@@ -70,6 +70,50 @@ TreeGroup::TreeGroup()
                 new TreeFace(cl, cl.neighbour(n), n >> 1);
         }
     }
+
+    // Add vertices
+
+    // std::cout << "Adding Vertices.\n";
+
+    // Corners
+    TreeVertex* tv;
+    for (int v = 0; v < 2*DIM; v++) {
+        cells[v].vertices[v] = tv = new TreeVertex();
+        tv->cells[~v & (2*DIM-1)] = CellRef(this, v);
+        // std::cout << "\tcells[" << v << "].v[" << v << "] == " << v << "\n";
+    }
+
+    // Middle 
+    tv = new TreeVertex();
+    for (int c = 0; c < 1<<DIM; c++) {
+        tv->cells[c] = cl = CellRef(this, c);
+        cells[c].vertices[~c & ((1<<DIM)-1)] = tv;
+
+        // std::cout << "\tcells[" << cl << "].v[" << (~c & ((1<<DIM)-1)) << "] == " << c << "\n";
+    }
+
+    // Centers
+    // Todo: Generalise
+
+    // Left
+    tv = new TreeVertex();
+    tv->cells[1] = CellRef(this, 0); cells[0].vertices[2] = tv;
+    tv->cells[3] = CellRef(this, 2); cells[2].vertices[0] = tv;
+
+    // Right
+    tv = new TreeVertex();
+    tv->cells[2] = CellRef(this, 3); cells[3].vertices[1] = tv;
+    tv->cells[0] = CellRef(this, 1); cells[1].vertices[3] = tv;
+
+    // Top
+    tv = new TreeVertex();
+    tv->cells[0] = CellRef(this, 2); cells[2].vertices[3] = tv;
+    tv->cells[1] = CellRef(this, 3); cells[3].vertices[2] = tv;
+
+    // Bottom
+    tv = new TreeVertex();
+    tv->cells[2] = CellRef(this, 0); cells[0].vertices[1] = tv;
+    tv->cells[3] = CellRef(this, 1); cells[1].vertices[0] = tv;
 }
 
 TreeGroup::TreeGroup(int b)
@@ -207,6 +251,109 @@ TreeGroup::TreeGroup(CellRef p)
             }
         }
     }
+
+    if (!p.isBoundary()) {
+
+        // Add vertices
+        // Todo: Generalise
+        TreeVertex* tv;
+
+        // Middle
+        tv = new TreeVertex();
+        for (int c = 0; c < 1<<DIM; c++) {
+            tv->cells[c] = cl = CellRef(this, c);
+            cells[c].vertices[~c & ((1<<DIM)-1)] = tv;
+        }
+
+        // Corners
+        for (int v = 0; v < 1<<DIM; v++) {
+            tv = p.vertex(v).vert;
+            cells[v].vertices[v] = tv;
+            tv->cells[~v & ((1<<DIM)-1)] = CellRef(this, v);
+        }
+
+        // Face Centers
+        // constexpr int faceVertices[4][2] = {
+        //     {1, 3},
+        //     {0, 2},
+        //     {2, 3},
+        //     {0, 1}
+        // };
+
+        // CellRef nb;
+        // for (int d = 0; d < 2*DIM; d++) {
+        //     nb = p.neighbour(d);
+        //     if (nb.hasChildren()) {
+        //         // Already exists
+        //         tv = nb.child(faceVertices[d][0]).vertex(faceVertices[d][1]).vert;
+        //     }
+        //     else {
+        //         tv = new TreeVertex();
+        //         for (int i = 0; i < 2*(DIM-1); i++) {
+        //             tv->cells[CellRef::childIndexOnFace(d, 0)] = nb;
+        //         }
+        //     }
+
+        //     for (int i = 0; i < 2*(DIM-1); i++) {
+        //         tv->cells[CellRef::childIndexOnFace(~d & ((1<<DIM)-1), i)]
+        //             = p.childOnFace(d, i);
+        //     }
+        // }
+
+
+
+        // Left
+        cell_t nb = p.neighbour(0);
+        if (!nb.isBoundary() && nb.hasChildren()) {
+            tv = nb.child(1).vertex(3).vert;
+        }
+        else {
+            tv = new TreeVertex();
+            tv->cells[0] = nb;
+            tv->cells[2] = nb;
+        }
+        tv->cells[1] = CellRef(this, 0); cells[0].vertices[2] = tv;
+        tv->cells[3] = CellRef(this, 2); cells[2].vertices[0] = tv;
+
+        // Right
+        nb = p.neighbour(1);
+        if (!nb.isBoundary() && nb.hasChildren()) {
+            tv = nb.child(0).vertex(2).vert;
+        }
+        else {
+            tv = new TreeVertex();
+            tv->cells[1] = nb;
+            tv->cells[3] = nb;
+        }
+        tv->cells[2] = CellRef(this, 3); cells[3].vertices[1] = tv;
+        tv->cells[0] = CellRef(this, 1); cells[1].vertices[3] = tv;
+
+        // Bottom
+        nb = p.neighbour(2);
+        if (!nb.isBoundary() && nb.hasChildren()) {
+            tv = nb.child(2).vertex(3).vert;
+        }
+        else {
+            tv = new TreeVertex();
+            tv->cells[0] = nb;
+            tv->cells[1] = nb;
+        }
+        tv->cells[2] = CellRef(this, 0); cells[0].vertices[1] = tv;
+        tv->cells[3] = CellRef(this, 1); cells[1].vertices[0] = tv;
+
+        // Top
+        nb = p.neighbour(3);
+        if (!nb.isBoundary() && nb.hasChildren()) {
+            tv = nb.child(0).vertex(1).vert;
+        }
+        else {
+            tv = new TreeVertex();
+            tv->cells[2] = nb;
+            tv->cells[3] = nb;
+        }
+        tv->cells[0] = CellRef(this, 2); cells[2].vertices[3] = tv;
+        tv->cells[1] = CellRef(this, 3); cells[3].vertices[2] = tv;
+    }
 }
 
 TreeGroup::~TreeGroup() {
@@ -265,6 +412,9 @@ TreeGroup::~TreeGroup() {
         //         delete cells[n].faces[i];
         //     }
         // }
+
+        // Delete vertices
+        // delete cells[0].vertices[3];
     }
 
     for (int ch = 0; ch < cells.size(); ch++) {
