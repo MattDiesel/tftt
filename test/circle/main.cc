@@ -1,5 +1,6 @@
 
 #include <iostream>
+#include <fstream>
 
 #include "util/formatstring.h"
 #include "util/pars.h"
@@ -30,7 +31,7 @@ struct circle {
         bool in = false;
         bool out = false;
         for (int v = 0; v < 1<<DIM; v++) {
-            if (contains(cl.vertex(v, 0), cl.vertex(v, 1))) {
+            if (contains(cl.vertexPoint(v, 0), cl.vertexPoint(v, 1))) {
                 if (out) return true;
                 in = true;
             }
@@ -130,6 +131,25 @@ int main(int argc, char const *argv[])
     tftt::drawCurve("circledata/hilb.init.dat");
     tftt::drawBoundaries("circledata/bound.init.dat");
 
+
+    double pos[2] = {0.37, 0.1};
+    tftt::cell_t cl = tftt::atPos(pos);
+
+    std::cout << cl << std::endl;
+
+    std::ofstream sing("circledata/single.dat");
+    tftt::drawCell(sing, cl);
+    sing.close();
+
+    tftt::calcFaceCoefs(cl);
+
+    std::ofstream ngb("circledata/ngb.dat");
+    tftt::drawPoissonNeighbourhood(ngb, cl);
+    ngb.close();
+
+    return 0;
+
+
     tftt::distribute(4);
     tftt::splitToDisk("circle.r{0}.tr");
 
@@ -174,34 +194,36 @@ int main(int argc, char const *argv[])
 
         std::cout << "\tAdapted " << tftt::adaptList.size() << "\n";
 
-        coarsened = 0;
-        tftt::adaptBegin();
-        for (auto& cl : tftt::leaforthos) {
-            if (c.intersects(cl))
-                continue;
+        do {
+            coarsened = 0;
+            tftt::adaptBegin();
+            for (auto& cl : tftt::leaforthos) {
+                if (c.intersects(cl))
+                    continue;
 
-            if (cl.level() > minDepth) {
-                cantCoarsen = false;
-                for (int ch = 0; ch < 1<<DIM; ch++) {
-                    if (cl.child(ch).hasChildren()) {
-                        cantCoarsen = true;
-                        break;
+                if (cl.level() > minDepth) {
+                    cantCoarsen = false;
+                    for (int ch = 0; ch < 1<<DIM; ch++) {
+                        if (cl.child(ch).hasChildren()) {
+                            cantCoarsen = true;
+                            break;
+                        }
+                        cantCoarsen = tftt::findAround(cl, tftt::options.two2oneFlag-1,
+                            [](tftt::cell_t& cl) {
+                                return cl.hasGrandChildren();
+                            });
+                        if (cantCoarsen) break;
                     }
-                    cantCoarsen = tftt::findAround(cl, tftt::options.two2oneFlag,
-                        [](tftt::cell_t& cl) {
-                            return cl.hasGrandChildren();
-                        });
-                    if (cantCoarsen) break;
-                }
 
-                if (!cantCoarsen) {
-                    tftt::adaptAddCoarsen(cl);
+                    if (!cantCoarsen) {
+                        tftt::adaptAddCoarsen(cl);
+                    }
                 }
             }
-        }
-        tftt::adaptCommitCoarsen();
+            tftt::adaptCommitCoarsen();
 
-        std::cout << "\tCoarsened: " << tftt::adaptList.size() << "\n";
+            std::cout << "\tCoarsened: " << tftt::adaptList.size() << "\n";
+        } while (tftt::adaptList.size());
 
         std::cout << "\tCell Count: " << tftt::gtree.ccells << "\n";
 
