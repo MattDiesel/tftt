@@ -18,14 +18,15 @@ namespace tftt {
 
 
 void drawMeshSub2d(std::ostream& os, TreeGroup* gr, double w, double h, double x, double y) {
-    if (!gr) {
+    // if (!gr) {
         os << x << ' ' << y << '\n'
             << (x+w) << ' ' << y << '\n'
             << (x+w) << ' ' << (y+h) << '\n'
             << x << ' ' << (y+h) << '\n'
             << x << ' ' << y << "\n\n";
-    }
-    else {
+    // }
+    // else {
+    if (gr) {
         drawMeshSub2d(os, gr->cells[0].children, w*0.5, h*0.5, x, y);
         drawMeshSub2d(os, gr->cells[1].children, w*0.5, h*0.5, x+w*0.5, y);
         drawMeshSub2d(os, gr->cells[2].children, w*0.5, h*0.5, x, y+h*0.5);
@@ -188,6 +189,18 @@ void drawMatrix(std::ostream& os, int imgW, int imgH, fnDataNorm dataNorm) {
         for (x = 0; x < imgW; x++) {
             os << (unsigned char)(255-bmp[y*imgW+x]);
         }
+    }
+}
+
+
+void plotMatrix(std::string fname, fnData dt) {
+    std::ofstream ofs(fname);
+    plotMatrix(ofs, dt);
+}
+
+void plotMatrix(std::ostream& os, fnData dt) {
+    for (auto& cl : leaves) {
+        os << cl.centre(0) << " " << cl.centre(1) << " " << dt(cl.data()) << "\n";
     }
 }
 
@@ -413,6 +426,28 @@ void loadTree(std::string fname, int n) {
         }
     }
 }
+
+
+
+
+
+void drawPoissonNeighbourhood(std::string fname, cell_t cl) {
+    std::ofstream ofs(fname);
+    drawPoissonNeighbourhood(ofs, cl);
+}
+
+void drawPoissonNeighbourhood(std::ostream& os, cell_t cl) {
+
+    TreeCell* tc = &cl.group->cells[cl.index];
+
+    for (int n = 0; n < tc->poisNgbC; n++) {
+        drawCell(os, tc->poisNgb[n]);
+    }
+
+}
+
+
+
 
 
 } // namespace tftt
