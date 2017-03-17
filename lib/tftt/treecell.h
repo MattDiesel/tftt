@@ -6,20 +6,27 @@
 #include <array>
 
 #include "tftt.h"
-#include "treeface.h"
 
 
 namespace tftt {
 
 struct TreeGroup;
 struct TreeFace;
+struct TreeVertex;
 
 
 struct TreeCell {
 	data_t data;
     std::array<TreeFace*, DIM*2> faces;
+    std::array<TreeVertex*, 1<<DIM> vertices;
     node_t rank;
 	TreeGroup* children;
+
+    int poisNgbC;
+    CellRef poisNgb[12];
+    bool poisNgbDir[12];
+    double poisCoef[12];
+    double poisAlpha[4];
 };
 
 
