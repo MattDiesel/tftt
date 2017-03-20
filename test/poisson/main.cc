@@ -2,16 +2,12 @@
 #include <iostream>
 #include <fstream>
 
-// #include <boost/mpi/environment.hpp>
-// #include <boost/mpi/communicator.hpp>
-
 #include "util/formatstring.h"
 #include "util/pars.h"
 
 #include "tftt/tftt.h"
 #include "tftt/tree.h"
 
-// namespace mpi = boost::mpi;
 using namespace util; // for formatString
 
 
@@ -81,28 +77,29 @@ int ITER = 0;
 circle c;
 
 
-double fn(tftt::cell_t& cl) {
+double fn(tftt::cell_t& cl)
+{
     return -cl->cc;
 }
 
-double dtPc(tftt::data_t& dt) {
+double dtPc(tftt::data_t& dt)
+{
     return dt.P;
 }
 
-double dtPcn(tftt::data_t& dt) {
+double dtPcn(tftt::data_t& dt)
+{
     return -dt.P;
 }
 
-double& dtP(tftt::data_t& dt) {
+double& dtP(tftt::data_t& dt)
+{
     return dt.P;
 }
 
 
 int main(int argc, char* argv[])
 {
-    // mpi::environment env(argc, argv);
-    // mpi::communicator world;
-
     // Defaults:
     int minDepth = 2;
     int maxDepth = 6;
@@ -156,16 +153,16 @@ int main(int argc, char* argv[])
     }
 
     std::cout << "Using Parameters: \n"
-            << "\tminDepth = " << minDepth << "\n"
-            << "\tmaxDepth = " << maxDepth << "\n"
-            << "\titerations = " << iterations << "\n"
-            << "\tcircle.start[0] = " << startPos[0] << "\n"
-            << "\tcircle.start[1] = " << startPos[1] << "\n"
-            << "\tcircle.end[0] = " << endPos[0] << "\n"
-            << "\tcircle.end[1] = " << endPos[1] << "\n"
-            << "\tcircle.radius = " << c.r << "\n"
-            << "\ttftt.ghosts = " << tftt::options.ghostsFlag << "\n"
-            << "\ttftt.two2one = " << tftt::options.two2oneFlag << std::endl;
+              << "\tminDepth = " << minDepth << "\n"
+              << "\tmaxDepth = " << maxDepth << "\n"
+              << "\titerations = " << iterations << "\n"
+              << "\tcircle.start[0] = " << startPos[0] << "\n"
+              << "\tcircle.start[1] = " << startPos[1] << "\n"
+              << "\tcircle.end[0] = " << endPos[0] << "\n"
+              << "\tcircle.end[1] = " << endPos[1] << "\n"
+              << "\tcircle.radius = " << c.r << "\n"
+              << "\ttftt.ghosts = " << tftt::options.ghostsFlag << "\n"
+              << "\ttftt.two2one = " << tftt::options.two2oneFlag << std::endl;
 
 
     // Init tree to min depth
@@ -181,7 +178,7 @@ int main(int argc, char* argv[])
     // tftt::drawCurve("pois/hilb.min.dat");
     // tftt::drawBoundaries("pois/bound.min.dat");
 
-    // Refine to circle. 
+    // Refine to circle.
     for (int d = minDepth; d < maxDepth; d++) {
         tftt::adaptBegin();
 
@@ -214,38 +211,38 @@ int main(int argc, char* argv[])
     tftt::drawBoundaries("pois/bound.init.dat");
 
 
-    tftt::drawMatrix("pois/cc.init.pgm", 512, 512, [](tftt::data_t& dt, int max) {
-        return dt.cc*max;
-    });
+    // tftt::drawMatrix("pois/cc.init.pgm", 512, 512, [](tftt::data_t& dt, int max) {
+    //     return dt.cc*max;
+    // });
 
 
-    double pos[2] = {0.148438,0.425};
-    tftt::cell_t cl = tftt::atPos(pos);
+    // double pos[2] = {0.148438,0.425};
+    // tftt::cell_t cl = tftt::atPos(pos);
 
-    std::cout << cl << " is " << cl.id().id << std::endl;
+    // std::cout << cl << " is " << cl.id().id << std::endl;
 
-    std::ofstream sing("pois/single.dat");
-    tftt::drawCell(sing, cl);
-    sing.close();
+    // std::ofstream sing("pois/single.dat");
+    // tftt::drawCell(sing, cl);
+    // sing.close();
 
     // tftt::calcFaceCoefs(cl);
 
-    std::ofstream ngb("pois/ngb.dat");
-    tftt::drawPoissonNeighbourhood(ngb, cl);
-    ngb.close();
+    // std::ofstream ngb("pois/ngb.dat");
+    // tftt::drawPoissonNeighbourhood(ngb, cl);
+    // ngb.close();
 
-    tftt::drawMatrix("pois/cc.init.pgm", 512, 512, [](tftt::data_t& dt, int max) {
-        return dt.cc*max;
-    });
-    tftt::drawMatrix("pois/P.init.pgm", 512, 512, [](tftt::data_t& dt, int max) {
-        return (dt.P+1.0)*max * 0.5;
-    });
+    // tftt::drawMatrix("pois/cc.init.pgm", 512, 512, [](tftt::data_t& dt, int max) {
+    //     return dt.cc*max;
+    // });
+    // tftt::drawMatrix("pois/P.init.pgm", 512, 512, [](tftt::data_t& dt, int max) {
+    //     return (dt.P+1.0)*max * 0.5;
+    // });
 
 
-    {
-        char c;
-        std::cin >> c;
-    }
+    // {
+    //     char c;
+    //     std::cin >> c;
+    // }
 
     std::ofstream ofGraph("pois/res.graph.dat");
 
