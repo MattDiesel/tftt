@@ -12,24 +12,25 @@ namespace tftt {
 
 
 struct Tree {
-	TreeGroup* root;
-	size_t ccells;
+    TreeGroup* root;
+    size_t ccells;
+    size_t cactive;
 
-	double size[DIM];
+    double size[DIM];
 
     TreeGroup* boundGroups;
 
     bool destroying;
     ~Tree();
 
-	// For thread
+    // For thread
     cell_t first;
     cell_t last;
     cell_t firstActive;
     cell_t lastActive;
 
-	//! The set of ghost groups on this processor
-	std::set<cell_t> ghosts;
+    //! The set of ghost groups on this processor
+    std::set<cell_t> ghosts;
 
     node_t rank;
 

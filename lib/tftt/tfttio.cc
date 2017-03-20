@@ -17,13 +17,14 @@
 namespace tftt {
 
 
-void drawMeshSub2d(std::ostream& os, TreeGroup* gr, double w, double h, double x, double y) {
+void drawMeshSub2d(std::ostream& os, TreeGroup* gr, double w, double h, double x, double y)
+{
     // if (!gr) {
-        os << x << ' ' << y << '\n'
-            << (x+w) << ' ' << y << '\n'
-            << (x+w) << ' ' << (y+h) << '\n'
-            << x << ' ' << (y+h) << '\n'
-            << x << ' ' << y << "\n\n";
+    os << x << ' ' << y << '\n'
+       << (x+w) << ' ' << y << '\n'
+       << (x+w) << ' ' << (y+h) << '\n'
+       << x << ' ' << (y+h) << '\n'
+       << x << ' ' << y << "\n\n";
     // }
     // else {
     if (gr) {
@@ -35,12 +36,14 @@ void drawMeshSub2d(std::ostream& os, TreeGroup* gr, double w, double h, double x
 }
 
 
-void drawMesh(std::string fname) {
+void drawMesh(std::string fname)
+{
     std::ofstream ofs(fname);
     drawMesh(ofs);
 }
 
-void drawMesh(std::ostream& os) {
+void drawMesh(std::ostream& os)
+{
     if (DIM == 2) {
         drawMeshSub2d(os, gtree.root, gtree.size[0], gtree.size[1], 0.0, 0.0);
     }
@@ -52,7 +55,8 @@ void drawMesh(std::ostream& os) {
 }
 
 
-void drawCell(std::ostream& os, cell_t const& c) {
+void drawCell(std::ostream& os, cell_t const& c)
+{
     double vtc[1<<DIM][DIM];
 
     c.vertices(vtc);
@@ -80,17 +84,20 @@ void drawCell(std::ostream& os, cell_t const& c) {
 }
 
 
-void drawPartialMesh(std::string fname, cell_t from, cell_t to) {
+void drawPartialMesh(std::string fname, cell_t from, cell_t to)
+{
     std::ofstream ofs(fname);
     drawPartialMesh(ofs, from, to);
 }
 
-void drawPartialMesh(std::string fname) {
+void drawPartialMesh(std::string fname)
+{
     std::ofstream ofs(fname);
     drawPartialMesh(ofs, gtree.firstActive, gtree.lastActive);
 }
 
-void drawPartialMesh(std::ostream& os, cell_t from, cell_t to) {
+void drawPartialMesh(std::ostream& os, cell_t from, cell_t to)
+{
     auto bgn = tagCurve::curve_iterator(from);
     auto end = tagCurve::curve_iterator(to);
     end++;
@@ -101,72 +108,82 @@ void drawPartialMesh(std::ostream& os, cell_t from, cell_t to) {
 }
 
 
-void drawGhosts(std::string fname) {
+void drawGhosts(std::string fname)
+{
     std::ofstream ofs(fname);
     drawGhosts(ofs);
 }
 
-void drawGhosts(std::ostream& os) {
+void drawGhosts(std::ostream& os)
+{
     for (auto& c : gtree.ghosts) {
         drawCell(os, c);
     }
 }
 
 
-void drawCurve(std::string fname) {
+void drawCurve(std::string fname)
+{
     std::ofstream ofs(fname);
     drawCurve(ofs);
 }
 
-void drawCurve(std::ostream& os) {
+void drawCurve(std::ostream& os)
+{
     for (auto& c : curve) {
         os << c.centre(0);
         for (int d = 1; d < DIM; d++) {
             os << " " << c.centre(d);
         }
-        
+
         os << "\n";
     }
 }
 
 
-void drawPartialCurve(std::string fname) {
+void drawPartialCurve(std::string fname)
+{
     std::ofstream ofs(fname);
     drawPartialCurve(ofs);
 }
 
-void drawPartialCurve(std::ostream& os) {
+void drawPartialCurve(std::ostream& os)
+{
     for (auto& c : activecurve) {
         os << c.centre(0);
         for (int d = 1; d < DIM; d++) {
             os << " " << c.centre(d);
         }
-        
+
         os << "\n";
     }
 }
 
 
-void drawBoundaries(std::string fname) {
+void drawBoundaries(std::string fname)
+{
     std::ofstream ofs(fname);
     for (int b = 0; b < 2*DIM; b++) {
         drawBoundary(ofs, b);
     }
 }
 
-void drawBoundary(std::ostream& os, int b) {
+void drawBoundary(std::ostream& os, int b)
+{
     for (auto& c : boundaryCells(b)) {
         drawCell(os, c);
     }
 }
 
 
-void drawMatrix(std::string fname, int imgW, int imgH, fnDataNorm dataNorm) {
+void drawMatrix(std::string fname, int imgW, int imgH, fnDataNorm dataNorm)
+{
     std::ofstream ofs(fname, std::ios::binary);
     drawMatrix(ofs, imgW, imgH, dataNorm);
 }
 
-void drawMatrix(std::ostream& os, int imgW, int imgH, fnDataNorm dataNorm) {
+void drawMatrix(std::ostream& os, int imgW, int imgH, fnDataNorm dataNorm)
+{
     unsigned char* bmp = new unsigned char[imgW*imgH];
 
     int x1,y1,w,h,x,y;
@@ -193,25 +210,29 @@ void drawMatrix(std::ostream& os, int imgW, int imgH, fnDataNorm dataNorm) {
 }
 
 
-void plotMatrix(std::string fname, fnData dt) {
+void plotMatrix(std::string fname, fnData dt)
+{
     std::ofstream ofs(fname);
     plotMatrix(ofs, dt);
 }
 
-void plotMatrix(std::ostream& os, fnData dt) {
+void plotMatrix(std::ostream& os, fnData dt)
+{
     for (auto& cl : leaves) {
         os << cl.centre(0) << " " << cl.centre(1) << " " << dt(cl.data()) << "\n";
     }
 }
 
 
-void saveTree(std::string fname) {
+void saveTree(std::string fname)
+{
     std::ofstream ofs(fname, std::ios::binary);
     saveTree(ofs);
 }
 
 template<typename T>
-void writeVal(std::ostream& os, T t) {
+void writeVal(std::ostream& os, T t)
+{
     os.write(reinterpret_cast<const char*>(&t), sizeof(T));
 }
 
@@ -223,7 +244,8 @@ void writeVal(std::ostream& os, T t) {
 //     os.write(reinterpret_cast<const char*>(idt), sizeof(ident_t));
 // }
 
-void writeCell(std::ostream& os, cell_t const& cl) {
+void writeCell(std::ostream& os, cell_t const& cl)
+{
     // os.write(reinterpret_cast<const char*>(&cl.id().id), sizeof(ident_t));
     // os.write(reinterpret_cast<const char*>(&cell->processor), 1);
     // os.write(reinterpret_cast<const char*>(&cell->data), sizeof(data_t));
@@ -233,7 +255,8 @@ void writeCell(std::ostream& os, cell_t const& cl) {
     writeVal(os, cl.data());
 }
 
-void writeHeader(std::ostream& os) {
+void writeHeader(std::ostream& os)
+{
     char magic[6] = "LT";
     magic[2] = 3;
     magic[3] = 0;
@@ -252,7 +275,8 @@ void writeHeader(std::ostream& os) {
 }
 
 
-void saveTree(std::ostream& os) {
+void saveTree(std::ostream& os)
+{
     os.imbue(std::locale::classic());
 
     writeHeader(os);
@@ -263,7 +287,8 @@ void saveTree(std::ostream& os) {
 }
 
 
-void addChildren(std::set<cell_t>& ghosts, cell_t cl, cell_t ngb, int nb, node_t node) {
+void addChildren(std::set<cell_t>& ghosts, cell_t cl, cell_t ngb, int nb, node_t node)
+{
     for (auto& ngbCh : *ngb.children()) {
         if (options.ghostsFlag == 0 && ngbCh.neighbour(nb ^ 1) != cl)
             continue; // Minimal - only take bordering children
@@ -278,7 +303,8 @@ void addChildren(std::set<cell_t>& ghosts, cell_t cl, cell_t ngb, int nb, node_t
 }
 
 
-void addGhosts(std::set<cell_t>& ghosts, cell_t cl, node_t node) {
+void addGhosts(std::set<cell_t>& ghosts, cell_t cl, node_t node)
+{
     cell_t ngb;
     for (int nb = 0; nb < 2*DIM; nb++) {
         ngb = cl.neighbour(nb);
@@ -294,7 +320,8 @@ void addGhosts(std::set<cell_t>& ghosts, cell_t cl, node_t node) {
 }
 
 
-void splitToDisk(std::string fnameFmt) {
+void splitToDisk(std::string fnameFmt)
+{
     int node = 0;
     std::ofstream ofs(::util::formatString(fnameFmt, 0), std::ios::binary);
     writeHeader(ofs);
@@ -332,12 +359,14 @@ void splitToDisk(std::string fnameFmt) {
 
 
 template<typename T>
-void readVal(std::istream& ist, T& ret) {
+void readVal(std::istream& ist, T& ret)
+{
     ist.read(reinterpret_cast<char*>(&ret), sizeof(T));
 }
 
 
-void loadTree(std::string fname, int n) {
+void loadTree(std::string fname, int n)
+{
     std::ifstream ifs(fname, std::ios::binary);
 
     // Read and check header
@@ -393,7 +422,8 @@ void loadTree(std::string fname, int n) {
     // Check
     if (n != -1) {
         bool first = false;
-        bool nonRank = false;
+
+        gtree.cactive = 0;
 
         for (auto& cl : curve) {
             if (cl.rank() == gtree.rank) {
@@ -401,23 +431,25 @@ void loadTree(std::string fname, int n) {
                     first = true;
                     gtree.firstActive = cl;
                 }
-#ifdef TFTT_DEBUG
+                #ifdef TFTT_DEBUG
                 else {
                     if (nonRank) {
                         std::cout << "Warning: Non-contigous range " << cl << "\n";
                         nonRank = false;
                     }
                 }
-#endif
+                #endif
 
+                gtree.cactive++;
                 gtree.lastActive = cl;
+
             }
             else {
-#ifdef TFTT_DEBUG
+                #ifdef TFTT_DEBUG
                 if (first) {
                     nonRank = true;
                 }
-#endif
+                #endif
 
                 if (cl.rank() != -1) {
                     gtree.ghosts.insert(cl);
@@ -431,12 +463,14 @@ void loadTree(std::string fname, int n) {
 
 
 
-void drawPoissonNeighbourhood(std::string fname, cell_t cl) {
+void drawPoissonNeighbourhood(std::string fname, cell_t cl)
+{
     std::ofstream ofs(fname);
     drawPoissonNeighbourhood(ofs, cl);
 }
 
-void drawPoissonNeighbourhood(std::ostream& os, cell_t cl) {
+void drawPoissonNeighbourhood(std::ostream& os, cell_t cl)
+{
 
     TreeCell* tc = &cl.group->cells[cl.index];
 
