@@ -11,7 +11,8 @@ namespace tftt {
 
 tagLeaves leaves;
 
-void tagLeaves::leaf_iterator::next() {
+void tagLeaves::leaf_iterator::next()
+{
     // if (!cr.isValid()) {
     //     return;
     // }
@@ -34,7 +35,8 @@ void tagLeaves::leaf_iterator::next() {
     }
 }
 
-tagLeaves::leaf_iterator::leaf_iterator(CellRef c) : cr(c) {
+tagLeaves::leaf_iterator::leaf_iterator(CellRef c) : cr(c)
+{
     if (!cr.isValid()) {
         return;
     }
@@ -43,38 +45,46 @@ tagLeaves::leaf_iterator::leaf_iterator(CellRef c) : cr(c) {
     }
 }
 
-tagLeaves::leaf_iterator tagLeaves::leaf_iterator::operator++() {
+tagLeaves::leaf_iterator tagLeaves::leaf_iterator::operator++()
+{
     auto i = *this;
     next();
     return i;
 }
 
-tagLeaves::leaf_iterator tagLeaves::leaf_iterator::operator++(int junk) {
+tagLeaves::leaf_iterator tagLeaves::leaf_iterator::operator++(int junk)
+{
     next();
     return *this;
 }
 
-CellRef& tagLeaves::leaf_iterator::operator*() {
+CellRef& tagLeaves::leaf_iterator::operator*()
+{
     return cr;
 }
 
-CellRef* tagLeaves::leaf_iterator::operator->() {
+CellRef* tagLeaves::leaf_iterator::operator->()
+{
     return &cr;
 }
 
-bool tagLeaves::leaf_iterator::operator==(const tagLeaves::leaf_iterator& rhs) {
+bool tagLeaves::leaf_iterator::operator==(const tagLeaves::leaf_iterator& rhs)
+{
     return cr == rhs.cr;
 }
 
-bool tagLeaves::leaf_iterator::operator!=(const tagLeaves::leaf_iterator& rhs) {
+bool tagLeaves::leaf_iterator::operator!=(const tagLeaves::leaf_iterator& rhs)
+{
     return !(cr == rhs.cr);
 }
 
-tagLeaves::leaf_iterator tagLeaves::begin() {
+tagLeaves::leaf_iterator tagLeaves::begin()
+{
     return tagLeaves::leaf_iterator(CellRef(gtree.root, 0));
 }
 
-tagLeaves::leaf_iterator tagLeaves::end() {
+tagLeaves::leaf_iterator tagLeaves::end()
+{
     return tagLeaves::leaf_iterator(CellRef());
 }
 
@@ -86,7 +96,8 @@ tagLeafOrthos leaforthos;
 
 
 
-void nextLeaf(cell_t& cr) {
+void nextLeaf(cell_t& cr)
+{
     if (cr.index+1 >= 2*DIM) {
         if (cr.group == gtree.root) {
             cr = CellRef();
@@ -105,11 +116,13 @@ void nextLeaf(cell_t& cr) {
     }
 }
 
-void tagLeafOrthos::ortho_iterator::next() {
+void tagLeafOrthos::ortho_iterator::next()
+{
     cell_t par = cr.parent();
     do {
         nextLeaf(cr);
-    } while (cr.isValid() && cr.parent() == par);
+    }
+    while (cr.isValid() && cr.parent() == par);
 
     if (cr.isValid())
         ortho = cr.parent();
@@ -117,7 +130,8 @@ void tagLeafOrthos::ortho_iterator::next() {
         ortho = CellRef();
 }
 
-tagLeafOrthos::ortho_iterator::ortho_iterator(CellRef c) : cr(c) {
+tagLeafOrthos::ortho_iterator::ortho_iterator(CellRef c) : cr(c)
+{
     if (!cr.isValid()) {
         return;
     }
@@ -127,38 +141,46 @@ tagLeafOrthos::ortho_iterator::ortho_iterator(CellRef c) : cr(c) {
     ortho = cr.parent();
 }
 
-tagLeafOrthos::ortho_iterator tagLeafOrthos::ortho_iterator::operator++() {
+tagLeafOrthos::ortho_iterator tagLeafOrthos::ortho_iterator::operator++()
+{
     auto i = *this;
     next();
     return i;
 }
 
-tagLeafOrthos::ortho_iterator tagLeafOrthos::ortho_iterator::operator++(int junk) {
+tagLeafOrthos::ortho_iterator tagLeafOrthos::ortho_iterator::operator++(int junk)
+{
     next();
     return *this;
 }
 
-CellRef& tagLeafOrthos::ortho_iterator::operator*() {
+CellRef& tagLeafOrthos::ortho_iterator::operator*()
+{
     return ortho;
 }
 
-CellRef* tagLeafOrthos::ortho_iterator::operator->() {
+CellRef* tagLeafOrthos::ortho_iterator::operator->()
+{
     return &ortho;
 }
 
-bool tagLeafOrthos::ortho_iterator::operator==(const tagLeafOrthos::ortho_iterator& rhs) {
+bool tagLeafOrthos::ortho_iterator::operator==(const tagLeafOrthos::ortho_iterator& rhs)
+{
     return ortho == rhs.ortho;
 }
 
-bool tagLeafOrthos::ortho_iterator::operator!=(const tagLeafOrthos::ortho_iterator& rhs) {
+bool tagLeafOrthos::ortho_iterator::operator!=(const tagLeafOrthos::ortho_iterator& rhs)
+{
     return !(ortho == rhs.ortho);
 }
 
-tagLeafOrthos::ortho_iterator tagLeafOrthos::begin() {
+tagLeafOrthos::ortho_iterator tagLeafOrthos::begin()
+{
     return tagLeafOrthos::ortho_iterator(CellRef(gtree.root, 0));
 }
 
-tagLeafOrthos::ortho_iterator tagLeafOrthos::end() {
+tagLeafOrthos::ortho_iterator tagLeafOrthos::end()
+{
     return tagLeafOrthos::ortho_iterator(CellRef());
 }
 
@@ -166,7 +188,8 @@ tagLeafOrthos::ortho_iterator tagLeafOrthos::end() {
 
 
 
-tagBoundaryLeaves boundaryCells(int b) {
+tagBoundaryLeaves boundaryCells(int b)
+{
     tagBoundaryLeaves ret;
     ret.b = b;
     return ret;
@@ -177,7 +200,8 @@ constexpr int _start[4] = {1,0,2,0};
 constexpr int _inc[4]   = {2,2,1,1};
 constexpr int _end[4]   = {3,2,3,1};
 
-void tagBoundaryLeaves::bleaf_iterator::next() {
+void tagBoundaryLeaves::bleaf_iterator::next()
+{
     if (!cr.isValid()) {
         return;
     }
@@ -200,7 +224,8 @@ void tagBoundaryLeaves::bleaf_iterator::next() {
     }
 }
 
-tagBoundaryLeaves::bleaf_iterator::bleaf_iterator(CellRef c, int bnd) : cr(c), b(bnd) {
+tagBoundaryLeaves::bleaf_iterator::bleaf_iterator(CellRef c, int bnd) : cr(c), b(bnd)
+{
     if (!cr.isValid()) {
         return;
     }
@@ -209,38 +234,46 @@ tagBoundaryLeaves::bleaf_iterator::bleaf_iterator(CellRef c, int bnd) : cr(c), b
     }
 }
 
-tagBoundaryLeaves::bleaf_iterator tagBoundaryLeaves::bleaf_iterator::operator++() {
+tagBoundaryLeaves::bleaf_iterator tagBoundaryLeaves::bleaf_iterator::operator++()
+{
     auto i = *this;
     next();
     return i;
 }
 
-tagBoundaryLeaves::bleaf_iterator tagBoundaryLeaves::bleaf_iterator::operator++(int junk) {
+tagBoundaryLeaves::bleaf_iterator tagBoundaryLeaves::bleaf_iterator::operator++(int junk)
+{
     next();
     return *this;
 }
 
-CellRef& tagBoundaryLeaves::bleaf_iterator::operator*() {
+CellRef& tagBoundaryLeaves::bleaf_iterator::operator*()
+{
     return cr;
 }
 
-CellRef* tagBoundaryLeaves::bleaf_iterator::operator->() {
+CellRef* tagBoundaryLeaves::bleaf_iterator::operator->()
+{
     return &cr;
 }
 
-bool tagBoundaryLeaves::bleaf_iterator::operator==(const tagBoundaryLeaves::bleaf_iterator& rhs) {
+bool tagBoundaryLeaves::bleaf_iterator::operator==(const tagBoundaryLeaves::bleaf_iterator& rhs)
+{
     return cr == rhs.cr;
 }
 
-bool tagBoundaryLeaves::bleaf_iterator::operator!=(const tagBoundaryLeaves::bleaf_iterator& rhs) {
+bool tagBoundaryLeaves::bleaf_iterator::operator!=(const tagBoundaryLeaves::bleaf_iterator& rhs)
+{
     return !(cr == rhs.cr);
 }
 
-tagBoundaryLeaves::bleaf_iterator tagBoundaryLeaves::begin() {
+tagBoundaryLeaves::bleaf_iterator tagBoundaryLeaves::begin()
+{
     return tagBoundaryLeaves::bleaf_iterator(CellRef(gtree.boundGroups, b), b);
 }
 
-tagBoundaryLeaves::bleaf_iterator tagBoundaryLeaves::end() {
+tagBoundaryLeaves::bleaf_iterator tagBoundaryLeaves::end()
+{
     return tagBoundaryLeaves::bleaf_iterator(CellRef(), b);
 }
 
@@ -251,45 +284,55 @@ tagBoundaryLeaves::bleaf_iterator tagBoundaryLeaves::end() {
 
 tagCurve curve;
 
-void tagCurve::curve_iterator::next() {
+void tagCurve::curve_iterator::next()
+{
     cr = cr.next();
 }
 
-tagCurve::curve_iterator::curve_iterator(CellRef c) : cr(c) {
+tagCurve::curve_iterator::curve_iterator(CellRef c) : cr(c)
+{
 }
 
-tagCurve::curve_iterator tagCurve::curve_iterator::operator++() {
+tagCurve::curve_iterator tagCurve::curve_iterator::operator++()
+{
     auto i = *this;
     next();
     return i;
 }
 
-tagCurve::curve_iterator tagCurve::curve_iterator::operator++(int junk) {
+tagCurve::curve_iterator tagCurve::curve_iterator::operator++(int junk)
+{
     next();
     return *this;
 }
 
-CellRef& tagCurve::curve_iterator::operator*() {
+CellRef& tagCurve::curve_iterator::operator*()
+{
     return cr;
 }
 
-CellRef* tagCurve::curve_iterator::operator->() {
+CellRef* tagCurve::curve_iterator::operator->()
+{
     return &cr;
 }
 
-bool tagCurve::curve_iterator::operator==(const tagCurve::curve_iterator& rhs) {
+bool tagCurve::curve_iterator::operator==(const tagCurve::curve_iterator& rhs)
+{
     return cr == rhs.cr;
 }
 
-bool tagCurve::curve_iterator::operator!=(const tagCurve::curve_iterator& rhs) {
+bool tagCurve::curve_iterator::operator!=(const tagCurve::curve_iterator& rhs)
+{
     return !(cr == rhs.cr);
 }
 
-tagCurve::curve_iterator tagCurve::begin() {
+tagCurve::curve_iterator tagCurve::begin()
+{
     return tagCurve::curve_iterator(gtree.first);
 }
 
-tagCurve::curve_iterator tagCurve::end() {
+tagCurve::curve_iterator tagCurve::end()
+{
     return tagCurve::curve_iterator(CellRef());
 }
 
@@ -298,11 +341,13 @@ tagCurve::curve_iterator tagCurve::end() {
 
 tagActiveCurve activecurve;
 
-tagActiveCurve::curve_iterator tagActiveCurve::begin() {
+tagActiveCurve::curve_iterator tagActiveCurve::begin()
+{
     return tagActiveCurve::curve_iterator(gtree.firstActive);
 }
 
-tagActiveCurve::curve_iterator tagActiveCurve::end() {
+tagActiveCurve::curve_iterator tagActiveCurve::end()
+{
     curve_iterator ret = tagActiveCurve::curve_iterator(gtree.lastActive);
     ret++;
     return ret;
@@ -311,3 +356,4 @@ tagActiveCurve::curve_iterator tagActiveCurve::end() {
 
 
 } // namespace tftt
+
