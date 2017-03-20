@@ -21,7 +21,8 @@ namespace tftt {
 TFTTOPTIONS options;
 
 
-void init(double w, double h) {
+void init(double w, double h)
+{
     if (gtree.root)
         throw std::runtime_error("Attempt to initialise tree twice.");
 
@@ -67,7 +68,8 @@ void init(double w, double h) {
     gtree.destroying = false;
 }
 
-void reset() {
+void reset()
+{
     gtree.destroying = true;
     delete gtree.root;
     delete gtree.boundGroups;
@@ -76,7 +78,8 @@ void reset() {
 }
 
 
-cell_t find(ident_t idt) {
+cell_t find(ident_t idt)
+{
     TreeGroup* gr = gtree.root;
 
     int n = 0;
@@ -91,7 +94,8 @@ cell_t find(ident_t idt) {
     return CellRef();
 }
 
-cell_t insert(ident_t idt) {
+cell_t insert(ident_t idt)
+{
     cell_t ret = CellRef(-1);
 
     while (ret.id().id != idt.id) {
@@ -112,7 +116,8 @@ cell_t insert(ident_t idt) {
 }
 
 
-cell_t findmax(fnData dt, double* maxValRet) {
+cell_t findmax(fnData dt, double* maxValRet)
+{
     cell_t max;
     double maxVal = 0.0;
     double val;
@@ -129,7 +134,8 @@ cell_t findmax(fnData dt, double* maxValRet) {
 }
 
 
-bool checkAround(cell_t cl, int dist, fnCheckCell check) {
+bool checkAround(cell_t cl, int dist, fnCheckCell check)
+{
     cell_t tmp;
     for (int nb = 0; nb < 2*DIM; nb++) {
         tmp = cl;
@@ -144,7 +150,8 @@ bool checkAround(cell_t cl, int dist, fnCheckCell check) {
 }
 
 
-bool findAround(cell_t cl, int dist, fnCheckCell check) {
+bool findAround(cell_t cl, int dist, fnCheckCell check)
+{
     cell_t tmp;
     for (int nb = 0; nb < 2*DIM; nb++) {
         tmp = cl;
@@ -161,7 +168,8 @@ bool findAround(cell_t cl, int dist, fnCheckCell check) {
 
 void calcFaceCoef(cell_t cl, TreeCell* tc, int fc);
 
-void calcFaceCoefs(cell_t cl) {
+void calcFaceCoefs(cell_t cl)
+{
 
     TreeCell* tc = &cl.group->cells[cl.index];
 
@@ -181,7 +189,8 @@ void calcFaceCoefs(cell_t cl) {
     cl->cenCoef = alphas;
 }
 
-void calcFaceCoef(cell_t cl, TreeCell* tc, int fc) {
+void calcFaceCoef(cell_t cl, TreeCell* tc, int fc)
+{
     cell_t ngb = cl.neighbour(fc);
     int clLvl = cl.level();
     int ngbLvl = ngb.level();
@@ -210,7 +219,7 @@ void calcFaceCoef(cell_t cl, TreeCell* tc, int fc) {
             tc->poisNgbDir[tc->poisNgbC] = fc & 1;
             tc->poisCoef[tc->poisNgbC++] = 2.0 * dbound;
         }
-        
+
         return;
     }
     else if (ngb.hasChildren()) {
@@ -272,7 +281,7 @@ void calcFaceCoef(cell_t cl, TreeCell* tc, int fc) {
 
                 }
 
-            } 
+            }
         }
         else {
             // Use interpolation of neighbours
@@ -353,7 +362,8 @@ void calcFaceCoef(cell_t cl, TreeCell* tc, int fc) {
 }
 
 
-double interpFace(cell_t cl, int fc, fnData dt) {
+double interpFace(cell_t cl, int fc, fnData dt)
+{
     cell_t ngb = cl.neighbour(fc);
     int clLvl = cl.level();
     int ngbLvl = ngb.level();
@@ -409,7 +419,8 @@ double interpFace(cell_t cl, int fc, fnData dt) {
 }
 
 
-double interpChild(cell_t cl, int ch, int forDir, fnData dt) {
+double interpChild(cell_t cl, int ch, int forDir, fnData dt)
+{
     cell_t forNbCl = cl.neighbour(forDir);
 
     // if (!forNbCl.hasChildren()) {
@@ -459,7 +470,8 @@ double interpChild(cell_t cl, int ch, int forDir, fnData dt) {
     return ret;
 }
 
-double interpALEVertex(cell_t cl, int v, fnData dt) {
+double interpALEVertex(cell_t cl, int v, fnData dt)
+{
     cell_t ngb = cl.neighbour(v | 1);
     cell_t c2;
     if (ngb.hasChildren()) {
@@ -483,7 +495,8 @@ double interpALEVertex(cell_t cl, int v, fnData dt) {
 }
 
 
-void distribute(int n) {
+void distribute(int n)
+{
     int cpernode = (gtree.ccells / n)+1;
 
     int cc = cpernode;
@@ -495,11 +508,12 @@ void distribute(int n) {
         }
 
         cl.rank() = node;
-    } 
+    }
 }
 
 
-cell_t atPos(double pos[DIM]) {
+cell_t atPos(double pos[DIM])
+{
     TreeGroup* gr = gtree.root;
 
     int n;
@@ -518,12 +532,14 @@ cell_t atPos(double pos[DIM]) {
             }
             n++;
         }
-    } while (loop);
+    }
+    while (loop);
 
     return CellRef();
 }
 
-cell_t atVertex(int v) {
+cell_t atVertex(int v)
+{
     CellRef c(gtree.root, v);
 
     while (c.hasChildren()) {
@@ -534,7 +550,8 @@ cell_t atVertex(int v) {
 }
 
 
-void refine(CellRef cl) {
+void refine(CellRef cl)
+{
     cl.group->cells[cl.index].children = new TreeGroup(cl);
     gtree.ccells += (1 << DIM) - 1;
 
@@ -549,7 +566,8 @@ void refine(CellRef cl) {
 }
 
 
-void coarsen(CellRef cl) {
+void coarsen(CellRef cl)
+{
     cell_t nbc;
     for (int nb = 0; nb < 2*DIM; nb++) {
         nbc = cl.group->neighbours[nb];
@@ -569,7 +587,8 @@ void coarsen(CellRef cl) {
 }
 
 
-void twoToOne_Add(std::set<CellRef, crless>& ls, CellRef cl, CellRef from) {
+void twoToOne_Add(std::set<CellRef, crless>& ls, CellRef cl, CellRef from)
+{
     if (!options.two2oneFlag) return; // No 2-2-1
 
     int lvl = cl.level();
@@ -607,7 +626,8 @@ void twoToOne_Add(std::set<CellRef, crless>& ls, CellRef cl, CellRef from) {
                     if (a == n) continue;
 
                     for (int dir = 0; dir <= 1; dir++) {
-                        if (nb.level() < lvl && (dir != (cl.index >> a) & 1)) {
+                        if (nb.level() < lvl
+                                && (dir != ((cl.index >> a) & 1))) {
                             // If neighbour is at a lower level, its neighbour
                             // won't be on the corner unless it's in the same direction
                             continue;
@@ -641,6 +661,7 @@ void twoToOne_Add(std::set<CellRef, crless>& ls, CellRef cl, CellRef from) {
                 }
 
                 if (nb.level() < lvl) {
+                    p++;
                     ls.insert(nb);
                     twoToOne_Add(ls, nb, cl);
                 }
@@ -649,7 +670,8 @@ void twoToOne_Add(std::set<CellRef, crless>& ls, CellRef cl, CellRef from) {
     }
 }
 
-void twoToOne(CellRef cl) {
+void twoToOne(CellRef cl)
+{
     if (!options.two2oneFlag) return; // No 2-2-1
 
     std::set<CellRef, crless> refList;
@@ -663,14 +685,17 @@ void twoToOne(CellRef cl) {
 
 std::set<CellRef, crless> adaptList;
 
-void adaptBegin() {
+void adaptBegin()
+{
     adaptList.clear();
 }
-void adaptAdd(CellRef cr) {
+void adaptAdd(CellRef cr)
+{
     adaptList.insert(cr);
     twoToOne_Add(adaptList, cr, CellRef());
 }
-bool adaptCommit() {
+bool adaptCommit()
+{
     for (auto& cr : adaptList) {
         if (!cr.hasChildren())
             refine(cr);
@@ -678,11 +703,13 @@ bool adaptCommit() {
     return adaptList.empty();
 }
 
-void adaptAddCoarsen(CellRef cr) {
+void adaptAddCoarsen(CellRef cr)
+{
     cr.group->flaggedForCoarsening = true;
     adaptList.insert(cr);
 }
-bool adaptCommitCoarsen() {
+bool adaptCommitCoarsen()
+{
 
     // int inter = 0;
     // Do it reverse order so that 2-1 is maintained.
@@ -695,7 +722,8 @@ bool adaptCommitCoarsen() {
 }
 
 
-cell_t max(fnData dfn) {
+cell_t max(fnData dfn)
+{
     double ret = 0.0, t;
     cell_t retc;
     for (auto& cl : tftt::leaves) {
@@ -717,13 +745,13 @@ cell_t max(fnData dfn) {
 
 
 
-void relax(double omega, fnDataRef datafn, fnCell cellfn) {
+void relax(double omega, fnDataRef datafn, fnCell cellfn)
+{
 
     uint64_t target = 432345564227570477;
 
     double alphas, betas;
     double temp;
-    double sgn;
 
     for (auto& cl : tftt::leaves) {
         TreeCell& tc = cl.group->cells[cl.index];
@@ -739,8 +767,8 @@ void relax(double omega, fnDataRef datafn, fnCell cellfn) {
 
             if (cl.id().id == target) {
                 std::cout << "\tNgb N=" << n << " " << tc.poisNgb[n]
-                        << ", P=" << datafn(tc.poisNgb[n].data())
-                        << ", b=" << tc.poisCoef[n] << "\n";
+                          << ", P=" << datafn(tc.poisNgb[n].data())
+                          << ", b=" << tc.poisCoef[n] << "\n";
             }
         }
 
@@ -758,9 +786,9 @@ void relax(double omega, fnDataRef datafn, fnCell cellfn) {
         temp = (betas - cellfn(cl)) / alphas;
 
         // if (tc.poisNgbC == 2)
-            // datafn(cl.data()) = temp;
+        // datafn(cl.data()) = temp;
         // else
-            datafn(cl.data()) = omega*temp + (1.0-omega)*datafn(cl.data());
+        datafn(cl.data()) = omega*temp + (1.0-omega)*datafn(cl.data());
 
         if (temp != temp) {
             throw;
@@ -776,29 +804,12 @@ void relax(double omega, fnDataRef datafn, fnCell cellfn) {
 }
 
 
-double resid(fnDataRef datafn, fnCell cellfn) {
+double resid(fnDataRef datafn, fnCell cellfn)
+{
     TreeCell* tc;
 
     double max = 0.0;
     cell_t maxat;
-
-    // double sm;
-    // for (auto& cl : leaves) {
-    //     tc = &cl.group->cells[cl.index];
-
-    //     sm = -cl->cenCoef;
-    //     for (int n = 0; n < tc->poisNgbC; n++) {
-    //         sm += std::fabs(tc->poisCoef[n]);
-    //     }
-
-    //     if (std::fabs(sm) != 0.0) {
-    //         std::cout << "Non-zero coefficient = " << sm << std::endl;
-    //         // exit(1);
-    //     }
-    // }
-
-    // std::cout << "Ok." << std::endl;
-    // exit(1);
 
     for (auto& cl : leaves) {
         tc = &cl.group->cells[cl.index];
@@ -806,7 +817,7 @@ double resid(fnDataRef datafn, fnCell cellfn) {
         cl->res = -cellfn(cl) - cl->cenCoef * datafn(cl.data());
 
         for (int n = 0; n < tc->poisNgbC; n++) {
-            cl->res += datafn(tc->poisNgb[n].data()) * tc->poisCoef[n]; 
+            cl->res += datafn(tc->poisNgb[n].data()) * tc->poisCoef[n];
         }
 
         if (std::fabs(cl->res) > std::fabs(max)) {

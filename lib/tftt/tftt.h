@@ -11,7 +11,7 @@
 
 
 #ifndef DIM
-#define DIM 2
+    #define DIM 2
 #endif
 
 
@@ -76,25 +76,27 @@ struct rt_vertexdata {
 };
 
 namespace tftt {
-	template<typename T> struct TreeId;
 
-    typedef rt_data data_t;
-    typedef rt_facedata facedata_t;
-    typedef rt_vertexdata vertexdata_t;
-	typedef TreeId<uint64_t> ident_t;
-    typedef int8_t node_t;
+template<typename T> struct TreeId;
+
+typedef rt_data data_t;
+typedef rt_facedata facedata_t;
+typedef rt_vertexdata vertexdata_t;
+typedef TreeId<uint64_t> ident_t;
+typedef int8_t node_t;
 
 
-    // Functions to be supplied by user
-    typedef double (*fnDataNorm)(data_t& d, int max);
-    typedef double (*fnData)(data_t& d);
-    typedef double& (*fnDataRef)(data_t& d);
+// Functions to be supplied by user
+typedef double (*fnDataNorm)(data_t& d, int max);
+typedef double (*fnData)(data_t& d);
+typedef double& (*fnDataRef)(data_t& d);
 
-    extern struct TFTTOPTIONS {
-        int ghostsFlag; // 0 - Minimum, 1 - Children of neighbour groups
-        int two2oneFlag; // 0 - None, 1 - strict, 2 - incl. corners, 3 - 3-2-1
-        bool isNeuman;
-    } options;
+extern struct TFTTOPTIONS {
+    int ghostsFlag; // 0 - Minimum, 1 - Children of neighbour groups
+    int two2oneFlag; // 0 - None, 1 - strict, 2 - incl. corners, 3 - 3-2-1
+    bool isNeuman;
+} options;
+
 }
 
 
@@ -149,16 +151,14 @@ struct crless {
             return true;
         else if (a.level() > b.level())
             return false;
+        else if (a.group < b.group)
+            return true;
+        else if (a.group > b.group)
+            return false;
+        else if (a.index < b.index)
+            return true;
         else
-            if (a.group < b.group)
-                return true;
-            else if (a.group > b.group)
-                return false;
-            else
-                if (a.index < b.index)
-                    return true;
-                else
-                    return false;
+            return false;
     }
 };
 
