@@ -269,7 +269,7 @@ cell_t max(fnData dfn)
 {
     double ret = 0.0, t;
     cell_t retc;
-    for (auto& cl : tftt::leaves) {
+    for (auto& cl : tftt::activecurve) {
         if (!retc.isValid()) {
             ret = dfn(cl.data());
             retc = cl;
@@ -295,7 +295,7 @@ void relax(double omega, fnDataRef datafn, fnCell cellfn)
     double alphas, betas;
     double temp;
 
-    for (auto& cl : tftt::leaves) {
+    for (auto& cl : tftt::activecurve) {
         TreeCell& tc = cl.group->cells[cl.index];
 
         if (cl.id().id == target) {
@@ -353,7 +353,7 @@ double resid(fnDataRef datafn, fnCell cellfn)
     double max = 0.0;
     cell_t maxat;
 
-    for (auto& cl : leaves) {
+    for (auto& cl : activecurve) {
         tc = &cl.group->cells[cl.index];
 
         cl->res = -cellfn(cl) - cl->cenCoef * datafn(cl.data());
