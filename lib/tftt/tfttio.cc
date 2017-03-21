@@ -122,6 +122,20 @@ void drawGhosts(std::ostream& os)
 }
 
 
+void drawBorder(std::string fname, int n)
+{
+    std::ofstream ofs(fname);
+    drawBorder(ofs, n);
+}
+
+void drawBorder(std::ostream& os, int n)
+{
+    for (auto& c : gtree.borders[n]) {
+        drawCell(os, c);
+    }
+}
+
+
 void drawCurve(std::string fname)
 {
     std::ofstream ofs(fname);
@@ -365,6 +379,22 @@ void readVal(std::istream& ist, T& ret)
 }
 
 
+template<typename T>
+T& vectorSet(std::vector<T>& vt, int index)
+{
+    if (index < vt.size()) {
+        return vt[index];
+    }
+
+    vt.reserve(index+1);
+    while (index >= vt.size()) {
+        vt.push_back(T());
+    }
+
+    return vt[index];
+}
+
+
 void loadTree(std::string fname, int n)
 {
     std::ifstream ifs(fname, std::ios::binary);
@@ -453,6 +483,21 @@ void loadTree(std::string fname, int n)
 
                 if (cl.rank() != -1) {
                     gtree.ghosts.insert(cl);
+
+                    for (auto& ngb : cl.neighbours()) {
+                        if (ngb.isBoundary()) continue;
+
+                        if (ngb.hasChildren()) {
+                            for (auto& ch : *ngb.children()) {
+                                if (ch.rank() == n) {
+                                    vectorSet(gtree.borders, cl.rank()).insert(ch);
+                                }
+                            }
+                        }
+                        else if (ngb.rank() == n) {
+                            vectorSet(gtree.borders, cl.rank()).insert(ngb);
+                        }
+                    }
                 }
             }
         }

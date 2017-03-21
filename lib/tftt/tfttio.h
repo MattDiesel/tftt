@@ -26,6 +26,9 @@ void drawPartialMesh(std::ostream& os, cell_t from, cell_t to);
 void drawGhosts(std::string fname);
 void drawGhosts(std::ostream& os);
 
+void drawBorder(std::string fname, int n);
+void drawBorder(std::ostream& os, int n);
+
 
 void drawCurve(std::string fname);
 void drawCurve(std::ostream& os);
