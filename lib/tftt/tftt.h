@@ -123,14 +123,7 @@ void reset();
 bool checkAround(cell_t cl, int dist, fnCheckCell check);
 bool findAround(cell_t cl, int dist, fnCheckCell check);
 
-cell_t find(ident_t id);
-cell_t insert(ident_t id);
-cell_t findmax(fnData dt, double* maxValRet);
-
-void calcFaceCoefs(cell_t cl);
-
 double interpFace(cell_t cl, int fc, fnData dt);
-
 double interpChild(cell_t cl, int ch, int forNb, fnData dt);
 double interpALEVertex(cell_t cl, int v, fnData dt);
 
@@ -164,17 +157,12 @@ struct crless {
 
 extern std::set<CellRef, crless> adaptList;
 void adaptBegin();
+
 void adaptAdd(CellRef cr);
 bool adaptCommit();
 
 void adaptAddCoarsen(CellRef cr);
 bool adaptCommitCoarsen();
-
-
-cell_t   max(fnData dfn);
-
-void relax(double omega, fnDataRef datafn, fnCell cellfn);
-double resid(fnDataRef datafn, fnCell cellfn);
 
 
 } // namespace tftt
@@ -183,6 +171,7 @@ double resid(fnDataRef datafn, fnCell cellfn);
 // bring utilities into tftt namespace
 #include "leaves.h"
 #include "tfttio.h"
+#include "tfttops.h"
 
 
 #endif

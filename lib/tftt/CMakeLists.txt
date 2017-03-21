@@ -47,7 +47,9 @@ set(libtftt_SRCS
     vertexref.h 
     vertexref.cc 
     treevertex.cc 
-    treevertex.h
+    treevertex.h 
+    tfttops.h 
+    tfttops.cc 
 )
 
 # Declare the library
