@@ -3,6 +3,7 @@
 #define TFTT_TREE_H
 
 #include <set>
+#include <vector>
 
 #include "tftt.h"
 #include "treegroup.h"
@@ -31,6 +32,8 @@ struct Tree {
 
     //! The set of ghost groups on this processor
     std::set<cell_t> ghosts;
+
+    std::vector<std::set<cell_t>> borders;
 
     node_t rank;
 
