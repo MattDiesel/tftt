@@ -15,6 +15,8 @@ namespace tftt {
 struct TreeGroup;
 struct FaceRef;
 struct VertexRef;
+struct tagNeighbours;
+
 
 //! Flags for a CellRef structure
 enum CellRefFlags {
@@ -43,9 +45,9 @@ public:
     //! Note: With debug enabled, this constructor cannot be used to create boundary cells. Instead the
     //! CellRef(bool) overload must be used.
     CellRef(
-            TreeGroup* gr,          //!< A pointer to the group
-            int ind
-        );
+        TreeGroup* gr,          //!< A pointer to the group
+        int ind
+    );
 
     //! Ctor for an invalid cell ref
     CellRef();
@@ -80,7 +82,9 @@ public:
     CellRef neighbour(int n) const;
     CellRef diagonal(int n) const;
 
-    //! The orientation of the space filling curve at this cell. 
+    tagNeighbours neighbours() const;
+
+    //! The orientation of the space filling curve at this cell.
     int orientation() const;
 
     //! The next cell in the space filling curve
@@ -111,7 +115,7 @@ public:
     //! Interpolate a "neighbours" data
     double ngbVal(int nb, fnData dt, double* ifBoundary = nullptr) const;
 
-    //! The data associated with a cell face. 
+    //! The data associated with a cell face.
     // facedata_t& facedata(int dir);
     // facedata_t const& facedata(int dir) const;
 
