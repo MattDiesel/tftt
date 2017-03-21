@@ -19,7 +19,8 @@ namespace fmt {
  * @author Diesel
  */
 template<typename T>
-inline bool print(std::ostream& os, int N, T v) {
+inline bool print(std::ostream& os, int N, T v)
+{
     if (!N) {
         os << v;
         return true;
@@ -32,7 +33,8 @@ inline bool print(std::ostream& os, int N, T v) {
  * @author Diesel
  */
 template<>
-inline bool print(std::ostream& os, int N, int v) {
+inline bool print(std::ostream& os, int N, int v)
+{
     if (!N) {
         os << std::setfill('0') << std::setw(5) << v;
         return true;
@@ -45,12 +47,13 @@ inline bool print(std::ostream& os, int N, int v) {
  * @author Diesel
  */
 template<typename T, typename... Args>
-inline bool print(std::ostream& os, int N, T first, Args... args) {
+inline bool print(std::ostream& os, int N, T first, Args... args)
+{
     if (!N) {
         os << first;
         return true;
     }
-    return fmtprint(os, N-1, args...);
+    return print(os, N-1, args...);
 }
 
 
@@ -58,15 +61,16 @@ inline bool print(std::ostream& os, int N, T first, Args... args) {
 
 
 /** Formats a string according to a format pattern.
- * 
+ *
  * @author Diesel
  */
 template<class ...TA>
-inline std::string formatString(std::string f, TA... pargs) {
+inline std::string formatString(std::string f, TA... pargs)
+{
     std::ostringstream oss;
 
     std::string::size_type c = 0, p, n;
-    for (;c < f.length();) {
+    for (; c < f.length();) {
         p = f.find('{', c);
 
         if (p == std::string::npos) {
