@@ -488,5 +488,7 @@ std::ostream& operator<<(std::ostream& os, const tftt::CellRef& cr)
         // os << "{" << cr.id() << "}";
         os << "{" << cr.centre(0) << "," << cr.centre(1) << "}";
     }
+
+    return os;
 }
 
