@@ -16,7 +16,8 @@
 namespace tftt {
 
 TreeGroup::TreeGroup()
-        : parent(), boundary(-1) {
+    : parent(), boundary(-1)
+{
     for (int i = 0; i < (1<<DIM); i++) {
         cells[i].children = nullptr;
         cells[i].rank = -1;
@@ -49,8 +50,8 @@ TreeGroup::TreeGroup()
 
     for (int i = 0; i < 4; i++) {
         cells[pairs[i][0]].faces[pairs[i][1]] =
-        cells[pairs[i][2]].faces[pairs[i][3]] =
-            new TreeFace(CellRef(this, pairs[i][0]), CellRef(this, pairs[i][2]), pairs[i][1] >> 1);
+            cells[pairs[i][2]].faces[pairs[i][3]] =
+                new TreeFace(CellRef(this, pairs[i][0]), CellRef(this, pairs[i][2]), pairs[i][1] >> 1);
     }
 
     // Add external faces
@@ -66,7 +67,7 @@ TreeGroup::TreeGroup()
         // Add faces
         for (int i = 0; i < 2; i++) {
             cl = CellRef(this, facecells[n][i]);
-            cells[facecells[n][i]].faces[n] = 
+            cells[facecells[n][i]].faces[n] =
                 new TreeFace(cl, cl.neighbour(n), n >> 1);
         }
     }
@@ -83,7 +84,7 @@ TreeGroup::TreeGroup()
         // std::cout << "\tcells[" << v << "].v[" << v << "] == " << v << "\n";
     }
 
-    // Middle 
+    // Middle
     tv = new TreeVertex();
     for (int c = 0; c < 1<<DIM; c++) {
         tv->cells[c] = cl = CellRef(this, c);
@@ -97,27 +98,36 @@ TreeGroup::TreeGroup()
 
     // Left
     tv = new TreeVertex();
-    tv->cells[1] = CellRef(this, 0); cells[0].vertices[2] = tv;
-    tv->cells[3] = CellRef(this, 2); cells[2].vertices[0] = tv;
+    tv->cells[1] = CellRef(this, 0);
+    cells[0].vertices[2] = tv;
+    tv->cells[3] = CellRef(this, 2);
+    cells[2].vertices[0] = tv;
 
     // Right
     tv = new TreeVertex();
-    tv->cells[2] = CellRef(this, 3); cells[3].vertices[1] = tv;
-    tv->cells[0] = CellRef(this, 1); cells[1].vertices[3] = tv;
+    tv->cells[2] = CellRef(this, 3);
+    cells[3].vertices[1] = tv;
+    tv->cells[0] = CellRef(this, 1);
+    cells[1].vertices[3] = tv;
 
     // Top
     tv = new TreeVertex();
-    tv->cells[0] = CellRef(this, 2); cells[2].vertices[3] = tv;
-    tv->cells[1] = CellRef(this, 3); cells[3].vertices[2] = tv;
+    tv->cells[0] = CellRef(this, 2);
+    cells[2].vertices[3] = tv;
+    tv->cells[1] = CellRef(this, 3);
+    cells[3].vertices[2] = tv;
 
     // Bottom
     tv = new TreeVertex();
-    tv->cells[2] = CellRef(this, 0); cells[0].vertices[1] = tv;
-    tv->cells[3] = CellRef(this, 1); cells[1].vertices[0] = tv;
+    tv->cells[2] = CellRef(this, 0);
+    cells[0].vertices[1] = tv;
+    tv->cells[3] = CellRef(this, 1);
+    cells[1].vertices[0] = tv;
 }
 
 TreeGroup::TreeGroup(int b)
-        : parent(), boundary(b) {
+    : parent(), boundary(b)
+{
 
     for (int i = 0; i < (1<<DIM); i++) {
         cells[i].children = nullptr;
@@ -142,14 +152,15 @@ TreeGroup::TreeGroup(int b)
 }
 
 TreeGroup::TreeGroup(CellRef p)
-        : parent(p) {
+    : parent(p)
+{
 
     boundary = p.group->boundary;
 
     #ifdef TFTT_DEBUG
-        if (!p.isValid() || p.hasChildren()) {
-            throw std::argument_exception("Invalid cell ref for group parent.");
-        }
+    if (!p.isValid() || p.hasChildren()) {
+        throw std::argument_exception("Invalid cell ref for group parent.");
+    }
     #endif
 
 
@@ -221,8 +232,8 @@ TreeGroup::TreeGroup(CellRef p)
 
     for (int i = 0; i < 4; i++) {
         cells[pairs[i][0]].faces[pairs[i][1]] =
-        cells[pairs[i][2]].faces[pairs[i][3]] =
-            new TreeFace(CellRef(this, pairs[i][0]), CellRef(this, pairs[i][2]), pairs[i][1] >> 1);
+            cells[pairs[i][2]].faces[pairs[i][3]] =
+                new TreeFace(CellRef(this, pairs[i][0]), CellRef(this, pairs[i][2]), pairs[i][1] >> 1);
     }
 
     // Add external faces
@@ -239,7 +250,7 @@ TreeGroup::TreeGroup(CellRef p)
             // Add faces
             for (int i = 0; i < 2; i++) {
                 cl = CellRef(this, facecells[n][i]);
-                cells[facecells[n][i]].faces[n] = 
+                cells[facecells[n][i]].faces[n] =
                     new TreeFace(cl, cl.neighbour(n), n >> 1);
             }
         }
@@ -312,8 +323,10 @@ TreeGroup::TreeGroup(CellRef p)
             tv->cells[0] = nb;
             tv->cells[2] = nb;
         }
-        tv->cells[1] = CellRef(this, 0); cells[0].vertices[2] = tv;
-        tv->cells[3] = CellRef(this, 2); cells[2].vertices[0] = tv;
+        tv->cells[1] = CellRef(this, 0);
+        cells[0].vertices[2] = tv;
+        tv->cells[3] = CellRef(this, 2);
+        cells[2].vertices[0] = tv;
 
         // Right
         nb = p.neighbour(1);
@@ -325,8 +338,10 @@ TreeGroup::TreeGroup(CellRef p)
             tv->cells[1] = nb;
             tv->cells[3] = nb;
         }
-        tv->cells[2] = CellRef(this, 3); cells[3].vertices[1] = tv;
-        tv->cells[0] = CellRef(this, 1); cells[1].vertices[3] = tv;
+        tv->cells[2] = CellRef(this, 3);
+        cells[3].vertices[1] = tv;
+        tv->cells[0] = CellRef(this, 1);
+        cells[1].vertices[3] = tv;
 
         // Bottom
         nb = p.neighbour(2);
@@ -338,8 +353,10 @@ TreeGroup::TreeGroup(CellRef p)
             tv->cells[0] = nb;
             tv->cells[1] = nb;
         }
-        tv->cells[2] = CellRef(this, 0); cells[0].vertices[1] = tv;
-        tv->cells[3] = CellRef(this, 1); cells[1].vertices[0] = tv;
+        tv->cells[2] = CellRef(this, 0);
+        cells[0].vertices[1] = tv;
+        tv->cells[3] = CellRef(this, 1);
+        cells[1].vertices[0] = tv;
 
         // Top
         nb = p.neighbour(3);
@@ -351,12 +368,15 @@ TreeGroup::TreeGroup(CellRef p)
             tv->cells[2] = nb;
             tv->cells[3] = nb;
         }
-        tv->cells[0] = CellRef(this, 2); cells[2].vertices[3] = tv;
-        tv->cells[1] = CellRef(this, 3); cells[3].vertices[2] = tv;
+        tv->cells[0] = CellRef(this, 2);
+        cells[2].vertices[3] = tv;
+        tv->cells[1] = CellRef(this, 3);
+        cells[3].vertices[2] = tv;
     }
 }
 
-TreeGroup::~TreeGroup() {
+TreeGroup::~TreeGroup()
+{
     constexpr int facecells[4][2] = {
         {0, 2},
         {1, 3},
@@ -393,7 +413,7 @@ TreeGroup::~TreeGroup() {
             gtree.last = parent;
         }
 
-        // Faces 
+        // Faces
         for (int n = 0; n < 2*DIM; n++) {
             if (neighbours[n].level() < id.level()) {
                 for (int i = 0; i < 2; i++) {
@@ -417,7 +437,7 @@ TreeGroup::~TreeGroup() {
         // delete cells[0].vertices[3];
     }
 
-    for (int ch = 0; ch < cells.size(); ch++) {
+    for (unsigned int ch = 0; ch < cells.size(); ch++) {
         if (cells[ch].children)
             delete cells[ch].children;
     }
