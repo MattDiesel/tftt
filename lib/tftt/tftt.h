@@ -51,15 +51,14 @@ struct rt_data {
     // double vof2;
     // double vof3;
     double P;
-    double Pstar;
+    // double Pstar;
     double rhs;
-    double cenCoef;
     double res;
 
     // double vof;
-    double rho;
+    // double rho;
 
-    double dive;
+    // double dive;
 };
 
 struct rt_facedata {
@@ -67,12 +66,13 @@ struct rt_facedata {
 };
 
 struct rt_vertexdata {
-    double V[DIM];
-    double v[DIM];
-    double F1[DIM];
-    double F2[DIM];
-    double D1[DIM];
-    double D2[DIM];
+    int placeholder;
+    // double V[DIM];
+    // double v[DIM];
+    // double F1[DIM];
+    // double F2[DIM];
+    // double D1[DIM];
+    // double D2[DIM];
 };
 
 namespace tftt {
@@ -84,7 +84,6 @@ typedef rt_facedata facedata_t;
 typedef rt_vertexdata vertexdata_t;
 typedef TreeId<uint64_t> ident_t;
 typedef int8_t node_t;
-
 
 // Functions to be supplied by user
 typedef double (*fnDataNorm)(data_t& d, int max);
@@ -155,6 +154,12 @@ struct crless {
     }
 };
 
+struct crparless {
+    bool operator()(const CellRef& a, const CellRef& b) {
+        return a.id().id < b.id().id;
+    }
+};
+
 extern std::set<CellRef, crless> adaptList;
 void adaptBegin();
 
@@ -172,6 +177,7 @@ bool adaptCommitCoarsen();
 #include "leaves.h"
 #include "tfttio.h"
 #include "tfttops.h"
+#include "parallel.h"
 
 
 #endif
