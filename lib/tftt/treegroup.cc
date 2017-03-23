@@ -16,7 +16,7 @@
 namespace tftt {
 
 TreeGroup::TreeGroup()
-    : parent(), boundary(-1)
+    : boundary(-1), parent()
 {
     for (int i = 0; i < (1<<DIM); i++) {
         cells[i].children = nullptr;
@@ -126,7 +126,7 @@ TreeGroup::TreeGroup()
 }
 
 TreeGroup::TreeGroup(int b)
-    : parent(), boundary(b)
+    : boundary(b), parent()
 {
 
     for (int i = 0; i < (1<<DIM); i++) {
@@ -140,7 +140,7 @@ TreeGroup::TreeGroup(int b)
     }
 
     origin[b >> 1] = gtree.size[b >> 1];
-    if (b & 1 == 0)
+    if ((b & 1) == 0)
         origin[b >> 1] *= -1;
 
     flaggedForCoarsening = false;
@@ -154,7 +154,6 @@ TreeGroup::TreeGroup(int b)
 TreeGroup::TreeGroup(CellRef p)
     : parent(p)
 {
-
     boundary = p.group->boundary;
 
     #ifdef TFTT_DEBUG
