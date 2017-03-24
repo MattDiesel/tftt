@@ -73,7 +73,6 @@ void calcFaceCoef(cell_t cl, TreeCell* tc, int fc);
 
 void calcFaceCoefs(cell_t cl)
 {
-
     TreeCell* tc = &cl.group->cells[cl.index];
 
     tc->poisNgbC = 0;
@@ -89,9 +88,10 @@ void calcFaceCoefs(cell_t cl)
         // std::cout << "\talpha[" << d << "] = " << tc.poisAlpha[d] << "\n";
     }
 
-    cl->cenCoef = alphas;
+    tc->cenCoef = alphas;
 }
 
+void nop() {}
 
 void calcFaceCoef(cell_t cl, TreeCell* tc, int fc)
 {
@@ -103,6 +103,10 @@ void calcFaceCoef(cell_t cl, TreeCell* tc, int fc)
 
     double dbound = 1.0 / cl.size((fc >> 1) ^ 1);
     dbound *= dbound;
+
+    if (cl.id().id == 432345564227569623) {
+        nop();
+    }
 
     if (ngb.isBoundary()) {
         if (options.isNeuman) {
@@ -323,7 +327,7 @@ void relax(double omega, fnDataRef datafn, fnCell cellfn)
         //     alphas += tc.poisAlpha[d]; // Todo: Rho?
         //     std::cout << "\talpha[" << d << "] = " << tc.poisAlpha[d] << "\n";
         // }
-        alphas = cl->cenCoef;
+        alphas = tc.cenCoef;
 
         temp = (betas - cellfn(cl)) / alphas;
 
@@ -356,7 +360,7 @@ double resid(fnDataRef datafn, fnCell cellfn)
     for (auto& cl : activecurve) {
         tc = &cl.group->cells[cl.index];
 
-        cl->res = -cellfn(cl) - cl->cenCoef * datafn(cl.data());
+        cl->res = -cellfn(cl) - tc->cenCoef * datafn(cl.data());
 
         for (int n = 0; n < tc->poisNgbC; n++) {
             cl->res += datafn(tc->poisNgb[n].data()) * tc->poisCoef[n];
@@ -368,7 +372,7 @@ double resid(fnDataRef datafn, fnCell cellfn)
         }
     }
 
-    std::cerr << "Max Residual = " << max << " @ " << maxat << "\n";
+    // std::cerr << "Max Residual = " << max << " @ " << maxat << "\n";
 
     return max;
 }

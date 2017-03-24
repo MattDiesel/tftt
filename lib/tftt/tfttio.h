@@ -23,8 +23,8 @@ void drawPartialMesh(std::string fname, cell_t from, cell_t to);
 void drawPartialMesh(std::ostream& os, cell_t from, cell_t to);
 
 
-void drawGhosts(std::string fname);
-void drawGhosts(std::ostream& os);
+void drawGhosts(std::string fname, int n);
+void drawGhosts(std::ostream& os, int n);
 
 void drawBorder(std::string fname, int n);
 void drawBorder(std::ostream& os, int n);

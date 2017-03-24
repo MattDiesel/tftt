@@ -31,9 +31,14 @@ struct Tree {
     cell_t lastActive;
 
     //! The set of ghost groups on this processor
-    std::set<cell_t> ghosts;
+    std::vector<std::set<cell_t, crparless>> ghosts;
+    std::vector<std::set<cell_t, crparless>> borders;
 
-    std::vector<std::set<cell_t>> borders;
+    std::vector<std::vector<cell_t>> rawGhosts;
+    std::vector<std::vector<cell_t>> rawBorders;
+
+    std::vector<data_t*> ghostData;
+    std::vector<data_t*> borderData;
 
     node_t rank;
 

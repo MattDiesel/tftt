@@ -104,10 +104,10 @@ double& dtP(tftt::data_t& dt)
 
 int main(int argc, char* argv[])
 {
-    // mpi::environment env(argc, argv);
-    // mpi::communicator world;
+    mpi::environment env(argc, argv);
+    mpi::communicator world;
 
-    // std::cout << "MPI rank=" << world.rank() << "/" << world.size() << '\n';
+    std::cout << "MPI rank=" << world.rank() << "/" << world.size() << '\n';
 
     // Defaults:
     int minDepth = 2;
@@ -158,23 +158,22 @@ int main(int argc, char* argv[])
         }
     }
     else {
-        std::cout << "Using default parameters" << std::endl;
+        if (world.rank() == 0)
+            std::cout << "Using default parameters" << std::endl;
     }
+    if (world.rank() == 0) {
 
-    std::cout << "Using Parameters: \n"
-              << "\tminDepth = " << minDepth << "\n"
-              << "\tmaxDepth = " << maxDepth << "\n"
-              << "\titerations = " << iterations << "\n"
-              << "\tcircle.start[0] = " << startPos[0] << "\n"
-              << "\tcircle.start[1] = " << startPos[1] << "\n"
-              << "\tcircle.end[0] = " << endPos[0] << "\n"
-              << "\tcircle.end[1] = " << endPos[1] << "\n"
-              << "\tcircle.radius = " << c.r << "\n"
-              << "\ttftt.ghosts = " << tftt::options.ghostsFlag << "\n"
-              << "\ttftt.two2one = " << tftt::options.two2oneFlag << std::endl;
-
-    // if (world.rank() == 0) {
-    {
+        std::cout << "Using Parameters: \n"
+                  << "\tminDepth = " << minDepth << "\n"
+                  << "\tmaxDepth = " << maxDepth << "\n"
+                  << "\titerations = " << iterations << "\n"
+                  << "\tcircle.start[0] = " << startPos[0] << "\n"
+                  << "\tcircle.start[1] = " << startPos[1] << "\n"
+                  << "\tcircle.end[0] = " << endPos[0] << "\n"
+                  << "\tcircle.end[1] = " << endPos[1] << "\n"
+                  << "\tcircle.radius = " << c.r << "\n"
+                  << "\ttftt.ghosts = " << tftt::options.ghostsFlag << "\n"
+                  << "\ttftt.two2one = " << tftt::options.two2oneFlag << std::endl;
 
         // Init tree to min depth
         tftt::init(1.0, 1.0);
@@ -200,16 +199,20 @@ int main(int argc, char* argv[])
         tftt::drawMesh("parp/cmesh.init.dat");
         tftt::drawCurve("parp/chilb.init.dat");
 
-        tftt::distribute(4);
+        for (auto& cl : tftt::leaves) {
+            tftt::calcFaceCoefs(cl);
+        }
+
+        tftt::distribute(world.size());
         tftt::splitToDisk("parp/r{0}.ltr");
 
         tftt::reset();
     }
 
-    // world.barrier();
+    world.barrier();
 
-    // tftt::loadTree(formatString("parp/r{0}.ltr", world.rank()), world.rank());
-    tftt::loadTree(formatString("parp/r{0}.ltr", 0), 0);
+    tftt::loadTree(formatString("parp/r{0}.ltr", world.rank()), world.rank());
+    // tftt::loadTree(formatString("parp/r{0}.ltr", 0), 0);
 
     // Initial Conditions for cells
     for (auto& cl : tftt::activecurve) {
@@ -226,31 +229,32 @@ int main(int argc, char* argv[])
         }
     }
 
-    struct {
-        int rank() {
-            return 0;
-        }
-    } world;
-
     tftt::drawMesh(formatString("parp/cmesh.r{0}.init.dat", world.rank()));
     tftt::drawCurve(formatString("parp/chilb.r{0}.init.dat", world.rank()));
     tftt::drawPartialMesh(formatString("parp/mesh.r{0}.init.dat", world.rank()));
     tftt::drawPartialCurve(formatString("parp/hilb.r{0}.init.dat", world.rank()));
     tftt::drawBoundaries(formatString("parp/bound.r{0}.init.dat", world.rank()));
-    tftt::drawGhosts(formatString("parp/ghosts.r{0}.init.dat", world.rank()));
 
-    return 0;
+    for (int n = 0; n < world.size(); n++) {
+        tftt::drawGhosts(formatString("parp/ghosts.r{0}.b{1}.init.dat", world.rank(), n), n);
+        tftt::drawBorder(formatString("parp/border.r{0}.b{1}.init.dat", world.rank(), n), n);
+    }
 
-    std::ofstream ofGraph("parp/res.graph.dat");
+    std::cout << "[" << world.rank() << "] Loaded tree of "
+              << tftt::gtree.cactive << " cells (" << tftt::gtree.ccells << " total).\n";
+
+    // world.barrier();
+    tftt::syncGhosts(world);
 
     tftt::cell_t mx;
+    double resid;
     for (ITER = 0; ITER < iterations; ITER++) {
-        std::cerr << "Iteration " << ITER << "\n";
-        mx = tftt::max(dtPc);
-        std::cerr << "Max P = " << mx->P << " @ " << mx << "\n";
+        std::cerr << "[" << world.rank() << "] Iteration " << ITER << "\n";
+        // mx = tftt::max(dtPc);
+        // std::cerr << "Max P = " << mx->P << " @ " << mx << "\n";
 
-        mx = tftt::max(dtPcn);
-        std::cerr << "Min P = " << mx->P << " @ " << mx << "\n";
+        // mx = tftt::max(dtPcn);
+        // std::cerr << "Min P = " << mx->P << " @ " << mx << "\n";
 
         tftt::relax(omega, dtP, fn);
 
@@ -262,25 +266,26 @@ int main(int argc, char* argv[])
             }
         }
 
-        ofGraph << tftt::resid(dtP, fn) << "\n";
+        tftt::syncGhosts(world);
+        resid = tftt::resid(dtP, fn);
 
-        std::cout << std::endl;
+        std::cout << "[" << world.rank() << "] " << "Resid: " << resid << '\n';
 
         if (ITER % plotEvery == 0) {
-            tftt::plotMatrix(formatString("parp/P.{0}.dat", ITER), [](tftt::data_t& dt) {
+            tftt::plotMatrix(formatString("parp/P.{0}.r{1}.dat", ITER, world.rank()), [](tftt::data_t& dt) {
                 return dt.P;
             });
 
-            tftt::plotMatrix(formatString("parp/res.{0}.dat", ITER), [](tftt::data_t& dt) {
+            tftt::plotMatrix(formatString("parp/res.{0}.r{1}.dat", ITER, world.rank()), [](tftt::data_t& dt) {
                 return dt.res;
             });
         }
     }
 
-    tftt::plotMatrix("parp/P.final.dat", [](tftt::data_t& dt) {
+    tftt::plotMatrix(formatString("parp/P.final.r{0}.dat", world.rank()), [](tftt::data_t& dt) {
         return dt.P;
     });
-    tftt::plotMatrix("parp/res.final.dat", [](tftt::data_t& dt) {
+    tftt::plotMatrix(formatString("parp/res.final.r{0}.dat", world.rank()), [](tftt::data_t& dt) {
         return dt.res;
     });
 

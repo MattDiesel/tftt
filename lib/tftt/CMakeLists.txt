@@ -50,6 +50,8 @@ set(libtftt_SRCS
     treevertex.h 
     tfttops.h 
     tfttops.cc 
+    parallel.h 
+    parallel.cc
 )
 
 # Declare the library

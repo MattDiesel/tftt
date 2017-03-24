@@ -108,15 +108,15 @@ void drawPartialMesh(std::ostream& os, cell_t from, cell_t to)
 }
 
 
-void drawGhosts(std::string fname)
+void drawGhosts(std::string fname, int n)
 {
     std::ofstream ofs(fname);
-    drawGhosts(ofs);
+    drawGhosts(ofs, n);
 }
 
-void drawGhosts(std::ostream& os)
+void drawGhosts(std::ostream& os, int n)
 {
-    for (auto& c : gtree.ghosts) {
+    for (auto& c : gtree.ghosts[n]) {
         drawCell(os, c);
     }
 }
@@ -232,7 +232,7 @@ void plotMatrix(std::string fname, fnData dt)
 
 void plotMatrix(std::ostream& os, fnData dt)
 {
-    for (auto& cl : leaves) {
+    for (auto& cl : activecurve) {
         os << cl.centre(0) << " " << cl.centre(1) << " " << dt(cl.data()) << "\n";
     }
 }
@@ -301,34 +301,31 @@ void saveTree(std::ostream& os)
 }
 
 
-void addChildren(std::set<cell_t>& ghosts, cell_t cl, cell_t ngb, int nb, node_t node)
-{
-    for (auto& ngbCh : *ngb.children()) {
-        if (options.ghostsFlag == 0 && ngbCh.neighbour(nb ^ 1) != cl)
-            continue; // Minimal - only take bordering children
+// void addChildren(std::set<cell_t>& ghosts, cell_t cl, cell_t ngb, int nb, node_t node)
+// {
+//     for (auto& ngbCh : *ngb.children()) {
+//         if (options.ghostsFlag == 0 && ngbCh.neighbour(nb ^ 1) != cl)
+//             continue; // Minimal - only take bordering children
 
-        if (ngbCh.hasChildren()) {
-            addChildren(ghosts, cl, ngbCh, nb, node);
-        }
-        else if (ngbCh.rank() != node) {
-            ghosts.insert(ngbCh);
-        }
-    }
-}
+//         if (ngbCh.hasChildren()) {
+//             addChildren(ghosts, cl, ngbCh, nb, node);
+//         }
+//         else if (ngbCh.rank() != node) {
+//             ghosts.insert(ngbCh);
+//         }
+//     }
+// }
 
 
 void addGhosts(std::set<cell_t>& ghosts, cell_t cl, node_t node)
 {
-    cell_t ngb;
-    for (int nb = 0; nb < 2*DIM; nb++) {
-        ngb = cl.neighbour(nb);
-        if (ngb.isBoundary()) continue;
+    // Ghosts are any cells required by poisson coefficients
 
-        if (ngb.hasChildren()) {
-            addChildren(ghosts, cl, ngb, nb, node);
-        }
-        else if (ngb.rank() != node) {
-            ghosts.insert(ngb);
+    TreeCell& tc = cl.group->cells[cl.index];
+
+    for (int n = 0; n < tc.poisNgbC; n++) {
+        if (tc.poisNgb[n].rank() != node) {
+            ghosts.insert(tc.poisNgb[n]);
         }
     }
 }
@@ -380,14 +377,14 @@ void readVal(std::istream& ist, T& ret)
 
 
 template<typename T>
-T& vectorSet(std::vector<T>& vt, int index)
+T& vectorSet(std::vector<T>& vt, unsigned int index)
 {
     if (index < vt.size()) {
         return vt[index];
     }
 
     vt.reserve(index+1);
-    while (index >= vt.size()) {
+    while (index+1 >= vt.size()) {
         vt.push_back(T());
     }
 
@@ -482,24 +479,60 @@ void loadTree(std::string fname, int n)
                 #endif
 
                 if (cl.rank() != -1) {
-                    gtree.ghosts.insert(cl);
-
-                    for (auto& ngb : cl.neighbours()) {
-                        if (ngb.isBoundary()) continue;
-
-                        if (ngb.hasChildren()) {
-                            for (auto& ch : *ngb.children()) {
-                                if (ch.rank() == n) {
-                                    vectorSet(gtree.borders, cl.rank()).insert(ch);
-                                }
-                            }
-                        }
-                        else if (ngb.rank() == n) {
-                            vectorSet(gtree.borders, cl.rank()).insert(ngb);
-                        }
-                    }
+                    vectorSet(gtree.ghosts, cl.rank()).insert(cl);
                 }
             }
+        }
+    }
+
+    // Calc border, and fill raw ghost
+    for (unsigned int r = 0; r < gtree.ghosts.size(); r++) {
+        gtree.rawGhosts.push_back(std::vector<cell_t>());
+
+        for (auto& gh : gtree.ghosts[r]) {
+            gtree.rawGhosts[r].push_back(gh);
+
+            // Border cells are any required by the ghosts poisson coefs.
+            calcFaceCoefs(gh);
+
+            TreeCell& tc = gh.group->cells[gh.index];
+
+            for (int p = 0; p < tc.poisNgbC; p++) {
+                if (tc.poisNgb[p].rank() == n) {
+                    vectorSet(gtree.borders, gh.rank()).insert(tc.poisNgb[p]);
+                }
+            }
+        }
+    }
+
+    // Fill raw
+    for (unsigned int r = 0; r < gtree.borders.size(); r++) {
+        gtree.rawBorders.push_back(std::vector<cell_t>());
+
+        for (auto& br : gtree.borders[r]) {
+            gtree.rawBorders[r].push_back(br);
+        }
+    }
+
+
+    // Fill empty data array
+    size_t szg, szb;
+    for (unsigned int r = 0; r < gtree.ghosts.size(); r++) {
+        szg = gtree.ghosts[r].size();
+        szb = gtree.borders[r].size();
+
+        if (szg) {
+            gtree.ghostData.push_back(new data_t[szg]);
+        }
+        else {
+            gtree.ghostData.push_back(nullptr);
+        }
+
+        if (szb) {
+            gtree.borderData.push_back(new data_t[szb]);
+        }
+        else {
+            gtree.borderData.push_back(nullptr);
         }
     }
 }
