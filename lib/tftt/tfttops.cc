@@ -105,7 +105,7 @@ void calcFaceCoef(cell_t cl, TreeCell* tc, int fc)
     dbound *= dbound;
 
     if (ngb.isBoundary()) {
-        if (options.isNeuman) {
+        if (gtree.isNeuman[fc]) {
             if (false) {
                 // Fake Neuman
                 tc->poisAlpha[fc] = 2.0*dbound;

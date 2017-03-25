@@ -21,6 +21,9 @@ struct Tree {
 
     TreeGroup* boundGroups;
 
+    bool isNeuman[2*DIM];
+    double dirichletValue[2*DIM];
+
     bool destroying;
     ~Tree();
 
