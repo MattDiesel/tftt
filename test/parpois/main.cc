@@ -4,6 +4,8 @@
 
 #include <boost/mpi/environment.hpp>
 #include <boost/mpi/communicator.hpp>
+#include <boost/mpi/collectives.hpp>
+#include <boost/mpi/operations.hpp>
 
 #include "util/formatstring.h"
 #include "util/pars.h"
@@ -110,14 +112,14 @@ int main(int argc, char* argv[])
     std::cout << "MPI rank=" << world.rank() << "/" << world.size() << '\n';
 
     // Defaults:
-    int minDepth = 2;
+    int minDepth = 4;
     int maxDepth = 6;
     int iterations = 100;
     int plotEvery = 1;
+    int printEvery = 1;
+    int residEvery = 1;
 
-    double dirichlet = 0.0;
-    double neuman = 0.0;
-    tftt::options.isNeuman = true;
+    double initialValue = 0.0;
 
     double omega = 1.3;
 
@@ -128,8 +130,12 @@ int main(int argc, char* argv[])
     c.pos[0] = startPos[0];
     c.pos[1] = startPos[1];
 
-    tftt::options.ghostsFlag = 0;
     tftt::options.two2oneFlag = 2;
+
+    for (int b = 0; b < 2*DIM; b++) {
+        tftt::gtree.isNeuman[b] = false;
+        tftt::gtree.dirichletValue[b] = 0.0;
+    }
 
     // Read from file:
     if (argc > 1) {
@@ -137,21 +143,28 @@ int main(int argc, char* argv[])
             getpars(argc, argv);
 
             tfetch("plotEvery", plotEvery);
+            tfetch("printEvery", printEvery);
+            tfetch("residEvery", residEvery);
             tfetch("minDepth", minDepth);
             tfetch("maxDepth", maxDepth);
+            tfetch("omega", omega);
+            tfetch("initialValue", initialValue);
             tfetch("iterations", iterations);
             tfetch("circle.start[0]", startPos[0]);
             tfetch("circle.start[1]", startPos[1]);
             tfetch("circle.end[0]", endPos[0]);
             tfetch("circle.end[1]", endPos[1]);
             tfetch("circle.radius", c.r);
-            tfetch("tftt.ghosts", tftt::options.ghostsFlag);
             tfetch("tftt.two2one", tftt::options.two2oneFlag);
 
-            if (tfetch("neuman", neuman))
-                tftt::options.isNeuman = true;
-            if (tfetch("dirichlet", dirichlet))
-                tftt::options.isNeuman = false;
+            tfetch("neuman[0]", tftt::gtree.isNeuman[0]);
+            tfetch("dirichlet[0]", tftt::gtree.dirichletValue[0]);
+            tfetch("neuman[1]", tftt::gtree.isNeuman[1]);
+            tfetch("dirichlet[1]", tftt::gtree.dirichletValue[1]);
+            tfetch("neuman[2]", tftt::gtree.isNeuman[2]);
+            tfetch("dirichlet[2]", tftt::gtree.dirichletValue[2]);
+            tfetch("neuman[3]", tftt::gtree.isNeuman[3]);
+            tfetch("dirichlet[3]", tftt::gtree.dirichletValue[3]);
         }
         catch (std::exception& e) {
             std::cout << "Error reading parameter file: " << e.what() << std::endl;
@@ -167,13 +180,28 @@ int main(int argc, char* argv[])
                   << "\tminDepth = " << minDepth << "\n"
                   << "\tmaxDepth = " << maxDepth << "\n"
                   << "\titerations = " << iterations << "\n"
+                  << "\tresidEvery = " << residEvery << "\n"
                   << "\tcircle.start[0] = " << startPos[0] << "\n"
                   << "\tcircle.start[1] = " << startPos[1] << "\n"
                   << "\tcircle.end[0] = " << endPos[0] << "\n"
                   << "\tcircle.end[1] = " << endPos[1] << "\n"
                   << "\tcircle.radius = " << c.r << "\n"
-                  << "\ttftt.ghosts = " << tftt::options.ghostsFlag << "\n"
                   << "\ttftt.two2one = " << tftt::options.two2oneFlag << std::endl;
+
+        std::cout << "Boundary Conditions: \n";
+        for (int b = 0; b < 4; b++) {
+            std::cout << "\t[" << b << "] ";
+
+            if (tftt::gtree.isNeuman[b])
+                std::cout << "Neuman\n";
+            else
+                std::cout << "Dirichlet = " << tftt::gtree.dirichletValue[b] << "\n";
+        }
+
+        {
+            char c;
+            std::cin >> c;
+        }
 
         // Init tree to min depth
         tftt::init(1.0, 1.0);
@@ -217,14 +245,14 @@ int main(int argc, char* argv[])
     // Initial Conditions for cells
     for (auto& cl : tftt::activecurve) {
         cl->cc = c.cc(cl);
-        cl->P = dirichlet;
+        cl->P = initialValue;
         tftt::calcFaceCoefs(cl);
     }
 
-    if (!tftt::options.isNeuman) {
-        for (int b = 0; b < 4; b++) {
+    for (int b = 0; b < 4; b++) {
+        if (!tftt::gtree.isNeuman[b]) {
             for (auto& cl : tftt::boundaryCells(b)) {
-                cl->P = dirichlet;
+                cl->P = tftt::gtree.dirichletValue[b];
             }
         }
     }
@@ -248,8 +276,9 @@ int main(int argc, char* argv[])
 
     tftt::cell_t mx;
     double resid;
+    double maxResid;
     for (ITER = 0; ITER < iterations; ITER++) {
-        std::cerr << "[" << world.rank() << "] Iteration " << ITER << "\n";
+
         // mx = tftt::max(dtPc);
         // std::cerr << "Max P = " << mx->P << " @ " << mx << "\n";
 
@@ -258,18 +287,30 @@ int main(int argc, char* argv[])
 
         tftt::relax(omega, dtP, fn);
 
-        if (!tftt::options.isNeuman) {
-            for (int b = 0; b < 4; b++) {
+        for (int b = 0; b < 4; b++) {
+            if (!tftt::gtree.isNeuman[b]) {
                 for (auto& cl : tftt::boundaryCells(b)) {
-                    cl->P = dirichlet;
+                    cl->P = tftt::gtree.dirichletValue[b];
                 }
             }
         }
 
         tftt::syncGhosts(world);
-        resid = tftt::resid(dtP, fn);
 
-        std::cout << "[" << world.rank() << "] " << "Resid: " << resid << '\n';
+        if (ITER % residEvery == 0) {
+            resid = tftt::resid(dtP, fn);
+
+            if (world.rank() == 0) {
+                mpi::reduce(world, resid, maxResid, mpi::maximum<int>(), 0);
+            }
+            else {
+                mpi::reduce(world, resid, mpi::maximum<int>(), 0);
+            }
+        }
+
+        if (ITER % printEvery == 0 && world.rank() == 0) {
+            std::cerr << "Iteration " << ITER << ", Resid: " << maxResid << '\n';
+        }
 
         if (ITER % plotEvery == 0) {
             tftt::plotMatrix(formatString("parp/P.{0}.r{1}.dat", ITER, world.rank()), [](tftt::data_t& dt) {
