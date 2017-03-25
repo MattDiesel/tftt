@@ -2,7 +2,6 @@
 
 #include <cmath>
 #include <stdexcept>
-#include <iostream> // TODO: Remove
 
 #include "tftt.h"
 #include "tree.h"
@@ -29,6 +28,7 @@ cell_t find(ident_t idt)
 
     return CellRef();
 }
+
 
 cell_t insert(ident_t idt)
 {
@@ -69,6 +69,7 @@ cell_t findmax(fnData dt, double* maxValRet)
     return max;
 }
 
+
 void calcFaceCoef(cell_t cl, TreeCell* tc, int fc);
 
 void calcFaceCoefs(cell_t cl)
@@ -91,7 +92,6 @@ void calcFaceCoefs(cell_t cl)
     tc->cenCoef = alphas;
 }
 
-void nop() {}
 
 void calcFaceCoef(cell_t cl, TreeCell* tc, int fc)
 {
@@ -104,13 +104,9 @@ void calcFaceCoef(cell_t cl, TreeCell* tc, int fc)
     double dbound = 1.0 / cl.size((fc >> 1) ^ 1);
     dbound *= dbound;
 
-    if (cl.id().id == 432345564227569623) {
-        nop();
-    }
-
     if (ngb.isBoundary()) {
         if (options.isNeuman) {
-            if (true) {
+            if (false) {
                 // Fake Neuman
                 tc->poisAlpha[fc] = 2.0*dbound;
                 tc->poisNgb[tc->poisNgbC] = cl;
@@ -293,59 +289,21 @@ cell_t max(fnData dfn)
 
 void relax(double omega, fnDataRef datafn, fnCell cellfn)
 {
-
-    uint64_t target = 432345564227570477;
-
     double alphas, betas;
     double temp;
 
     for (auto& cl : tftt::activecurve) {
         TreeCell& tc = cl.group->cells[cl.index];
 
-        if (cl.id().id == target) {
-            std::cout << "Relaxing target cell " << cl << "\n";
-            std::cout << "\tdx = " << cl.size(0) << ", dy = " << cl.size(1) << "\n";
-        }
-
         betas = 0.0;
         for (int n = 0; n < tc.poisNgbC; n++) {
             betas += datafn(tc.poisNgb[n].data()) * tc.poisCoef[n]; // * (tc.poisNgbDir ? 1.0 : -1.0); // Todo: Rho?
-
-            if (cl.id().id == target) {
-                std::cout << "\tNgb N=" << n << " " << tc.poisNgb[n]
-                          << ", P=" << datafn(tc.poisNgb[n].data())
-                          << ", b=" << tc.poisCoef[n] << "\n";
-            }
         }
-
-        if (cl.id().id == target) {
-            std::cout << "\tsum(betas) = " << betas << "\n";
-        }
-
-        // alphas = 0.0;
-        // for (int d = 0; d < 2*DIM; d++) {
-        //     alphas += tc.poisAlpha[d]; // Todo: Rho?
-        //     std::cout << "\talpha[" << d << "] = " << tc.poisAlpha[d] << "\n";
-        // }
         alphas = tc.cenCoef;
 
         temp = (betas - cellfn(cl)) / alphas;
 
-        // if (tc.poisNgbC == 2)
-        // datafn(cl.data()) = temp;
-        // else
         datafn(cl.data()) = omega*temp + (1.0-omega)*datafn(cl.data());
-
-        if (temp != temp) {
-            throw;
-        }
-
-        if (cl.id().id == target) {
-            std::cout << "\tsum(alphas) = " << alphas << "\n";
-            std::cout << "\tf = " << cellfn(cl) << "\n";
-            std::cout << "\tP' = " << temp << "\n";
-            std::cout << "\tP = " << datafn(cl.data()) << "\n";
-        }
     }
 }
 
@@ -371,8 +329,6 @@ double resid(fnDataRef datafn, fnCell cellfn)
             maxat = cl;
         }
     }
-
-    // std::cerr << "Max Residual = " << max << " @ " << maxat << "\n";
 
     return max;
 }

@@ -40,8 +40,8 @@ void syncGhosts(mpi::communicator world)
         snt[r] = world.isend(r, 0x100 | (wr*16) | r,
                              reinterpret_cast<int*>(gtree.borderData[r]), sz*sizeof(data_t)/sizeof(int));
 
-        std::cout << "[" << wr << "] Sent #" << (0x100 | (wr*16) | r) << " "
-                  << sz << " cells to " << r << "\n";
+        // std::cout << "[" << wr << "] Sent #" << (0x100 | (wr*16) | r) << " "
+        //           << sz << " cells to " << r << "\n";
     }
 
     // Recieve all ghosts data
@@ -53,8 +53,8 @@ void syncGhosts(mpi::communicator world)
         rcv[r] = world.irecv(r, 0x100 | (r*16) | wr,
                              reinterpret_cast<int*>(gtree.ghostData[r]), sz*sizeof(data_t)/sizeof(int));
 
-        std::cout << "[" << wr << "] Recv #" << (0x100 | (r*16) | wr) << " "
-                  << sz << " cells from " << r << '\n';
+        // std::cout << "[" << wr << "] Recv #" << (0x100 | (r*16) | wr) << " "
+        //           << sz << " cells from " << r << '\n';
     }
 
 
