@@ -13,6 +13,8 @@
 #include "tftt/tftt.h"
 #include "tftt/tree.h"
 
+#include <vector>
+
 namespace mpi = boost::mpi;
 using namespace util; // for formatString
 
@@ -22,6 +24,7 @@ struct circle {
     double pos[2];
     double r;
 
+    // @brief Checks if the circle contains a point.
     bool contains(double x, double y) {
         double dx = (x-pos[0]);
         double dy = (y-pos[1]);
@@ -198,11 +201,6 @@ int main(int argc, char* argv[])
                 std::cout << "Dirichlet = " << tftt::gtree.dirichletValue[b] << "\n";
         }
 
-        {
-            char c;
-            std::cin >> c;
-        }
-
         // Init tree to min depth
         tftt::init(1.0, 1.0);
 
@@ -275,6 +273,7 @@ int main(int argc, char* argv[])
     tftt::syncGhosts(world);
 
     tftt::cell_t mx;
+
     double resid;
     double maxResid;
     for (ITER = 0; ITER < iterations; ITER++) {
@@ -301,10 +300,10 @@ int main(int argc, char* argv[])
             resid = tftt::resid(dtP, fn);
 
             if (world.rank() == 0) {
-                mpi::reduce(world, resid, maxResid, mpi::maximum<int>(), 0);
+                mpi::reduce(world, resid, maxResid, mpi::maximum<double>(), 0);
             }
             else {
-                mpi::reduce(world, resid, mpi::maximum<int>(), 0);
+                mpi::reduce(world, resid, mpi::maximum<double>(), 0);
             }
         }
 
