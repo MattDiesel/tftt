@@ -68,6 +68,7 @@ void init(double w, double h)
     gtree.destroying = false;
 }
 
+
 void reset()
 {
     gtree.destroying = true;
@@ -76,7 +77,6 @@ void reset()
     gtree.root = nullptr;
     gtree.ghosts.clear();
 }
-
 
 
 bool checkAround(cell_t cl, int dist, fnCheckCell check)
@@ -219,6 +219,7 @@ double interpChild(cell_t cl, int ch, int forDir, fnData dt)
     return ret;
 }
 
+
 double interpALEVertex(cell_t cl, int v, fnData dt)
 {
     cell_t ngb = cl.neighbour(v | 1);
@@ -286,6 +287,7 @@ cell_t atPos(double pos[DIM])
 
     return CellRef();
 }
+
 
 cell_t atVertex(int v)
 {
@@ -432,6 +434,7 @@ void twoToOne(CellRef cl)
     }
 }
 
+
 std::set<CellRef, crless> adaptList;
 
 void adaptBegin()
@@ -454,7 +457,6 @@ bool adaptCommit()
 
 void adaptAddCoarsen(CellRef cr)
 {
-    cr.group->flaggedForCoarsening = true;
     adaptList.insert(cr);
 }
 bool adaptCommitCoarsen()

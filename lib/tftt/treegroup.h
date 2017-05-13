@@ -21,9 +21,9 @@ namespace tftt {
 struct TreeGroup {
 
     int boundary;
-    bool isBoundary() const { return boundary != -1; };
-
-    bool flaggedForCoarsening;
+    bool isBoundary() const {
+        return boundary != -1;
+    };
 
     // Base Tree
     TreeGroup();
@@ -66,19 +66,38 @@ struct TreeGroup {
         CellRef cr;
 
         cell_iterator(TreeGroup* gr, int ind)
-                : cr(gr, ind) {
+            : cr(gr, ind) {
         }
 
-        cell_iterator operator++() { cell_iterator i = *this; cr.index++; return i; }
-        cell_iterator operator++(int junk) { cr.index++; return *this; }
-        CellRef& operator*() { return cr; }
-        CellRef* operator->() { return &cr; }
-        bool operator==(const cell_iterator& rhs) { return cr == rhs.cr; }
-        bool operator!=(const cell_iterator& rhs) { return !(cr == rhs.cr); }
+        cell_iterator operator++() {
+            cell_iterator i = *this;
+            cr.index++;
+            return i;
+        }
+        cell_iterator operator++(int junk) {
+            cr.index++;
+            return *this;
+        }
+        CellRef& operator*() {
+            return cr;
+        }
+        CellRef* operator->() {
+            return &cr;
+        }
+        bool operator==(const cell_iterator& rhs) {
+            return cr == rhs.cr;
+        }
+        bool operator!=(const cell_iterator& rhs) {
+            return !(cr == rhs.cr);
+        }
     };
 
-    cell_iterator begin() { return cell_iterator(this, 0); }
-    cell_iterator end() { return cell_iterator(this, 1<<DIM); }
+    cell_iterator begin() {
+        return cell_iterator(this, 0);
+    }
+    cell_iterator end() {
+        return cell_iterator(this, 1<<DIM);
+    }
 };
 
 

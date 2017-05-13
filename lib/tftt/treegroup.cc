@@ -32,8 +32,6 @@ TreeGroup::TreeGroup()
         neighbours[i] = CellRef(gtree.boundGroups, i);
     }
 
-    flaggedForCoarsening = false;
-
     // Thread
     orientation = 0;
     next = CellRef();
@@ -143,8 +141,6 @@ TreeGroup::TreeGroup(int b)
     if ((b & 1) == 0)
         origin[b >> 1] *= -1;
 
-    flaggedForCoarsening = false;
-
     // Thread
     orientation = 0;
     next = CellRef();
@@ -181,8 +177,6 @@ TreeGroup::TreeGroup(CellRef p)
             neighbours[n].children()->neighbours[n ^ 1] = p;
         }
     }
-
-    flaggedForCoarsening = false;
 
     // Thread
     if (boundary == -1) {
