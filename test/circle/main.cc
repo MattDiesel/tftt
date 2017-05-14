@@ -5,6 +5,8 @@
 #include "util/formatstring.h"
 #include "util/pars.h"
 
+#define TFTT_NOMPI
+
 #include "tftt/tftt.h"
 #include "tftt/tree.h"
 
@@ -47,12 +49,14 @@ struct circle {
 
 
 
-int main(int argc, char const *argv[])
+int main(int argc, char* argv[])
 {
     // Defaults:
     int minDepth = 2;
     int maxDepth = 6;
     int iterations = 100;
+
+    int worldSize = 4;
 
     circle c;
 
@@ -91,16 +95,16 @@ int main(int argc, char const *argv[])
     }
 
     std::cout << "Using Parameters: \n"
-            << "\tminDepth = " << minDepth << "\n"
-            << "\tmaxDepth = " << maxDepth << "\n"
-            << "\titerations = " << iterations << "\n"
-            << "\tcircle.start[0] = " << startPos[0] << "\n"
-            << "\tcircle.start[1] = " << startPos[1] << "\n"
-            << "\tcircle.end[0] = " << endPos[0] << "\n"
-            << "\tcircle.end[1] = " << endPos[1] << "\n"
-            << "\tcircle.radius = " << c.r << "\n"
-            << "\ttftt.ghosts = " << tftt::options.ghostsFlag << "\n"
-            << "\ttftt.two2one = " << tftt::options.two2oneFlag << std::endl;
+              << "\tminDepth = " << minDepth << "\n"
+              << "\tmaxDepth = " << maxDepth << "\n"
+              << "\titerations = " << iterations << "\n"
+              << "\tcircle.start[0] = " << startPos[0] << "\n"
+              << "\tcircle.start[1] = " << startPos[1] << "\n"
+              << "\tcircle.end[0] = " << endPos[0] << "\n"
+              << "\tcircle.end[1] = " << endPos[1] << "\n"
+              << "\tcircle.radius = " << c.r << "\n"
+              << "\ttftt.ghosts = " << tftt::options.ghostsFlag << "\n"
+              << "\ttftt.two2one = " << tftt::options.two2oneFlag << std::endl;
 
     // Init tree to min depth
     tftt::init(1.0, 1.0);
@@ -115,7 +119,7 @@ int main(int argc, char const *argv[])
     tftt::drawCurve("circledata/hilb.min.dat");
     tftt::drawBoundaries("circledata/bound.min.dat");
 
-    // Refine to circle. 
+    // Refine to circle.
     for (int d = minDepth; d < maxDepth; d++) {
         tftt::adaptBegin();
 
@@ -150,7 +154,7 @@ int main(int argc, char const *argv[])
     return 0;
 
 
-    tftt::distribute(4);
+    tftt::distribute(worldSize);
     tftt::splitToDisk("circle.r{0}.tr");
 
     // for (auto& cl : tftt::leaves) {
@@ -160,7 +164,7 @@ int main(int argc, char const *argv[])
     //     }
     // }
 
-    for (int n = 0; n < 4; n++) {
+    for (int n = 0; n < worldSize; n++) {
         std::cout << "Node = " << n << "\n";
         tftt::reset();
         tftt::loadTree(formatString("circle.r{0}.tr", n), n);
@@ -169,8 +173,12 @@ int main(int argc, char const *argv[])
         tftt::drawPartialCurve(formatString("parcircle/hilb.r{0}.dat", n));
         tftt::drawMesh(formatString("parcircle/mesh.r{0}.full.dat", n));
         tftt::drawCurve(formatString("parcircle/hilb.r{0}.full.dat", n));
-        tftt::drawGhosts(formatString("parcircle/ghosts.r{0}.dat", n));
-        tftt::drawBoundaries(formatString("parcircle/bound.r{0}.dat", n));
+
+        for (int b = 0; b < worldSize; b++) {
+            tftt::drawGhosts(formatString("parcircle/ghosts.r{0}.b{1}.init.dat", n, b), b);
+            tftt::drawBorder(formatString("parcircle/border.r{0}.b{1}.init.dat", n, b), b);
+        }
+
 
         std::cout << "\tCells: " << tftt::gtree.ccells << "\n";
         std::cout << "\tGhosts: " << tftt::gtree.ghosts.size() << "\n";
@@ -209,9 +217,9 @@ int main(int argc, char const *argv[])
                             break;
                         }
                         cantCoarsen = tftt::findAround(cl, tftt::options.two2oneFlag-1,
-                            [](tftt::cell_t& cl) {
-                                return cl.hasGrandChildren();
-                            });
+                        [](tftt::cell_t& cl) {
+                            return cl.hasGrandChildren();
+                        });
                         if (cantCoarsen) break;
                     }
 
@@ -223,7 +231,8 @@ int main(int argc, char const *argv[])
             tftt::adaptCommitCoarsen();
 
             std::cout << "\tCoarsened: " << tftt::adaptList.size() << "\n";
-        } while (tftt::adaptList.size());
+        }
+        while (tftt::adaptList.size());
 
         std::cout << "\tCell Count: " << tftt::gtree.ccells << "\n";
 
