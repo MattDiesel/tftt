@@ -15,6 +15,14 @@ struct TreeFace;
 struct TreeVertex;
 
 
+enum ADAPTFLAGS {
+    AF_NoAction = 0,
+    AF_Refine,
+    AF_Coarsen,
+    AF_HoldRefined,
+    AF_HoldCoarsened
+};
+
 struct TreeCell {
     data_t data;
     std::array<TreeFace*, DIM*2> faces;
@@ -28,6 +36,8 @@ struct TreeCell {
     double poisCoef[12];
     double poisAlpha[4];
     double cenCoef;
+
+    ADAPTFLAGS adaptFlags;
 };
 
 
