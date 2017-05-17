@@ -40,6 +40,9 @@ void init(double w, double h)
     // Init top level cells
     gtree.root = new TreeGroup();
 
+    gtree.firstActive = CellRef(gtree.root, hilbChild(0, 0));
+    gtree.lastActive = CellRef(gtree.root, hilbChild(0, (1<<DIM)-1));
+
     cell_t cl;
     cell_t bch;
     TreeGroup* newGrp;
@@ -470,6 +473,198 @@ bool adaptCommitCoarsen()
         // drawCurve(::util::formatString("coarsen.{0}.dat", inter++));
     }
     return adaptList.empty();
+}
+
+
+void adaptSwBegin()
+{
+    TreeCell* tc;
+    for (auto cl : leaves) {
+        tc = &cl.group->cells[cl.index];
+        tc->adaptFlags = AF_NoAction;
+
+        tc = &cl.parent().group->cells[cl.parent().index];
+        tc->adaptFlags = AF_NoAction;
+    }
+
+    for (auto& vec : gtree.ghostAdaptVectors) {
+        vec = 0;
+    }
+}
+
+
+void adaptSwSetFlags(CellRef cl, ADAPTFLAGS af)
+{
+    TreeCell& tc = cl.group->cells[cl.index];
+
+    if (cl.hasChildren()) {
+        if (af == AF_Refine) {
+            af = AF_HoldRefined;
+            // throw std::logic_error("Cell already refined!");
+        }
+
+        for (int ch = 0; ch < 1<<DIM; ch++) {
+            adaptSwSetFlags(cl.child(ch), af);
+        }
+    }
+    else {
+        if ((af == AF_Coarsen || af == AF_HoldCoarsened)) {
+            if (tc.adaptFlags != AF_NoAction)
+                return; // Ignore
+        }
+
+        if (tc.adaptFlags == AF_Refine && af == AF_HoldRefined)
+            return; // Nothing to do here
+
+        if (tc.adaptFlags == af) return;
+
+        if (tc.adaptFlags != AF_NoAction && tc.adaptFlags != af) {
+            if (tc.adaptFlags == AF_HoldRefined && af == AF_Refine) {
+            }
+            else
+                throw std::runtime_error("Conflicting refinement instructions");
+        }
+    }
+
+    tc.adaptFlags = af;
+}
+
+ADAPTFLAGS adaptSwGetFlags(CellRef cl)
+{
+    TreeCell& tc = cl.group->cells[cl.index];
+    return tc.adaptFlags;
+}
+
+void adaptSwCommit()
+{
+    TreeCell* tc;
+
+    for (auto cl : leaves) {
+        tc = &cl.group->cells[cl.index];
+
+        if (tc->adaptFlags == AF_Refine) {
+            refine(cl);
+        }
+        else if (tc->adaptFlags == AF_Coarsen) {
+            // Coarsen the parent
+            CellRef pr = cl.parent();
+            coarsen(pr);
+            cl = pr;
+        }
+    }
+}
+
+
+void adaptSwSetCoarsen(CellRef cl)
+{
+    if (cl.hasChildren()) {
+        for (int ch = 0; ch < 1<<DIM; ch++) {
+            switch (adaptSwGetFlags(cl.child(ch))) {
+                case AF_Refine:
+                case AF_HoldRefined:
+                    return;
+            }
+        }
+        adaptSwSetFlags(cl, AF_Coarsen);
+    }
+    else {
+        adaptSwSetFlags(cl, AF_HoldCoarsened);
+    }
+}
+
+
+void adaptSw2to1(CellRef cl, CellRef from, bool hold = false)
+{
+    if (!options.two2oneFlag) return; // No 2-2-1
+
+    int lvl = cl.level();
+    CellRef nb;
+    CellRef prev;
+
+    // Propagate in each direction p times
+
+    for (int n = 0; n < 2*DIM; n++) {
+        nb = cl;
+
+        // Propagate in given direction
+        for (int d = lvl; d > 1; d--) {
+            for (int p = 0; p < options.two2oneFlag; p++) {
+                prev = nb;
+                nb = nb.neighbour(n);
+                if (nb == from || nb.isBoundary())
+                    goto edge;
+
+                if (hold) {
+                    if (nb.level() == d) {
+                        adaptSwSetFlags(nb, AF_HoldRefined);
+                    }
+                }
+                else {
+                    if (nb.level() < d) {
+                        p++;
+                        adaptSwSetFlags(nb, AF_Refine);
+                        adaptSw2to1(nb, prev, false);
+                        goto edge;
+                    }
+                    else if (nb.level() == d) {
+                        adaptSwSetFlags(nb, AF_HoldRefined);
+                        adaptSw2to1(nb, prev, true);
+                        goto edge;
+                    }
+                }
+            }
+        }
+    edge:
+        n=n;
+    }
+}
+
+void adaptSwPropogateLevel(CellRef cl, int dir, int lvl)
+{
+    for (int d = lvl; d > 1; d--) {
+        for (int p = 0; p < options.two2oneFlag; p++) {
+            cl = cl.neighbour(dir);
+            if (cl.isBoundary()) return;
+
+            if (cl.hasChildren()) {
+                // Do Nothing?
+            }
+            else if (cl.level() == d) {
+                adaptSwSetFlags(cl, AF_HoldRefined);
+                adaptSwPropogateLevel(cl, dir ^ 2, d-1);
+                adaptSwPropogateLevel(cl, dir ^ 3, d-1);
+            }
+            else if (cl.level() < d) {
+                p++;
+                adaptSwSetFlags(cl, AF_Refine);
+                adaptSwPropogateLevel(cl, dir ^ 2, d-1);
+                adaptSwPropogateLevel(cl, dir ^ 3, d-1);
+            }
+        }
+    }
+
+}
+
+void adaptSwSetRefine(CellRef cl)
+{
+    if (cl.hasChildren()) {
+        throw std::logic_error("Cell already refined.");
+    }
+
+    adaptSwSetFlags(cl, AF_Refine);
+    // adaptSw2to1(cl, CellRef());
+    for (int d = 0; d < 4; d++) {
+        adaptSwPropogateLevel(cl, d, cl.level());
+    }
+}
+
+void adaptSwSetHoldRefined(CellRef cl)
+{
+    adaptSwSetFlags(cl.parent(), AF_HoldRefined);
+    // adaptSw2to1(cl.parent(), CellRef(), true);
+    for (int d = 0; d < 4; d++) {
+        adaptSwPropogateLevel(cl.parent(), d, cl.level()-1);
+    }
 }
 
 
