@@ -504,6 +504,9 @@ void adaptSwSetFlags(CellRef cl, ADAPTFLAGS af)
         }
 
         for (int ch = 0; ch < 1<<DIM; ch++) {
+            cell_t clch = cl.child(ch);
+            if (af == AF_HoldRefined && clch.hasChildren()) continue;
+
             adaptSwSetFlags(cl.child(ch), af);
         }
     }
@@ -535,22 +538,33 @@ ADAPTFLAGS adaptSwGetFlags(CellRef cl)
     return tc.adaptFlags;
 }
 
+
 void adaptSwCommit()
 {
     TreeCell* tc;
 
-    for (auto cl : leaves) {
-        tc = &cl.group->cells[cl.index];
+    for (auto cl = leaves.begin(); cl != leaves.end(); cl++) {
+    nextLeaf:
+        tc = &cl->group->cells[cl->index];
 
         if (tc->adaptFlags == AF_Refine) {
-            refine(cl);
+            // Store cell and increment iterator before refinement
+            CellRef old = *cl;
+            cl++;
+
+            refine(old);
+
+            // Skip child processing:
+            goto nextLeaf;
         }
         else if (tc->adaptFlags == AF_Coarsen) {
             // Coarsen the parent
-            CellRef pr = cl.parent();
+            CellRef pr = cl->parent();
             coarsen(pr);
-            cl = pr;
+            cl = tagLeaves::leaf_iterator(pr);
         }
+
+
     }
 }
 
@@ -563,6 +577,8 @@ void adaptSwSetCoarsen(CellRef cl)
                 case AF_Refine:
                 case AF_HoldRefined:
                     return;
+                default:
+                    break;
             }
         }
         adaptSwSetFlags(cl, AF_Coarsen);
@@ -573,52 +589,6 @@ void adaptSwSetCoarsen(CellRef cl)
 }
 
 
-void adaptSw2to1(CellRef cl, CellRef from, bool hold = false)
-{
-    if (!options.two2oneFlag) return; // No 2-2-1
-
-    int lvl = cl.level();
-    CellRef nb;
-    CellRef prev;
-
-    // Propagate in each direction p times
-
-    for (int n = 0; n < 2*DIM; n++) {
-        nb = cl;
-
-        // Propagate in given direction
-        for (int d = lvl; d > 1; d--) {
-            for (int p = 0; p < options.two2oneFlag; p++) {
-                prev = nb;
-                nb = nb.neighbour(n);
-                if (nb == from || nb.isBoundary())
-                    goto edge;
-
-                if (hold) {
-                    if (nb.level() == d) {
-                        adaptSwSetFlags(nb, AF_HoldRefined);
-                    }
-                }
-                else {
-                    if (nb.level() < d) {
-                        p++;
-                        adaptSwSetFlags(nb, AF_Refine);
-                        adaptSw2to1(nb, prev, false);
-                        goto edge;
-                    }
-                    else if (nb.level() == d) {
-                        adaptSwSetFlags(nb, AF_HoldRefined);
-                        adaptSw2to1(nb, prev, true);
-                        goto edge;
-                    }
-                }
-            }
-        }
-    edge:
-        n=n;
-    }
-}
-
 void adaptSwPropogateLevel(CellRef cl, int dir, int lvl)
 {
     for (int d = lvl; d > 1; d--) {
@@ -627,10 +597,10 @@ void adaptSwPropogateLevel(CellRef cl, int dir, int lvl)
             if (cl.isBoundary()) return;
 
             if (cl.hasChildren()) {
-                // Do Nothing?
+                // Do nothing
             }
             else if (cl.level() == d) {
-                adaptSwSetFlags(cl, AF_HoldRefined);
+                adaptSwSetFlags(cl.parent(), AF_HoldRefined);
                 adaptSwPropogateLevel(cl, dir ^ 2, d-1);
                 adaptSwPropogateLevel(cl, dir ^ 3, d-1);
             }
@@ -642,8 +612,8 @@ void adaptSwPropogateLevel(CellRef cl, int dir, int lvl)
             }
         }
     }
-
 }
+
 
 void adaptSwSetRefine(CellRef cl)
 {
@@ -652,16 +622,15 @@ void adaptSwSetRefine(CellRef cl)
     }
 
     adaptSwSetFlags(cl, AF_Refine);
-    // adaptSw2to1(cl, CellRef());
     for (int d = 0; d < 4; d++) {
         adaptSwPropogateLevel(cl, d, cl.level());
     }
 }
 
+
 void adaptSwSetHoldRefined(CellRef cl)
 {
     adaptSwSetFlags(cl.parent(), AF_HoldRefined);
-    // adaptSw2to1(cl.parent(), CellRef(), true);
     for (int d = 0; d < 4; d++) {
         adaptSwPropogateLevel(cl.parent(), d, cl.level()-1);
     }
