@@ -611,6 +611,7 @@ void adaptSwPropogateLevel(CellRef cl, int dir, int lvl)
                 adaptSwPropogateLevel(cl, dir ^ 3, d-1);
             }
         }
+        if (cl.level() == d) cl = cl.parent();
     }
 }
 
