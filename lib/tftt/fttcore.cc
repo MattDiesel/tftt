@@ -27,9 +27,9 @@ void init(double w, double h)
     gtree.size[0] = w;
     gtree.size[1] = h;
 
-    for (int b = 0; b < 2*DIM; b++) {
-        gtree.boundGroups = new TreeGroup();
-    }
+    // for (int b = 0; b < 2*DIM; b++) {
+    gtree.boundGroups = new TreeGroup(-1);
+    // }
 
     // Init top level cells
     gtree.root = new TreeGroup();
