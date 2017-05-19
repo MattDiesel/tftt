@@ -32,7 +32,8 @@ CellRef::CellRef(TreeGroup* gr, int ind)
 {
     #ifdef TFTT_DEBUG
     if (!gr) throw std::invalid_argument("Null TreeGroup given.");
-    if (ind < 0 || ind > (1 << DIM)) throw std::invalid_argument("Child index is invalid for dimension of problem.");
+    if ((gr != gtree.root && ind < 0)
+            || ind > (1 << DIM)) throw std::invalid_argument("Child index is invalid for dimension of problem.");
     #endif
 }
 
