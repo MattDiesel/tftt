@@ -1,58 +1,24 @@
 
-#ifndef TFTT_LEAVES
-#define TFTT_LEAVES
+#ifndef TFTT_ITER_LEAVES_H
+#define TFTT_ITER_LEAVES_H
 
 
 #include "../config.h"
 #include "../cellref.h"
+#include "cellrefiterator.h"
 
 
 namespace tftt {
 
 
-struct tagNeighbours {
-    CellRef cr;
-
-    tagNeighbours(CellRef c);
-
-    class neighb_iterator {
-        CellRef cl;
-        int nb;
-        CellRef cr;
-
-        void next();
-
-    public:
-        neighb_iterator(CellRef c, int n);
-
-        neighb_iterator operator++();
-        neighb_iterator operator++(int junk);
-        CellRef& operator*();
-        CellRef* operator->();
-        bool operator==(const neighb_iterator& rhs);
-        bool operator!=(const neighb_iterator& rhs);
-    };
-
-    neighb_iterator begin();
-    neighb_iterator end();
-};
-
-
-
 struct tagLeaves {
-    class leaf_iterator {
-        CellRef cr;
-
+    class leaf_iterator : public cellref_iterator {
         void next();
     public:
         leaf_iterator(CellRef c);
 
         leaf_iterator operator++();
         leaf_iterator operator++(int junk);
-        CellRef& operator*();
-        CellRef* operator->();
-        bool operator==(const leaf_iterator& rhs);
-        bool operator!=(const leaf_iterator& rhs);
     };
 
     leaf_iterator begin();
@@ -60,91 +26,6 @@ struct tagLeaves {
 };
 
 extern tagLeaves leaves;
-
-
-struct tagLeafOrthos {
-    class ortho_iterator {
-        CellRef cr;
-        CellRef ortho;
-
-        void next();
-    public:
-        ortho_iterator(CellRef c);
-
-        ortho_iterator operator++();
-        ortho_iterator operator++(int junk);
-        CellRef& operator*();
-        CellRef* operator->();
-        bool operator==(const ortho_iterator& rhs);
-        bool operator!=(const ortho_iterator& rhs);
-    };
-
-    ortho_iterator begin();
-    ortho_iterator end();
-};
-
-extern tagLeafOrthos leaforthos;
-
-
-struct tagBoundaryLeaves {
-    int b;
-
-    class bleaf_iterator {
-        CellRef cr;
-        int b;
-
-
-        void next();
-    public:
-        bleaf_iterator(CellRef c, int bnd);
-
-        bleaf_iterator operator++();
-        bleaf_iterator operator++(int junk);
-        CellRef& operator*();
-        CellRef* operator->();
-        bool operator==(const bleaf_iterator& rhs);
-        bool operator!=(const bleaf_iterator& rhs);
-    };
-
-    bleaf_iterator begin();
-    bleaf_iterator end();
-};
-
-tagBoundaryLeaves boundaryCells(int b);
-
-
-
-
-
-struct tagCurve {
-    class curve_iterator {
-        CellRef cr;
-
-        void next();
-    public:
-        curve_iterator(CellRef c);
-
-        curve_iterator operator++();
-        curve_iterator operator++(int junk);
-        CellRef& operator*();
-        CellRef* operator->();
-        bool operator==(const curve_iterator& rhs);
-        bool operator!=(const curve_iterator& rhs);
-    };
-
-    curve_iterator begin();
-    curve_iterator end();
-};
-
-extern tagCurve curve;
-
-
-struct tagActiveCurve : public tagCurve {
-    curve_iterator begin();
-    curve_iterator end();
-};
-
-extern tagActiveCurve activecurve;
 
 
 } // namespace tftt

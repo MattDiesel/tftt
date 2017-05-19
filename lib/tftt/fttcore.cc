@@ -6,7 +6,7 @@
 #include "cellref.h"
 #include "structure/tree.h"
 #include "structure/treegroup.h"
-#include "iter/leaves.h"
+#include "iter/all.h"
 #include "adapt.h"
 
 #include "fttcore.h"

@@ -14,7 +14,7 @@
 #include "../structure/treecell.h"
 #include "../structure/treegroup.h"
 #include "../fttcore.h"
-#include "../iter/leaves.h"
+#include "../iter/all.h"
 #include "../gray.h"
 #include "../tfttops.h"
 

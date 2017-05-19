@@ -6,7 +6,7 @@
 
 #include "config.h"
 #include "structure/tree.h"
-#include "iter/leaves.h"
+#include "iter/all.h"
 
 #include "parallel.h"
 

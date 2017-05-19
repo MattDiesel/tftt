@@ -39,7 +39,7 @@ enum {
 
 
 // bring utilities into tftt namespace
-#include "iter/leaves.h"
+#include "iter/all.h"
 #include "io/tfttio.h"
 #include "tfttops.h"
 #include "adapt.h"

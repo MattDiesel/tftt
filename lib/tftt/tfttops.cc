@@ -11,7 +11,7 @@
 #include "structure/treecell.h"
 #include "fttcore.h"
 #include "adapt.h"
-#include "iter/leaves.h"
+#include "iter/all.h"
 
 #include "tfttops.h"
 

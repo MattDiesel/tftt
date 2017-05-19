@@ -8,7 +8,7 @@
 #include "structure/treecell.h"
 #include "structure/treegroup.h"
 #include "hilbert.h"
-#include "iter/leaves.h"
+#include "iter/all.h"
 
 #include "cellref.h"
 
