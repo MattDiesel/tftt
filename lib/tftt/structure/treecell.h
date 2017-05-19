@@ -51,6 +51,8 @@ struct TreeCell {
     double cenCoef;
 
     ADAPTFLAGS adaptFlags;
+    uint8_t adaptVector[2*DIM];
+    uint8_t adaptHoldVector[2*DIM];
 };
 
 

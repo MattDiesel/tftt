@@ -1,8 +1,5 @@
 
-#ifdef TFTT_DEBUG
-    #include <stdexcept>
-#endif
-
+#include <stdexcept>
 #include <iostream>
 
 #include "../config.h"
@@ -161,7 +158,7 @@ TreeGroup::TreeGroup(CellRef p)
 
     #ifdef TFTT_DEBUG
     if (!p.isValid() || p.hasChildren()) {
-        throw std::argument_exception("Invalid cell ref for group parent.");
+        throw std::invalid_argument("Invalid cell ref for group parent.");
     }
     #endif
 

@@ -45,8 +45,8 @@ struct Tree {
     std::vector<data_t*> ghostData;
     std::vector<data_t*> borderData;
 
-    std::vector<uint32_t> ghostAdaptVectors;
-    std::vector<uint32_t> borderAdaptVectors;
+    std::vector<uint32_t*> ghostAdaptVectors;
+    std::vector<uint32_t*> borderAdaptVectors;
 
     node_t rank;
 };
