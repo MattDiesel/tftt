@@ -70,6 +70,7 @@ inline std::string formatString(std::string f, TA... pargs)
     std::ostringstream oss;
 
     std::string::size_type c = 0, p, n;
+    int w;
     for (; c < f.length();) {
         p = f.find('{', c);
 
@@ -83,6 +84,31 @@ inline std::string formatString(std::string f, TA... pargs)
         n = 0;
         while (std::isdigit(f[++p])) {
             n = n*10 + (f[p]-'0');
+        }
+
+        if (f[p] == ',') {
+            w = 0;
+            while (std::isdigit(f[++p]))
+                w = w*10 + (f[p]-'0');
+
+            oss << std::setw(w);
+
+            if (f[p] == '<') { // Left align
+                oss << std::left;
+                p++;
+            }
+            else if (f[p] == '>') {
+                oss << std::right;
+                p++;
+            }
+            else if (f[p] == '|') {
+                oss << std::internal;
+                p++;
+            }
+
+            if (f[p] != '}') {
+                oss << std::setfill(f[p++]);
+            }
         }
 
         if (f[p] != '}')
