@@ -6,8 +6,8 @@
 #include <set>
 #include <vector>
 
-#include "config.h"
-#include "cellref.h"
+#include "../config.h"
+#include "../cellref.h"
 #include "treegroup.h"
 
 

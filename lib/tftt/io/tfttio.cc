@@ -9,14 +9,14 @@
 
 #include "util/formatstring.h"
 
-#include "config.h"
-#include "tree.h"
-#include "treecell.h"
-#include "treegroup.h"
-#include "fttcore.h"
-#include "leaves.h"
-#include "gray.h"
-#include "tfttops.h"
+#include "../config.h"
+#include "../structure/tree.h"
+#include "../structure/treecell.h"
+#include "../structure/treegroup.h"
+#include "../fttcore.h"
+#include "../iter/leaves.h"
+#include "../gray.h"
+#include "../tfttops.h"
 
 #include "tfttio.h"
 

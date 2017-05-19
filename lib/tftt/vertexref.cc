@@ -1,6 +1,8 @@
 
+#ifdef TFTT_VERTICES
+
 #include "config.h"
-#include "treevertex.h"
+#include "structure/treevertex.h"
 
 #include "vertexref.h"
 
@@ -15,3 +17,5 @@ VertexRef::VertexRef(TreeVertex* tv)
 
 
 } // namepspace tftt
+
+#endif

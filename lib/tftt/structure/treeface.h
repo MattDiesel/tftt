@@ -4,8 +4,8 @@
 
 #ifdef TFTT_FACES
 
-#include "config.h"
-#include "cellref.h"
+#include "../config.h"
+#include "../cellref.h"
 
 
 namespace tftt {

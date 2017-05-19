@@ -20,6 +20,11 @@ void coarsen(CellRef cl);
 CellRef atPos(double pos[DIM]);
 CellRef atVertex(int v);
 
+cell_t find(ident_t id);
+cell_t insert(ident_t id);
+cell_t findmax(fnData dt, double* maxValRet);
+cell_t max(fnData dfn);
+
 
 } // namespace tftt
 

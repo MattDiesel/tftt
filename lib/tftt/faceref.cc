@@ -2,7 +2,7 @@
 #ifdef TFTT_FACES
 
 #include "config.h"
-#include "treeface.h"
+#include "structure/treeface.h"
 
 #include "faceref.h"
 

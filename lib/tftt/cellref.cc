@@ -4,11 +4,11 @@
 #include <sstream>
 #include <ostream>
 
-#include "tree.h"
-#include "treecell.h"
-#include "treegroup.h"
+#include "structure/tree.h"
+#include "structure/treecell.h"
+#include "structure/treegroup.h"
 #include "hilbert.h"
-#include "leaves.h"
+#include "iter/leaves.h"
 
 #include "cellref.h"
 

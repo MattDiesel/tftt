@@ -8,8 +8,8 @@
 #include "util/formatstring.h"
 
 #include "tftt.h"
-#include "tree.h"
-#include "treegroup.h"
+#include "structure/tree.h"
+#include "structure/treegroup.h"
 #include "cellref.h"
 #include "gray.h"
 #include "hilbert.h"

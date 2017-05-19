@@ -1,9 +1,9 @@
 
 #include <iostream>
 
-#include "config.h"
-#include "cellref.h"
-#include "tree.h"
+#include "../config.h"
+#include "../cellref.h"
+#include "../structure/tree.h"
 
 #include "leaves.h"
 

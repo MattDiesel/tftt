@@ -5,10 +5,10 @@
 
 #include <iostream>
 
-#include "config.h"
-#include "cellref.h"
+#include "../config.h"
+#include "../cellref.h"
 #include "tree.h"
-#include "hilbert.h"
+#include "../hilbert.h"
 #include "treeface.h"
 #include "treevertex.h"
 

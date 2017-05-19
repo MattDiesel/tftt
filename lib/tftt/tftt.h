@@ -39,11 +39,13 @@ enum {
 
 
 // bring utilities into tftt namespace
-#include "leaves.h"
-#include "tfttio.h"
+#include "iter/leaves.h"
+#include "io/tfttio.h"
 #include "tfttops.h"
 #include "adapt.h"
 #include "fttcore.h"
+
+#include "structure/tree.h"
 
 #ifndef TFTT_NOMPI
     #include "parallel.h"

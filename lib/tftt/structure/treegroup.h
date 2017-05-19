@@ -5,9 +5,9 @@
 #include <iterator>
 #include <array>
 
-#include "config.h"
-#include "treeid.h"
-#include "cellref.h"
+#include "../config.h"
+#include "../treeid.h"
+#include "../cellref.h"
 #include "treecell.h"
 
 

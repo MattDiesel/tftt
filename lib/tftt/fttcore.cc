@@ -4,8 +4,10 @@
 #include "config.h"
 #include "hilbert.h"
 #include "cellref.h"
-#include "tree.h"
-#include "treegroup.h"
+#include "structure/tree.h"
+#include "structure/treegroup.h"
+#include "iter/leaves.h"
+#include "adapt.h"
 
 #include "fttcore.h"
 
@@ -177,6 +179,85 @@ cell_t atVertex(int v)
     }
 
     return c;
+}
+
+
+cell_t find(ident_t idt)
+{
+    TreeGroup* gr = gtree.root;
+
+    int n = 0;
+    while (gr) {
+        if (gr->id == idt.group()) {
+            return CellRef(gr, (int)idt.orthant());
+        }
+
+        gr = gr->cells[idt.orthant(n++)].children;
+    }
+
+    return CellRef();
+}
+
+
+cell_t insert(ident_t idt)
+{
+    cell_t ret = CellRef(-1);
+
+    while (ret.id().id != idt.id) {
+        if (idt.level() <= ret.level())
+            throw std::runtime_error("Badly formatted ID.");
+
+        if (!ret.hasChildren()) {
+            twoToOne(ret);
+            refine(ret);
+        }
+
+        // std::cout << idt.orthant(ret.level() + 1) << std::endl;
+
+        ret = ret.child(idt.orthant(ret.level() + 1));
+    }
+
+    return ret;
+}
+
+
+cell_t findmax(fnData dt, double* maxValRet)
+{
+    cell_t max;
+    double maxVal = 0.0;
+    double val;
+    for (auto& cl : leaves) {
+        val = dt(cl.data());
+        if (val > maxVal) {
+            max = cl;
+            maxVal = val;
+        }
+    }
+
+    if (maxValRet) *maxValRet = maxVal;
+    return max;
+}
+
+
+cell_t max(fnData dfn)
+{
+    double ret = 0.0, t;
+    cell_t retc;
+    for (auto& cl : tftt::activecurve) {
+        if (!retc.isValid()) {
+            ret = dfn(cl.data());
+            retc = cl;
+        }
+        else {
+            t = dfn(cl.data());
+            if (ret < t) {
+                ret = t;
+                retc = cl;
+            }
+        }
+    }
+
+    return retc;
 }
 
 

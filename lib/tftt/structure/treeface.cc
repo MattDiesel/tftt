@@ -1,7 +1,7 @@
 
 #ifdef TFTT_FACES
 
-#include "cellref.h"
+#include "../cellref.h"
 
 #include "treeface.h"
 

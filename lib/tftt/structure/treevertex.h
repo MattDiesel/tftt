@@ -2,11 +2,13 @@
 #ifndef TFTT_TREEVERTEX_H
 #define TFTT_TREEVERTEX_H
 
+#ifdef TFTT_VERTICES
+
 
 #include <array>
 
-#include "config.h"
-#include "cellref.h"
+#include "../config.h"
+#include "../cellref.h"
 
 
 namespace tftt {
@@ -21,4 +23,5 @@ struct TreeVertex {
 } // namespace tftt
 
 
+#endif
 #endif

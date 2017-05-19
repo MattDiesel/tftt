@@ -2,11 +2,11 @@
 #include <set>
 
 #include "config.h"
-#include "treegroup.h"
-#include "treecell.h"
-#include "tree.h"
+#include "structure/treegroup.h"
+#include "structure/treecell.h"
+#include "structure/tree.h"
 #include "cellref.h"
-#include "leaves.h"
+#include "iter/leaves.h"
 #include "fttcore.h"
 
 #include "adapt.h"

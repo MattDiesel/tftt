@@ -5,8 +5,8 @@
 #include <boost/mpi/request.hpp>
 
 #include "config.h"
-#include "tree.h"
-#include "leaves.h"
+#include "structure/tree.h"
+#include "iter/leaves.h"
 
 #include "parallel.h"
 

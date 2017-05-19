@@ -3,8 +3,8 @@
 #define TFTT_LEAVES
 
 
-#include "config.h"
-#include "cellref.h"
+#include "../config.h"
+#include "../cellref.h"
 
 
 namespace tftt {
