@@ -6,6 +6,7 @@
 #include <set>
 
 #include "config.h"
+#include "structure/treecell.h"
 #include "cellref.h"
 
 
@@ -29,6 +30,10 @@ void adaptSwCommit();
 void adaptSwSetCoarsen(CellRef cl);
 void adaptSwSetRefine(CellRef cl);
 void adaptSwSetHoldRefined(CellRef cl);
+
+void adaptSwPropogateLevel(CellRef cl, int dir, int lvl);
+void adaptSwSetFlags(CellRef cl, ADAPTFLAGS af);
+ADAPTFLAGS adaptSwGetFlags(CellRef cl);
 
 
 } // namespace tftt
