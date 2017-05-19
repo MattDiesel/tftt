@@ -1,15 +1,22 @@
 
 #include <string>
+#include <vector>
 #include <fstream>
 #include <ostream>
+#include <stdexcept>
 
 #include <iostream> // Todo: Remove
 
 #include "util/formatstring.h"
 
-#include "tftt.h"
+#include "config.h"
 #include "tree.h"
+#include "treecell.h"
+#include "treegroup.h"
+#include "fttcore.h"
+#include "leaves.h"
 #include "gray.h"
+#include "tfttops.h"
 
 #include "tfttio.h"
 

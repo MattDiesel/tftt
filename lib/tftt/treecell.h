@@ -5,14 +5,21 @@
 
 #include <array>
 
-#include "tftt.h"
+#include "config.h"
+#include "cellref.h"
 
 
 namespace tftt {
 
+
 struct TreeGroup;
-struct TreeFace;
-struct TreeVertex;
+
+#ifdef TFTT_FACES
+    struct TreeFace;
+#endif
+#ifdef TFTT_VERTICES
+    struct TreeVertex;
+#endif
 
 
 enum ADAPTFLAGS {
@@ -25,10 +32,16 @@ enum ADAPTFLAGS {
 
 struct TreeCell {
     data_t data;
-    std::array<TreeFace*, DIM*2> faces;
-    std::array<TreeVertex*, 1<<DIM> vertices;
     node_t rank;
     TreeGroup* children;
+
+    #ifdef TFTT_FACES
+    std::array<TreeFace*, DIM*2> faces;
+    #endif
+
+    #ifdef TFTT_VERTICES
+    std::array<TreeVertex*, 1<<DIM> vertices;
+    #endif
 
     int poisNgbC;
     CellRef poisNgb[12];

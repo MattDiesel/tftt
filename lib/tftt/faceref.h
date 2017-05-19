@@ -3,8 +3,9 @@
 #ifndef TFTT_FACEREF_H
 #define TFTT_FACEREF_H
 
+#ifdef TFTT_FACES
 
-#include "tftt.h"
+#include "config.h"
 #include "treeface.h"
 
 
@@ -25,4 +26,5 @@ struct FaceRef {
 } // namespace tftt
 
 
+#endif
 #endif

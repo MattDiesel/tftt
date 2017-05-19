@@ -1,13 +1,14 @@
 
 #include <iostream>
 
-#include "tftt.h"
+#include "config.h"
+#include "cellref.h"
 #include "tree.h"
 
 #include "leaves.h"
 
-namespace tftt {
 
+namespace tftt {
 
 
 tagNeighbours::tagNeighbours(CellRef c)

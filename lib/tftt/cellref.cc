@@ -1,13 +1,12 @@
 
-#ifdef TFTT_DEBUG
-    #include <stdexcept>
-#endif
-
+#include <stdexcept>
+#include <string>
 #include <sstream>
 #include <ostream>
 
 #include "tree.h"
 #include "treecell.h"
+#include "treegroup.h"
 #include "hilbert.h"
 #include "leaves.h"
 
@@ -313,29 +312,33 @@ double CellRef::avrChildren(fnData dt) const
 
 double CellRef::ngbVal(int nb, fnData dt, double* ifBoundary) const
 {
-    cell_t ngb = neighbour(nb);
+    throw std::runtime_error("Deprecated.");
+    return 0.0;
 
-    // if (ngb.isBoundary()) {
-    //     if (ifBoundary)
-    //         return *ifBoundary;
-    //     else
-    //         throw std::runtime_error("Not Implemented: Automatic boundary condition");
+    // cell_t ngb = neighbour(nb);
+
+    // // if (ngb.isBoundary()) {
+    // //     if (ifBoundary)
+    // //         return *ifBoundary;
+    // //     else
+    // //         throw std::runtime_error("Not Implemented: Automatic boundary condition");
+    // // }
+    // // else
+    // if (ngb.hasChildren()) {
+    //     // Neighbour more refined, average children
+    //     return ngb.avrChildren(dt);
     // }
-    // else
-    if (ngb.hasChildren()) {
-        // Neighbour more refined, average children
-        return ngb.avrChildren(dt);
-    }
-    else if (ngb.level() < level()) {
-        // Neighbour is less refined
-        return interpChild(ngb, index ^ (1 << (nb >> 1)), nb ^ 1, dt);
-    }
-    else {
-        // Neighbour at same level
-        return dt(ngb.data());
-    }
+    // else if (ngb.level() < level()) {
+    //     // Neighbour is less refined
+    //     return interpChild(ngb, index ^ (1 << (nb >> 1)), nb ^ 1, dt);
+    // }
+    // else {
+    //     // Neighbour at same level
+    //     return dt(ngb.data());
+    // }
 }
 
+#ifdef TFTT_FACES
 
 // facedata_t& CellRef::facedata(int dir) {
 //     facedata_t& ret = group->cells[index].facedata[dir];
@@ -353,11 +356,17 @@ face_t CellRef::face(int dir) const
     return group->cells[index].faces[dir];
 }
 
+#endif
+
+
+#ifdef TFTT_VERTICES
 
 vertex_t CellRef::vertex(int v) const
 {
     return group->cells[index].vertices[v];
 }
+
+#endif
 
 
 double CellRef::size(int d) const

@@ -3,7 +3,8 @@
 #define TFTT_TFTTOPS_H
 
 
-#include "tftt.h"
+#include "config.h"
+#include "cellref.h"
 
 
 namespace tftt {

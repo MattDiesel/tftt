@@ -2,10 +2,12 @@
 #ifndef TFTT_TREE_H
 #define TFTT_TREE_H
 
+
 #include <set>
 #include <vector>
 
-#include "tftt.h"
+#include "config.h"
+#include "cellref.h"
 #include "treegroup.h"
 
 
@@ -34,8 +36,8 @@ struct Tree {
     cell_t lastActive;
 
     //! The set of ghost groups on this processor
-    std::vector<std::set<cell_t, crparless>> ghosts;
-    std::vector<std::set<cell_t, crparless>> borders;
+    std::vector<std::set<cell_t, cell_t::parless>> ghosts;
+    std::vector<std::set<cell_t, cell_t::parless>> borders;
 
     std::vector<std::vector<cell_t>> rawGhosts;
     std::vector<std::vector<cell_t>> rawBorders;
@@ -43,8 +45,10 @@ struct Tree {
     std::vector<data_t*> ghostData;
     std::vector<data_t*> borderData;
 
-    node_t rank;
+    std::vector<uint32_t> ghostAdaptVectors;
+    std::vector<uint32_t> borderAdaptVectors;
 
+    node_t rank;
 };
 
 

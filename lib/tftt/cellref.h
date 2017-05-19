@@ -4,17 +4,17 @@
 #define TFTT_CELLREF_H
 
 
+#include <string>
 #include <ostream>
 
-#include "tftt.h"
+#include "config.h"
+#include "treeid.h"
 
 
 namespace tftt {
 
 
 struct TreeGroup;
-struct FaceRef;
-struct VertexRef;
 struct tagNeighbours;
 
 
@@ -120,9 +120,13 @@ public:
     // facedata_t const& facedata(int dir) const;
 
     //! The cell faces
+    #ifdef TFTT_FACES
     FaceRef face(int dir) const;
+    #endif
 
+    #ifdef TFTT_VERTICES
     VertexRef vertex(int v) const;
+    #endif
 
 
     double origin(int d) const;
@@ -143,6 +147,30 @@ public:
     data_t const* operator->() const;
 
     std::string path() const;
+
+
+    struct less {
+        bool operator()(const CellRef& a, const CellRef& b) {
+            if (a.level() < b.level())
+                return true;
+            else if (a.level() > b.level())
+                return false;
+            else if (a.group < b.group)
+                return true;
+            else if (a.group > b.group)
+                return false;
+            else if (a.index < b.index)
+                return true;
+            else
+                return false;
+        }
+    };
+
+    struct parless {
+        bool operator()(const CellRef& a, const CellRef& b) {
+            return a.id().id < b.id().id;
+        }
+    };
 };
 
 

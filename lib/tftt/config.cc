@@ -1,9 +1,12 @@
 
+
 #include "config.h"
-#include "treecell.h"
 
 
 namespace tftt {
+
+
+TFTTOPTIONS options;
 
 
 } // namespace tftt

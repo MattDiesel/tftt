@@ -4,7 +4,9 @@
 #include <boost/mpi/communicator.hpp>
 #include <boost/mpi/request.hpp>
 
-#include "tftt.h"
+#include "config.h"
+#include "tree.h"
+#include "leaves.h"
 
 #include "parallel.h"
 
@@ -15,6 +17,23 @@ namespace mpi = boost::mpi;
 
 
 namespace tftt {
+
+
+void distribute(int n)
+{
+    int cpernode = (gtree.ccells / n)+1;
+
+    int cc = cpernode;
+    int node = 0;
+    for (auto& cl : curve) {
+        if (!--cc) {
+            cc = cpernode;
+            node++;
+        }
+
+        cl.rank() = node;
+    }
+}
 
 
 void syncGhosts(mpi::communicator world)
@@ -94,6 +113,50 @@ void syncGhosts(mpi::communicator world)
     // std::cout << "Done.\n";
     world.barrier();
 }
+
+
+// void adaptParSwPropogateLevel(CellRef cl, int dir, int lvl)
+// {
+//     for (int d = lvl; d > 1; d--) {
+//         for (int p = 0; p < options.two2oneFlag; p++) {
+//             cl = cl.neighbour(dir);
+//             if (cl.isBoundary()) return;
+
+//             if (cl.hasChildren()) {
+//                 // return; // I'm sure this should work.
+//             }
+//             else if (cl.level() == d) {
+//                 adaptSwSetFlags(cl.parent(), AF_HoldRefined);
+//                 adaptSwPropogateLevel(cl, dir ^ 2, d-1);
+//                 adaptSwPropogateLevel(cl, dir ^ 3, d-1);
+//             }
+//             else if (cl.level() < d) {
+//                 p++;
+//                 adaptSwSetFlags(cl, AF_Refine);
+//                 adaptSwPropogateLevel(cl, dir ^ 2, d-1);
+//                 adaptSwPropogateLevel(cl, dir ^ 3, d-1);
+//             }
+
+//             if (cl.rank()) {
+//                 if (cl.level() <= d)
+//                     std::cout << "Propagate through ghost " << cl << " - " << dir << " " << d << "\n";
+//             }
+//         }
+//         if (cl.level() == d) cl = cl.parent();
+//     }
+// }
+
+// void adaptParSwSetRefine(CellRef cl)
+// {
+//     if (cl.hasChildren()) {
+//         throw std::logic_error("Cell already refined.");
+//     }
+
+//     adaptSwSetFlags(cl, AF_Refine);
+//     for (int d = 0; d < 4; d++) {
+//         adaptParSwPropogateLevel(cl, d, cl.level());
+//     }
+// }
 
 
 } // namespace tftt

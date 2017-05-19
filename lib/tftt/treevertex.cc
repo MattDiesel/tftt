@@ -1,5 +1,5 @@
 
-#include "tftt.h"
+#include "config.h"
 
 #include "treevertex.h"
 

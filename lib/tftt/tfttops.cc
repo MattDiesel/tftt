@@ -3,9 +3,14 @@
 #include <cmath>
 #include <stdexcept>
 
-#include "tftt.h"
+#include "config.h"
+#include "treeid.h"
+#include "cellref.h"
 #include "tree.h"
 #include "treegroup.h"
+#include "fttcore.h"
+#include "adapt.h"
+#include "leaves.h"
 
 #include "tfttops.h"
 

@@ -5,7 +5,8 @@
 
 #include <array>
 
-#include "tftt.h"
+#include "config.h"
+#include "cellref.h"
 
 
 namespace tftt {

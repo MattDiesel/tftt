@@ -51,7 +51,13 @@ set(libtftt_SRCS
     tfttops.h 
     tfttops.cc 
     parallel.h 
-    parallel.cc
+    parallel.cc 
+    adapt.h 
+    adapt.cc 
+    fttcore.h 
+    fttcore.cc 
+    config.h 
+    config.cc 
 )
 
 # Declare the library

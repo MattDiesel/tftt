@@ -5,8 +5,7 @@
 
 #include <boost/mpi/communicator.hpp>
 
-#include "tftt.h"
-#include "tree.h"
+#include "config.h"
 
 
 // namespace boost {
@@ -22,7 +21,13 @@
 namespace tftt {
 
 
+//! Distribute cells across processors
+void distribute(int n);
+
 void syncGhosts(boost::mpi::communicator world);
+
+// void adaptParSwPropogateLevel(CellRef cl, int dir, int lvl);
+// void adaptParSwSetRefine(CellRef cl);
 
 
 } // namespace tftt

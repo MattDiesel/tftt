@@ -1,5 +1,5 @@
 
-#include "tftt.h"
+#include "config.h"
 #include "tree.h"
 
 
@@ -9,7 +9,8 @@ namespace tftt {
 Tree gtree;
 
 
-Tree::~Tree() {
+Tree::~Tree()
+{
     destroying = true;
     delete root;
 }

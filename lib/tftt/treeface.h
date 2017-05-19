@@ -2,8 +2,10 @@
 #ifndef TFTT_TREEFACE_H
 #define TFTT_TREEFACE_H
 
+#ifdef TFTT_FACES
 
-#include "tftt.h"
+#include "config.h"
+#include "cellref.h"
 
 
 namespace tftt {
@@ -25,4 +27,4 @@ struct TreeFace {
 
 #endif
 
-
+#endif

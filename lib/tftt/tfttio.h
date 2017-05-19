@@ -6,7 +6,8 @@
 #include <string>
 #include <ostream>
 
-#include "tftt.h"
+#include "config.h"
+#include "cellref.h"
 
 
 namespace tftt {

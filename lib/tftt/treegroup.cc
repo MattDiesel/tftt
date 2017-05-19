@@ -5,10 +5,12 @@
 
 #include <iostream>
 
-#include "tftt.h"
+#include "config.h"
 #include "cellref.h"
 #include "tree.h"
 #include "hilbert.h"
+#include "treeface.h"
+#include "treevertex.h"
 
 #include "treegroup.h"
 
@@ -37,6 +39,7 @@ TreeGroup::TreeGroup()
     next = CellRef();
     prev = CellRef();
 
+    #ifdef TFTT_FACES
     // Boundaries
     // Internal
     constexpr int pairs[4][4] = {
@@ -69,7 +72,9 @@ TreeGroup::TreeGroup()
                 new TreeFace(cl, cl.neighbour(n), n >> 1);
         }
     }
+    #endif
 
+    #ifdef TFTT_VERTICES
     // Add vertices
 
     // std::cout << "Adding Vertices.\n";
@@ -121,6 +126,8 @@ TreeGroup::TreeGroup()
     cells[0].vertices[1] = tv;
     tv->cells[3] = CellRef(this, 1);
     cells[1].vertices[0] = tv;
+
+    #endif
 }
 
 TreeGroup::TreeGroup(int b)
@@ -210,6 +217,7 @@ TreeGroup::TreeGroup(CellRef p)
         }
     }
 
+    #ifdef TFTT_FACES
     // Update faces
     // Add internal faces
 
@@ -259,9 +267,11 @@ TreeGroup::TreeGroup(CellRef p)
             }
         }
     }
+    #endif
 
     if (!p.isBoundary()) {
 
+        #ifdef TFTT_VERTICES
         // Add vertices
         // Todo: Generalise
         TreeVertex* tv;
@@ -369,17 +379,21 @@ TreeGroup::TreeGroup(CellRef p)
         cells[2].vertices[3] = tv;
         tv->cells[1] = CellRef(this, 3);
         cells[3].vertices[2] = tv;
+
+        #endif
     }
 }
 
 TreeGroup::~TreeGroup()
 {
+    #ifdef TFTT_FACES
     constexpr int facecells[4][2] = {
         {0, 2},
         {1, 3},
         {0, 1},
         {2, 3}
     };
+    #endif
 
     if (!gtree.destroying && boundary == -1) {
         if (prev.isValid()) {
@@ -410,6 +424,7 @@ TreeGroup::~TreeGroup()
             gtree.last = parent;
         }
 
+        #ifdef TFTT_FACES
         // Faces
         for (int n = 0; n < 2*DIM; n++) {
             if (neighbours[n].level() < id.level()) {
@@ -418,6 +433,7 @@ TreeGroup::~TreeGroup()
                 }
             }
         }
+        #endif
     }
     else {
         // delete faces nicely?
