@@ -172,6 +172,8 @@ TreeGroup::TreeGroup(CellRef p)
 
     // Update FTT
     for (int n = 0; n < 2*DIM; n++) {
+        if (boundary != -1 && n != (boundary ^ 1)) continue;
+
         neighbours[n] = p.neighbour(n);
         if (neighbours[n].hasChildren()) {
             neighbours[n].children()->neighbours[n ^ 1] = p;
@@ -239,6 +241,8 @@ TreeGroup::TreeGroup(CellRef p)
 
     cell_t cl;
     for (int n = 0; n < 2*DIM; n++) {
+        if (boundary != -1 && n != (boundary ^ 1)) continue;
+
         if (neighbours[n].level() <= p.level()) {
             // Add faces
             for (int i = 0; i < 2; i++) {

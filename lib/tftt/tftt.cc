@@ -54,7 +54,12 @@ void init(double w, double h)
         newGrp = cl.group->cells[cl.index].children;
 
         newGrp->boundary = b;
-        newGrp->neighbours[b ^ 1] = CellRef(gtree.root, -1);
+        for (int b2 = 0; b2 < 2*DIM; b2++) {
+            if (b2 == (b ^ 1))
+                newGrp->neighbours[b2] = CellRef(gtree.root, -1);
+            else
+                newGrp->neighbours[b2] = CellRef();
+        }
         gtree.root->neighbours[b] = CellRef(gtree.boundGroups, b);
 
         newGrp->id = 0;
