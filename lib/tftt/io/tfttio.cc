@@ -331,7 +331,7 @@ void addGhosts(std::set<cell_t>& ghosts, cell_t cl, node_t node)
     TreeCell& tc = cl.group->cells[cl.index];
 
     for (int n = 0; n < tc.poisNgbC; n++) {
-        if (tc.poisNgb[n].rank() != node) {
+        if (tc.poisNgb[n].rank() != node && !tc.poisNgb[n].isBoundary()) {
             ghosts.insert(tc.poisNgb[n]);
         }
     }
@@ -459,6 +459,10 @@ void loadTree(std::string fname, int n)
 
         gtree.cactive = 0;
 
+        #ifdef TFTT_DEBUG
+        bool nonRank = false;
+        #endif
+
         for (auto& cl : curve) {
             if (cl.rank() == gtree.rank) {
                 if (!first) {
@@ -530,16 +534,20 @@ void loadTree(std::string fname, int n)
 
         if (szg) {
             gtree.ghostData.push_back(new data_t[szg]);
+            gtree.ghostAdaptVectors.push_back(new uint32_t[szg]);
         }
         else {
             gtree.ghostData.push_back(nullptr);
+            gtree.ghostAdaptVectors.push_back(nullptr);
         }
 
         if (szb) {
             gtree.borderData.push_back(new data_t[szb]);
+            gtree.borderAdaptVectors.push_back(new uint32_t[szb]);
         }
         else {
             gtree.borderData.push_back(nullptr);
+            gtree.borderAdaptVectors.push_back(nullptr);
         }
     }
 }
