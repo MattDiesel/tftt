@@ -39,17 +39,19 @@ void init(double w, double h)
 
     // Init top level cells
     gtree.root = new TreeGroup();
-
-    gtree.firstActive = CellRef(gtree.root, hilbChild(0, 0));
-    gtree.lastActive = CellRef(gtree.root, hilbChild(0, (1<<DIM)-1));
-
     cell_t cl;
     cell_t bch;
     TreeGroup* newGrp;
+
+
     for (int b = 0; b < 2*DIM; b++) {
         cl = CellRef(gtree.boundGroups, b);
+        cl.group->cells[cl.index].children = new TreeGroup(cl);
+    }
 
-        newGrp = cl.group->cells[cl.index].children = new TreeGroup(cl);
+    for (int b = 0; b < 2*DIM; b++) {
+        cl = CellRef(gtree.boundGroups, b);
+        newGrp = cl.group->cells[cl.index].children;
 
         newGrp->boundary = b;
         newGrp->neighbours[b ^ 1] = CellRef(gtree.root, -1);
@@ -67,6 +69,10 @@ void init(double w, double h)
             // std::cout << "(" << b << "," << d << ") @ " << newGrp->origin[d] << std::endl;
         }
     }
+
+    gtree.first = gtree.firstActive = CellRef(gtree.root, hilbChild(0, 0));
+    gtree.last = gtree.lastActive = CellRef(gtree.root, hilbChild(0, (1<<DIM)-1));
+
 
     gtree.destroying = false;
 }
@@ -597,7 +603,7 @@ void adaptSwPropogateLevel(CellRef cl, int dir, int lvl)
             if (cl.isBoundary()) return;
 
             if (cl.hasChildren()) {
-                // Do nothing
+                // return;
             }
             else if (cl.level() == d) {
                 adaptSwSetFlags(cl.parent(), AF_HoldRefined);
