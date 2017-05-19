@@ -317,6 +317,11 @@ cell_t atVertex(int v)
 
 void refine(CellRef cl)
 {
+    #ifdef TFTT_DEBUG
+    if (cl.isBoundary())
+        throw std::runtime_error("Calling refine() on boundary.");
+    #endif
+
     cl.group->cells[cl.index].children = new TreeGroup(cl);
     gtree.ccells += (1 << DIM) - 1;
 
@@ -333,10 +338,24 @@ void refine(CellRef cl)
 
 void coarsen(CellRef cl)
 {
+    #ifdef TFTT_DEBUG
+    for (int ch = 0; ch < (1<<DIM); ch++) {
+        if (cl.child(ch).hasChildren()) {
+            throw std::runtime_error("Cell has grandchildren.");
+        }
+    }
+    #endif
+
     cell_t nbc;
     for (int nb = 0; nb < 2*DIM; nb++) {
-        nbc = cl.group->neighbours[nb];
-        if (nbc.isBoundary() && nbc.level() >= cl.level()) {
+        nbc = cl.children()->neighbours[nb];
+
+        if (nbc.isBoundary()) {
+            #ifdef TFTT_DEBUG
+            if (nbc.level() != cl.level())
+                throw std::runtime_error("Boundary level mismatch");
+            #endif
+
             delete nbc.group->cells[nbc.index].children;
             nbc.group->cells[nbc.index].children = nullptr;
         };
