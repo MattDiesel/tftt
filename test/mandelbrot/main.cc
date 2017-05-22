@@ -16,7 +16,8 @@
 using namespace util; // getpars, tfetch, formatString
 
 
-int escape_iterations(double re, double im, int max_iterations) {
+int escape_iterations(double re, double im, int max_iterations)
+{
     double xre = 0.0, xim = 0.0, rtemp, xre2 = 0.0, xim2 = 0.0;
     int i = max_iterations;
 
@@ -27,17 +28,20 @@ int escape_iterations(double re, double im, int max_iterations) {
         xre = rtemp;
         xre2 = rtemp*rtemp;
         xim2 = xim*xim;
-    } while ( (xre2 + xim2 < 4.0f) && i);
+    }
+    while ( (xre2 + xim2 < 4.0f) && i);
 
     return max_iterations-i;
 }
 
-double mbrot(double re, double im) {
+double mbrot(double re, double im)
+{
     return escape_iterations(re, im, 255) / 255.0;
 }
 
 
-double avrChildren(tftt::cell_t cl) {
+double avrChildren(tftt::cell_t cl)
+{
     double ret = 0.0;
     for (auto& ch : *cl.children()) {
         if (ch.hasChildren()) {
@@ -51,7 +55,8 @@ double avrChildren(tftt::cell_t cl) {
     return ret*0.25;
 }
 
-double faceFlux(tftt::cell_t cl, tftt::cell_t nb) {
+double faceFlux(tftt::cell_t cl, tftt::cell_t nb)
+{
 
     double nbDat = 0.0;
     if (nb.hasChildren()) {
@@ -71,7 +76,7 @@ double faceFlux(tftt::cell_t cl, tftt::cell_t nb) {
 
 
 
-int main(int argc, char const *argv[])
+int main(int argc, char const* argv[])
 {
     int cnodes = 4;
     int minDepth = 3;
@@ -86,14 +91,14 @@ int main(int argc, char const *argv[])
     }
 
     std::cout << "Using configuration:\n"
-            << "\tminDepth = " << minDepth << "\n"
-            << "\tmaxDepth = " << maxDepth << "\n"
-            << "\tcnodes = " << cnodes << std::endl;
+              << "\tminDepth = " << minDepth << "\n"
+              << "\tmaxDepth = " << maxDepth << "\n"
+              << "\tcnodes = " << cnodes << std::endl;
 
 
-	std::cout << "Init Tree" << std::endl;
+    std::cout << "Init Tree" << std::endl;
 
-	tftt::init(4.0, 2.0);
+    tftt::init(4.0, 2.0);
 
     std::cout << "Min Depth" << std::endl;
 
@@ -118,7 +123,7 @@ int main(int argc, char const *argv[])
         double eps;
         tftt::cell_t nb;
         for (auto& cl : tftt::leaves) {
-            if (cl.level() >= maxDepth) 
+            if (cl.level() >= maxDepth)
                 continue;
 
             for (int n = 0; n < 2*DIM; n++) {
@@ -147,10 +152,11 @@ int main(int argc, char const *argv[])
         iter++;
 
         std::cout << "Iteration "
-            << iter << " refined: "
-            << tftt::adaptList.size() << std::endl;
+                  << iter << " refined: "
+                  << tftt::adaptList.size() << std::endl;
 
-    } while (!tftt::adaptList.empty());
+    }
+    while (!tftt::adaptList.empty());
 
     std::cout << "Refined to depth " << maxDepth << "\n";
     std::cout << "Total Cells: " << tftt::gtree.ccells << "\n";
@@ -163,12 +169,12 @@ int main(int argc, char const *argv[])
     });
 
     tftt::distribute(cnodes);
-    tftt::splitToDisk("mbrot/r{0}.tr");
+    tftt::saveParTree("mbrot/r{0}.tr", cnodes);
 
     for (int n = 0; n < cnodes; n++) {
         std::cout << "Node = " << n << "\n";
         tftt::reset();
-        tftt::loadTree(formatString("mbrot/r{0}.tr", n), n);
+        tftt::loadParTree(formatString("mbrot/r{0}.tr", n));
 
         tftt::drawPartialMesh(formatString("mbrot/mesh.r{0}.dat", n));
         tftt::drawPartialCurve(formatString("mbrot/hilb.r{0}.dat", n));
@@ -178,5 +184,5 @@ int main(int argc, char const *argv[])
         std::cout << "\tGhosts: " << tftt::gtree.ghosts.size() << "\n";
     }
 
-	return 0;
+    return 0;
 }

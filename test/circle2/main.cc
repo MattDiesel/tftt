@@ -47,6 +47,101 @@ struct circle {
     }
 };
 
+void printTwo2one(std::string fname, tftt::cell_t c)
+{
+    std::ofstream ofs(fname);
+
+    tftt::cell_t nb;
+
+    for (int dir = 0; dir < 4; dir++) {
+        nb = c;
+        for (int d = c.level(); d > 1; d--) {
+            for (int p = 0; p < tftt::options.two2oneFlag; p++) {
+                nb = nb.neighbour(dir);
+
+                if (nb.isBoundary()) goto edge;
+
+                tftt::drawCell(ofs, nb);
+            }
+
+            if (nb.level() > d)
+                nb = nb.parent();
+        }
+    edge:
+        nb=nb;
+    }
+}
+
+bool areNeighbours(tftt::cell_t a, tftt::cell_t b)
+{
+    for (int nb = 0; nb < 2*DIM; nb++) {
+        if (a.neighbour(nb) == b || b.neighbour(nb) == a) return true;
+    }
+    return false;
+}
+
+void miscChecks()
+{
+    std::set<uint64_t> seen;
+    std::set<uint64_t> seenCurve;
+
+    for (auto cl : tftt::leaves) {
+        if (cl.isBoundary())
+            throw std::runtime_error("Boundary in leaves");
+        if (cl.hasChildren())
+            throw std::runtime_error("Parent in leaves");
+
+        auto result = seen.insert(cl.id().id);
+        if (!result.second)
+            throw std::runtime_error("Duplicate in leaf iterator");
+    }
+
+    tftt::cell_t prev;
+    for (auto cl : tftt::curve) {
+        if (cl.isBoundary())
+            throw std::runtime_error("Boundary in curve");
+        if (cl.hasChildren())
+            throw std::runtime_error("Parent in curve");
+
+        auto search = seen.find(cl.id().id);
+        if (search == seen.end())
+            throw std::runtime_error("In curve, not in leaves");
+        seen.erase(cl.id().id);
+
+        auto result = seenCurve.insert(cl.id().id);
+        if (!result.second)
+            throw std::runtime_error("Duplicate in curve iterator");
+
+        if (prev.isValid()) {
+            if (!areNeighbours(cl, prev))
+                throw std::runtime_error("Consecutive cells in curve aren't neighbours");
+            prev = cl;
+        }
+    }
+    if (!seen.empty()) {
+        throw std::runtime_error("Curve count != leaf count");
+    }
+
+    tftt::cell_t inside;
+    for (int b = 0; b < 2*DIM; b++) {
+        for (auto bcl : tftt::boundaryCells(b)) {
+            if (bcl.hasChildren())
+                throw std::runtime_error("Boundary leaf has children");
+            if (!bcl.isBoundary())
+                throw std::runtime_error("Boundary leaf isn't boundary");
+            if (bcl.boundary() != b)
+                throw std::runtime_error("Boundary leaf is on the wrong one");
+
+            inside = bcl.neighbour(b ^ 1);
+            if (inside.isBoundary())
+                throw std::runtime_error("Boundary inside cell is still boundary");
+            if (inside.level() != bcl.level())
+                throw std::runtime_error("Boundary inside cell level mismatch");
+            if (inside.hasChildren())
+                throw std::runtime_error("Boundary inside cell has children");
+        }
+    }
+}
 
 
 int main(int argc, char* argv[])
@@ -106,12 +201,15 @@ int main(int argc, char* argv[])
 
     // Init tree to min depth
     tftt::init(1.0, 1.0);
+    miscChecks();
 
     for (int d = 0; d < minDepth; d++) {
         for (auto& cl : tftt::leaves) {
             tftt::refine(cl);
         }
     }
+
+    miscChecks();
 
     tftt::drawMesh("circle2data/mesh.min.dat");
 
@@ -125,31 +223,11 @@ int main(int argc, char* argv[])
         }
 
         tftt::adaptSwCommit();
+
+        tftt::drawMesh(formatString("circle2data/mesh.init.{0}.dat", d-minDepth));
     }
 
-    // tftt::adaptSwBegin();
-    // double p[2] = {0.5, 0.5};
-    // double p2[2] = {0.6, 0.6};
-    // tftt::adaptSwSetRefine(tftt::atPos(p));
-    // tftt::adaptSwCommit();
-
-    // tftt::adaptSwBegin();
-    // tftt::adaptSwSetRefine(tftt::atPos(p));
-    // tftt::adaptSwCommit();
-
-    // tftt::adaptSwBegin();
-    // tftt::adaptSwSetRefine(tftt::atPos(p2));
-    // tftt::adaptSwCommit();
-
-    // tftt::adaptSwBegin();
-    // tftt::adaptSwSetRefine(tftt::atPos(p2));
-    // tftt::adaptSwCommit();
-
     tftt::drawMesh("circle2data/mesh.init.dat");
-    // tftt::drawCurve("circle2data/hilb.init.dat");
-    // tftt::drawBoundaries("circle2data/bound.init.dat");
-
-    // return 0;
 
     tftt::cell_t tmp;
     for (ITER = 1; ITER <= iterations; ITER++) {
@@ -157,6 +235,8 @@ int main(int argc, char* argv[])
         c.pos[1] = startPos[1] + (endPos[1] - startPos[1])/iterations * ITER;
 
         std::cout << "Iteration " << ITER << "\n\tCircle at: " << c.pos[0] << "," << c.pos[1] << "\n";
+
+        miscChecks();
 
         tftt::adaptSwBegin();
         for (auto& cl : tftt::leaves) {
@@ -168,61 +248,15 @@ int main(int argc, char* argv[])
             }
         }
         for (auto& cl : tftt::leaforthos) {
-            if (cl.level() > minDepth) {
+            if (cl.level() >= minDepth) {
                 tftt::adaptSwSetCoarsen(cl);
             }
         }
         tftt::adaptSwCommit();
 
-        // do {
-        //     coarsened = 0;
-        //     tftt::adaptBegin();
-        //     for (auto& cl : tftt::leaforthos) {
-        //         if (c.intersects(cl))
-        //             continue;
-
-        //         if (cl.level() > minDepth) {
-        //             cantCoarsen = false;
-        //             for (int ch = 0; ch < 1<<DIM; ch++) {
-        //                 if (cl.child(ch).hasChildren()) {
-        //                     cantCoarsen = true;
-        //                     break;
-        //                 }
-        //                 cantCoarsen = tftt::findAround(cl, tftt::options.two2oneFlag-1,
-        //                 [](tftt::cell_t& cl) {
-        //                     return cl.hasGrandChildren();
-        //                 });
-        //                 if (cantCoarsen) break;
-        //             }
-
-        //             if (!cantCoarsen) {
-        //                 tftt::adaptAddCoarsen(cl);
-        //             }
-        //         }
-        //     }
-        //     tftt::adaptCommitCoarsen();
-
-        //     std::cout << "\tCoarsened: " << tftt::adaptList.size() << "\n";
-        // }
-        // while (tftt::adaptList.size());
-
         std::cout << "\tCell Count: " << tftt::gtree.ccells << "\n";
 
-        // int ccells = 0;
-        // for (auto& cl : tftt::leaves) {
-        //     ccells++;
-        // }
-        // std::cout << "\tCell Count (from leaves): " << ccells << "\n";
-
-        // ccells = 0;
-        // for (auto& cl : tftt::curve) {
-        //     ccells++;
-        // }
-        // std::cout << "\tCell Count (from curve): " << ccells << "\n";
-
         tftt::drawMesh(formatString("circle2data/mesh.{0}.dat", ITER));
-        tftt::drawCurve(formatString("circle2data/hilb.{0}.dat", ITER));
-        tftt::drawBoundaries(formatString("circle2data/bound.{0}.dat", ITER));
     }
 
     return 0;

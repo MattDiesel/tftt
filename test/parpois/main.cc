@@ -11,7 +11,6 @@
 #include "util/pars.h"
 
 #include "tftt/tftt.h"
-#include "tftt/tree.h"
 
 #include <vector>
 
@@ -230,15 +229,15 @@ int main(int argc, char* argv[])
         }
 
         tftt::distribute(world.size());
-        tftt::splitToDisk("parp/r{0}.ltr");
+        tftt::saveParTree("parp/r{0}.ltr", world.size());
 
         tftt::reset();
     }
 
     world.barrier();
 
-    tftt::loadTree(formatString("parp/r{0}.ltr", world.rank()), world.rank());
-    // tftt::loadTree(formatString("parp/r{0}.ltr", 0), 0);
+    tftt::loadParTree(formatString("parp/r{0}.ltr", world.rank()));
+    // tftt::loadParTree(formatString("parp/r{0}.ltr", 0));
 
     // Initial Conditions for cells
     for (auto& cl : tftt::activecurve) {

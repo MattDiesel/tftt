@@ -155,7 +155,7 @@ int main(int argc, char* argv[])
 
 
     tftt::distribute(worldSize);
-    tftt::splitToDisk("circle.r{0}.tr");
+    tftt::saveParTree("circle.r{0}.tr", worldSize);
 
     // for (auto& cl : tftt::leaves) {
     //     if (cl.rank() == -1) {
@@ -167,7 +167,7 @@ int main(int argc, char* argv[])
     for (int n = 0; n < worldSize; n++) {
         std::cout << "Node = " << n << "\n";
         tftt::reset();
-        tftt::loadTree(formatString("circle.r{0}.tr", n), n);
+        tftt::loadParTree(formatString("circle.r{0}.tr", n));
 
         tftt::drawPartialMesh(formatString("parcircle/mesh.r{0}.dat", n));
         tftt::drawPartialCurve(formatString("parcircle/hilb.r{0}.dat", n));
