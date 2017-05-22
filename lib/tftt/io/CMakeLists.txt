@@ -2,6 +2,8 @@
 set(tfttio_SRCS
     tfttio.h 
     tfttio.cc 
+    serialize.h 
+    serialize.cc
 )
 
 add_library(tfttio STATIC

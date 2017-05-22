@@ -46,14 +46,6 @@ void drawMatrix(std::ostream& os, int imgW, int imgH, fnDataNorm dataNorm);
 void plotMatrix(std::string fname, fnData dt);
 void plotMatrix(std::ostream& os, fnData dt);
 
-void saveTree(std::string fname);
-void saveTree(std::ostream& os);
-
-void loadTree(std::string fname, int n = -1);
-
-
-void splitToDisk(std::string fnameFmt);
-
 
 void drawPoissonNeighbourhood(std::string fname, cell_t cl);
 void drawPoissonNeighbourhood(std::ostream& os, cell_t cl);

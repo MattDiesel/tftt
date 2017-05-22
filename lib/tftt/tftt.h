@@ -41,6 +41,7 @@ enum {
 // bring utilities into tftt namespace
 #include "iter/all.h"
 #include "io/tfttio.h"
+#include "io/serialize.h"
 #include "tfttops.h"
 #include "adapt.h"
 #include "fttcore.h"
