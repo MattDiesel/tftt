@@ -8,7 +8,7 @@
 #include <algorithm>
 
 #ifdef PARS_DEBUG
-#include <iostream>
+    #include <iostream>
 #endif
 
 #include "pars.h"
@@ -22,7 +22,7 @@ std::map<std::string, std::string> pars;
 
 std::string& rtrim(std::string& str)
 {
-    auto it1 = std::find_if(str.rbegin(), str.rend(), [](char ch){
+    auto it1 = std::find_if(str.rbegin(), str.rend(), [](char ch) {
         return !std::isspace<char>(ch , std::locale::classic());
     });
     str.erase( it1.base() , str.end() );
@@ -30,15 +30,15 @@ std::string& rtrim(std::string& str)
 }
 
 
-void getpars(std::string parfile) {
+void getpars(std::string parfile)
+{
     std::ifstream ifs(parfile);
 
     ifs.setf(std::ios_base::skipws);
 
-    int i = 0;
     std::string key;
     std::string val;
-    for (;ifs;) {
+    for (; ifs;) {
         // Ignore WS
         ifs >> std::ws;
 
@@ -49,19 +49,21 @@ void getpars(std::string parfile) {
         if (!(ifs >> std::ws)) break;
 
         std::getline(ifs, key, '=');
-        ifs >> std::ws; std::getline(ifs, val, '\n');
+        ifs >> std::ws;
+        std::getline(ifs, val, '\n');
 
         pars[rtrim(key)] = val;
 
-#ifdef PARS_DEBUG
+        #ifdef PARS_DEBUG
         std::cout << "   '" << key << "' = '" << val << "'\n";
-#endif
+        #endif
     }
 }
 
 
 // A bit naive
-bool isFile(char const* str) {
+bool isFile(char const* str)
+{
     char const* comp = ".par";
     int n = 0;
 
@@ -75,7 +77,8 @@ bool isFile(char const* str) {
 }
 
 
-void getpars(int argc, char* argv[]) {
+void getpars(int argc, char* argv[])
+{
 
     char** arg = &argv[1];
 
@@ -83,20 +86,21 @@ void getpars(int argc, char* argv[]) {
     char* val;
 
     for (int i = 1; i < argc; i++) {
-        if (isFile(*arg)) 
+        if (isFile(*arg))
             getpars(*arg);
         else {
             if ((*arg)[0] == '+') {
                 if (i == argc-1)
                     return; // Ignore argument at end
-                
+
                 key = &(*arg)[1];
-                val = *++arg; i++;
+                val = *++arg;
+                i++;
                 pars[key] = val;
 
-#ifdef PARS_DEBUG
-        std::cout << "   '" << key << "' = '" << val << "'\n";
-#endif
+                #ifdef PARS_DEBUG
+                std::cout << "   '" << key << "' = '" << val << "'\n";
+                #endif
             }
         }
 
@@ -106,9 +110,10 @@ void getpars(int argc, char* argv[]) {
 }
 
 
-bool sfetch(std::string s, std::string& ret) {
+bool sfetch(std::string s, std::string& ret)
+{
     auto search = pars.find(s);
-    if(search != pars.end()) {
+    if (search != pars.end()) {
         ret = search->second;
         return true;
     }
