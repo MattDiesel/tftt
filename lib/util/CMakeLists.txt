@@ -1,8 +1,6 @@
 
 set(util_SRCS
-    formatstring.h 
     pars.cc 
-    pars.h 
 )
 
 # Declare the library

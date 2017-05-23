@@ -1,8 +1,6 @@
 
 set(tfttio_SRCS
-    tfttio.h 
-    tfttio.cc 
-    serialize.h 
+    tfttio.cc
     serialize.cc
 )
 

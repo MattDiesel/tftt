@@ -1,28 +1,16 @@
 
 set(libtftt_SRCS
-    tftt.h
     tftt.cc
-    treeid.h 
     treeid.cc
-    cellref.h
     cellref.cc
-    gray.h
     gray.cc
-    hilbert.h 
     hilbert.cc 
-    faceref.h 
     faceref.cc 
-    vertexref.h 
     vertexref.cc 
-    tfttops.h 
     tfttops.cc 
-    parallel.h 
     parallel.cc 
-    adapt.h 
     adapt.cc 
-    fttcore.h 
     fttcore.cc 
-    config.h 
     config.cc 
 )
 
