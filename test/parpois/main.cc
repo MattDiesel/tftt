@@ -254,6 +254,17 @@ int main(int argc, char* argv[])
         }
     }
 
+    // Every node moves 50 cells left
+    if (world.rank() == 0) {
+        tftt::moveCells(world, 0, -50);
+    }
+    else if (world.rank() == world.size()-1) {
+        tftt::moveCells(world, 50, 0);
+    }
+    else {
+        tftt::moveCells(world, 50, -50);
+    }
+
     tftt::drawMesh(formatString("parp/cmesh.r{0}.init.dat", world.rank()));
     tftt::drawCurve(formatString("parp/chilb.r{0}.init.dat", world.rank()));
     tftt::drawPartialMesh(formatString("parp/mesh.r{0}.init.dat", world.rank()));
