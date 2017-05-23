@@ -26,4 +26,18 @@ tagActiveCurve::curve_iterator tagActiveCurve::end()
 }
 
 
+tagActiveCurve::curve_iterator tagActiveCurve::rbegin()
+{
+    return tagActiveCurve::curve_iterator(gtree.lastActive);
+}
+
+
+tagActiveCurve::curve_iterator tagActiveCurve::rend()
+{
+    curve_iterator ret = tagActiveCurve::curve_iterator(gtree.firstActive);
+    ret--;
+    return ret;
+}
+
+
 } // namespace tftt

@@ -14,15 +14,22 @@ namespace tftt {
 struct tagCurve {
     class curve_iterator : public cellref_iterator {
         void next();
+        void prev();
     public:
         curve_iterator(CellRef c);
 
         curve_iterator operator++();
         curve_iterator operator++(int junk);
+
+        curve_iterator operator--();
+        curve_iterator operator--(int junk);
     };
 
     curve_iterator begin();
     curve_iterator end();
+
+    curve_iterator rbegin();
+    curve_iterator rend();
 };
 
 extern tagCurve curve;

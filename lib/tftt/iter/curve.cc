@@ -18,6 +18,12 @@ void tagCurve::curve_iterator::next()
 }
 
 
+void tagCurve::curve_iterator::prev()
+{
+    cr = cr.prev();
+}
+
+
 tagCurve::curve_iterator::curve_iterator(CellRef c) : cellref_iterator(c)
 {
 }
@@ -38,6 +44,21 @@ tagCurve::curve_iterator tagCurve::curve_iterator::operator++(int junk)
 }
 
 
+tagCurve::curve_iterator tagCurve::curve_iterator::operator--()
+{
+    auto i = *this;
+    prev();
+    return i;
+}
+
+
+tagCurve::curve_iterator tagCurve::curve_iterator::operator--(int junk)
+{
+    prev();
+    return *this;
+}
+
+
 tagCurve::curve_iterator tagCurve::begin()
 {
     return tagCurve::curve_iterator(gtree.first);
@@ -45,6 +66,18 @@ tagCurve::curve_iterator tagCurve::begin()
 
 
 tagCurve::curve_iterator tagCurve::end()
+{
+    return tagCurve::curve_iterator(CellRef());
+}
+
+
+tagCurve::curve_iterator tagCurve::rbegin()
+{
+    return tagCurve::curve_iterator(gtree.last);
+}
+
+
+tagCurve::curve_iterator tagCurve::rend()
 {
     return tagCurve::curve_iterator(CellRef());
 }

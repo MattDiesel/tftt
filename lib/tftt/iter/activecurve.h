@@ -13,6 +13,9 @@ namespace tftt {
 struct tagActiveCurve : public tagCurve {
     curve_iterator begin();
     curve_iterator end();
+
+    curve_iterator rbegin();
+    curve_iterator rend();
 };
 
 extern tagActiveCurve activecurve;
