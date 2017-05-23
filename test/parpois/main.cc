@@ -134,6 +134,8 @@ int main(int argc, char* argv[])
 
     tftt::options.two2oneFlag = 2;
 
+    int contin = 0;
+
     for (int b = 0; b < 2*DIM; b++) {
         tftt::gtree.isNeuman[b] = false;
         tftt::gtree.dirichletValue[b] = 0.0;
@@ -152,6 +154,7 @@ int main(int argc, char* argv[])
             tfetch("omega", omega);
             tfetch("initialValue", initialValue);
             tfetch("iterations", iterations);
+            tfetch("contin", contin);
             tfetch("circle.start[0]", startPos[0]);
             tfetch("circle.start[1]", startPos[1]);
             tfetch("circle.end[0]", endPos[0]);
@@ -179,6 +182,7 @@ int main(int argc, char* argv[])
     if (world.rank() == 0) {
 
         std::cout << "Using Parameters: \n"
+                  << "\tcontin = " << contin << "\n"
                   << "\tminDepth = " << minDepth << "\n"
                   << "\tmaxDepth = " << maxDepth << "\n"
                   << "\titerations = " << iterations << "\n"
@@ -200,38 +204,44 @@ int main(int argc, char* argv[])
                 std::cout << "Dirichlet = " << tftt::gtree.dirichletValue[b] << "\n";
         }
 
-        // Init tree to min depth
-        tftt::init(1.0, 1.0);
+        if (!contin) {
+            std::cout << "Generating initial distribution." << std::endl;
 
-        for (int d = 0; d < minDepth; d++) {
-            for (auto& cl : tftt::leaves) {
-                tftt::refine(cl);
-            }
-        }
+            // Init tree to min depth
+            tftt::init(1.0, 1.0);
 
-        // Refine to circle.
-        for (int d = minDepth; d < maxDepth; d++) {
-            tftt::adaptBegin();
-
-            for (auto& cl : tftt::leaves) {
-                if (c.intersects(cl))
-                    tftt::adaptAdd(cl);
+            for (int d = 0; d < minDepth; d++) {
+                for (auto& cl : tftt::leaves) {
+                    tftt::refine(cl);
+                }
             }
 
-            tftt::adaptCommit();
+            // Refine to circle.
+            for (int d = minDepth; d < maxDepth; d++) {
+                tftt::adaptBegin();
+
+                for (auto& cl : tftt::leaves) {
+                    if (c.intersects(cl))
+                        tftt::adaptAdd(cl);
+                }
+
+                tftt::adaptCommit();
+            }
+
+            std::cout << "Refined to geometry." << std::endl;
+
+            tftt::drawMesh("parp/cmesh.init.dat");
+            tftt::drawCurve("parp/chilb.init.dat");
+
+            for (auto& cl : tftt::leaves) {
+                tftt::calcFaceCoefs(cl);
+            }
+
+            tftt::distribute(world.size());
+            tftt::saveParTree("parp/r{0}.ltr", world.size());
+
+            tftt::reset();
         }
-
-        tftt::drawMesh("parp/cmesh.init.dat");
-        tftt::drawCurve("parp/chilb.init.dat");
-
-        for (auto& cl : tftt::leaves) {
-            tftt::calcFaceCoefs(cl);
-        }
-
-        tftt::distribute(world.size());
-        tftt::saveParTree("parp/r{0}.ltr", world.size());
-
-        tftt::reset();
     }
 
     world.barrier();
