@@ -60,7 +60,7 @@ TrHeader::TrHeader()
 TrHeader::TrHeader(int rank, int world)
     : TrHeader()
 {
-    worldSize = worldSize;
+    worldSize = world;
     worldRank = rank;
 }
 
