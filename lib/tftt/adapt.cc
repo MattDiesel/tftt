@@ -216,6 +216,7 @@ ADAPTFLAGS adaptSwGetFlags(CellRef cl)
 void adaptSwCommit()
 {
     TreeCell* tc;
+    adaptList.clear();
 
     for (auto cl = leaves.begin(); cl != leaves.end(); cl++) {
     nextLeaf:
@@ -226,7 +227,9 @@ void adaptSwCommit()
             CellRef old = *cl;
             cl++;
 
-            refine(old);
+
+            adaptList.insert(old);
+            // refine(old);
 
             // Skip child processing:
             goto nextLeaf;
@@ -237,8 +240,10 @@ void adaptSwCommit()
             coarsen(pr);
             cl = tagLeaves::leaf_iterator(pr);
         }
+    }
 
-
+    for (auto& cr : adaptList) {
+        refine(cr);
     }
 }
 
