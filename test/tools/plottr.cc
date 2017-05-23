@@ -30,6 +30,8 @@ void printTree(std::string fname)
     readVal2(ifs, trh);
     trh.check();
 
+    std::cout << "File is for rank " << int(trh.worldRank) << " / " << int(trh.worldSize) << "\n";
+
     init(trh.domainSize[0], trh.domainSize[1]);
     gtree.rank = trh.worldRank;
 
