@@ -26,33 +26,12 @@ void printTree(std::string fname)
 
     std::ifstream ifs(fname, std::ios::binary);
 
-    // Read and check header
-    char header[40];
-    ifs.read(reinterpret_cast<char*>(header), 40);
+    TrHeader trh;
+    readVal2(ifs, trh);
+    trh.check();
 
-    if (header[0] != 'L' || header[1] != 'T') {
-        throw std::invalid_argument(fname);
-        throw std::invalid_argument("Input file is not a valid ltree file.");
-    }
-
-    int dim = int(header[4]);
-    int idlen = int(header[5]);
-    uint16_t datalen = *reinterpret_cast<uint16_t*>(&header[6]);
-
-    double w = *reinterpret_cast<double*>(&header[24]);
-    double h = *reinterpret_cast<double*>(&header[32]);
-
-    if (header[2] != 3)
-        throw std::runtime_error("Major version of file format incompatible");
-    if (dim != DIM)
-        throw std::runtime_error("Dimension of file tree does not match structure.");
-    if (datalen != sizeof(data_t))
-        throw std::runtime_error("Data size in file does not match structure.");
-    if (idlen != sizeof(ident_t))
-        throw std::runtime_error("ID size in file does not match structure.");
-
-    init(w, h);
-    gtree.rank = -1;
+    init(trh.domainSize[0], trh.domainSize[1]);
+    gtree.rank = trh.worldRank;
 
     ident_t toInsert;
     cell_t newcl;
