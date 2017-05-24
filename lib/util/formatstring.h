@@ -36,7 +36,7 @@ template<>
 inline bool print(std::ostream& os, int N, int v)
 {
     if (!N) {
-        os << std::setfill('0') << std::setw(5) << v;
+        os << v;
         return true;
     }
     return false;
