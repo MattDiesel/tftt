@@ -2,3 +2,6 @@
 include/
 build/
 *.sublime-*
+
+*.pdf
+*.gnuploterrors
