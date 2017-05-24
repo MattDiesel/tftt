@@ -65,7 +65,6 @@ typedef double& (*fnDataRef)(data_t& d);
 
 extern struct TFTTOPTIONS {
     int two2oneFlag; // 0 - None, 1 - strict, 2 - incl. corners, 3 - 3-2-1
-    int maxDepth;
 } options;
 
 struct CellRef;
