@@ -343,7 +343,6 @@ int main(int argc, char* argv[])
     c.pos[0] = startPos[0];
     c.pos[1] = startPos[1];
 
-    tftt::options.ghostsFlag = 0;
     tftt::options.two2oneFlag = 2;
 
     // Read from file:
@@ -359,7 +358,6 @@ int main(int argc, char* argv[])
             tfetch("circle.end[0]", endPos[0]);
             tfetch("circle.end[1]", endPos[1]);
             tfetch("circle.radius", c.r);
-            tfetch("tftt.ghosts", tftt::options.ghostsFlag);
             tfetch("tftt.two2one", tftt::options.two2oneFlag);
         }
         catch (std::exception& e) {
@@ -382,7 +380,6 @@ int main(int argc, char* argv[])
                   << "\tcircle.end[0] = " << endPos[0] << "\n"
                   << "\tcircle.end[1] = " << endPos[1] << "\n"
                   << "\tcircle.radius = " << c.r << "\n"
-                  << "\ttftt.ghosts = " << tftt::options.ghostsFlag << "\n"
                   << "\ttftt.two2one = " << tftt::options.two2oneFlag << std::endl;
 
         // Init tree to min depth
