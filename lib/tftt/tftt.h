@@ -8,8 +8,8 @@ namespace tftt {
 
 // Constants for children, vertices, neighbours
 
-//! Neighbours. P = positive dir, N = negative
-//! Neighbours indices are made up of the direction (1 for positive) in the
+//! \brief Neighbours. P = positive dir, N = negative
+//! \details Neighbours indices are made up of the direction (1 for positive) in the
 //! lsb, and the dimension number in higher bits.
 enum NEIGHBOUR_INDICES {
     NB_XN = 0,
@@ -21,8 +21,8 @@ enum NEIGHBOUR_INDICES {
 };
 
 
-//! Vertices (2d)
-//! Vertices are numbered in the same way children are numbered as seen by the
+//! \brief Vertices (2d)
+//! \details Vertices are numbered in the same way children are numbered as seen by the
 //! centre of the cell - using one bit per dimension, with a 1 in that position
 //! representing the positive direction. Dimensions are ordered with the lowest
 //! ranked dimension in the lsb, so {x,y,z} coordinates would be stored ZYX.
@@ -34,8 +34,8 @@ enum VERTEX_INDICES {
 };
 
 
-//! Children (2d)
-//! Children indexing is uses one bit per dimension, with a 1 in that position
+//! \brief Children (2d)
+//! \details Children indexing is uses one bit per dimension, with a 1 in that position
 //! representing the positive direction. Dimensions are ordered with the lowest
 //! ranked dimension in the lsb, so {x,y,z} coordinates would be stored ZYX.
 enum CHILDREN_INDICES {
