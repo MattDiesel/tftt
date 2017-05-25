@@ -13,7 +13,7 @@ set(TFTT_VERSION "0.0.0")
 set(TFTT_BRIEF "${TFTT_NAME} implements a parallel Threaded Fully-Threaded-Tree structure.")
 
 set(COMMON_FLAGS "-std=c++11 ${MPI_COMPILE_FLAGS}")
-set(DEBUG_FLAGS "${COMMON_FLAGS} -O0 -Wall -DTFTT_DEBUG")
+set(DEBUG_FLAGS "${COMMON_FLAGS} -O0 -Wall -DTFTT_DEBUG -ggdb")
 set(RELEASE_FLAGS "${COMMON_FLAGS} -O3 -DNDEBUG")
 set(PROFILE_FLAGS "${COMMON_FLAGS} -O0 -pg")
 
