@@ -59,7 +59,6 @@ void calcFaceCoef(cell_t cl, TreeCell* tc, int fc)
                 // Fake Neuman
                 tc->poisAlpha[fc] = 2.0*dbound;
                 tc->poisNgb[tc->poisNgbC] = cl;
-                tc->poisNgbDir[tc->poisNgbC] = fc & 1;
                 tc->poisCoef[tc->poisNgbC++] = 2.0 * dbound;
             }
             else {
@@ -69,7 +68,6 @@ void calcFaceCoef(cell_t cl, TreeCell* tc, int fc)
         else {
             tc->poisAlpha[fc] = 2.0*dbound;
             tc->poisNgb[tc->poisNgbC] = ngb;
-            tc->poisNgbDir[tc->poisNgbC] = fc & 1;
             tc->poisCoef[tc->poisNgbC++] = 2.0 * dbound;
         }
 
@@ -103,14 +101,12 @@ void calcFaceCoef(cell_t cl, TreeCell* tc, int fc)
                         tmp = ngbngb.childOnFace(awayDir ^ 1, n);
 
                         tc->poisNgb[tc->poisNgbC] = tmp;
-                        tc->poisNgbDir[tc->poisNgbC] = fc & 1;
                         tc->poisCoef[tc->poisNgbC++] = (2.0/9.0) * dbound;
 
                         // std::cout << "Use " << tmp << " * " << ((1.0/18.0)*dbound) << "\n";
                     }
 
                     tc->poisNgb[tc->poisNgbC] = ps;
-                    tc->poisNgbDir[tc->poisNgbC] = fc & 1;
                     tc->poisCoef[tc->poisNgbC++] = (4.0 / 3.0) * dbound;
 
                     // std::cout << "Use " << tmp << " * " << (2.0/9.0*dbound) << "\n";
@@ -121,13 +117,11 @@ void calcFaceCoef(cell_t cl, TreeCell* tc, int fc)
                     tc->poisAlpha[fc] += dbound;
 
                     tc->poisNgb[tc->poisNgbC] = ngbngb;
-                    tc->poisNgbDir[tc->poisNgbC] = fc & 1;
                     tc->poisCoef[tc->poisNgbC++] = (1.0 / 3.0) * dbound;
 
                     // std::cout << "Use " << ngbngb << " * " << (1.0/12.0*dbound) << "\n";
 
                     tc->poisNgb[tc->poisNgbC] = ps;
-                    tc->poisNgbDir[tc->poisNgbC] = fc & 1;
                     tc->poisCoef[tc->poisNgbC++] = (4.0 / 3.0) * dbound;
 
                     // std::cout << "Use " << ngbngb << " * " << (0.25*dbound) << "\n";
@@ -145,7 +139,6 @@ void calcFaceCoef(cell_t cl, TreeCell* tc, int fc)
                 tmp = ngb.childOnFace(fc ^ 1, n);
 
                 tc->poisNgb[tc->poisNgbC] = tmp;
-                tc->poisNgbDir[tc->poisNgbC] = fc & 1;
                 tc->poisCoef[tc->poisNgbC++] = 2.0/3.0 * dbound;
 
                 // std::cout << "Use " << tmp << " * " << (0.3333*dbound) << "\n";
@@ -158,7 +151,6 @@ void calcFaceCoef(cell_t cl, TreeCell* tc, int fc)
 
         tc->poisAlpha[fc] = 1.0 * dbound;
         tc->poisNgb[tc->poisNgbC] = ngb;
-        tc->poisNgbDir[tc->poisNgbC] = fc & 1;
         tc->poisCoef[tc->poisNgbC++] = 1.0 * dbound;
 
         // std::cout << "Use " << ngb << " * " << (0.5*dbound) << "\n";
@@ -180,14 +172,12 @@ void calcFaceCoef(cell_t cl, TreeCell* tc, int fc)
                 tmp = ngbngb.childOnFace(awayDir ^ 1, n);
 
                 tc->poisNgb[tc->poisNgbC] = tmp;
-                tc->poisNgbDir[tc->poisNgbC] = fc & 1;
                 tc->poisCoef[tc->poisNgbC++] = (1.0/9.0) * dbound;
 
                 // std::cout << "Use " << tmp << " * " << ((1.0/18.0)*dbound) << "\n";
             }
 
             tc->poisNgb[tc->poisNgbC] = ngb;
-            tc->poisNgbDir[tc->poisNgbC] = fc & 1;
             tc->poisCoef[tc->poisNgbC++] = (4.0 / 9.0) * dbound;
 
             // std::cout << "Use " << tmp << " * " << (2.0/9.0*dbound) << "\n";
@@ -198,13 +188,11 @@ void calcFaceCoef(cell_t cl, TreeCell* tc, int fc)
             tc->poisAlpha[fc] = 2.0/3.0 * dbound;
 
             tc->poisNgb[tc->poisNgbC] = ngbngb;
-            tc->poisNgbDir[tc->poisNgbC] = fc & 1;
             tc->poisCoef[tc->poisNgbC++] = (1.0 / 6.0) * dbound;
 
             // std::cout << "Use " << ngbngb << " * " << (1.0/12.0*dbound) << "\n";
 
             tc->poisNgb[tc->poisNgbC] = ngb;
-            tc->poisNgbDir[tc->poisNgbC] = fc & 1;
             tc->poisCoef[tc->poisNgbC++] = 0.5 * dbound;
 
             // std::cout << "Use " << ngbngb << " * " << (0.25*dbound) << "\n";
@@ -224,7 +212,7 @@ void relax(double omega, fnDataRef datafn, fnCell cellfn)
 
         betas = 0.0;
         for (int n = 0; n < tc.poisNgbC; n++) {
-            betas += datafn(tc.poisNgb[n].data()) * tc.poisCoef[n]; // * (tc.poisNgbDir ? 1.0 : -1.0); // Todo: Rho?
+            betas += datafn(tc.poisNgb[n].data()) * tc.poisCoef[n]; // Todo: Rho?
         }
         alphas = tc.cenCoef;
 

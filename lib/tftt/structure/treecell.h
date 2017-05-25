@@ -45,7 +45,6 @@ struct TreeCell {
 
     int poisNgbC;
     CellRef poisNgb[12];
-    bool poisNgbDir[12];
     double poisCoef[12];
     double poisAlpha[4];
     double cenCoef;
