@@ -62,6 +62,59 @@ void drawMesh(std::ostream& os)
 }
 
 
+#if DIM == 2
+
+void drawPrettyMesh(std::string fname)
+{
+    std::ofstream ofs(fname);
+    drawPrettyMesh(ofs);
+}
+
+void drawPrettyMesh(std::ostream& os, cell_t cl)
+{
+    if (!cl.hasChildren()) return;
+
+    os << cl.centre(0) << " " << cl.origin(1) << "\n"
+       << cl.centre(0) << " " << (cl.origin(1)+cl.size(1)) << "\n\n"
+       << cl.origin(0) << " " << cl.centre(1) << "\n"
+       << (cl.origin(0)+cl.size(0)) << " " << cl.centre(1) << "\n\n";
+
+    for (auto clch : *cl.children()) {
+        drawPrettyMesh(os, clch);
+    }
+
+    constexpr int sides[4][2] = {
+        {0, 2},
+        {1, 3},
+        {0, 1},
+        {2, 3}
+    };
+
+    if (cl.isRoot()) {
+        // Draw borders
+    }
+    else {
+        cell_t nbcl;
+        for (int nb = 0; nb < (1<<DIM); nb++) {
+            nbcl = cl.neighbour(nb);
+            if (nbcl.parent() == cl.parent()) continue;
+
+            if (nbcl.level() == cl.level() && !nbcl.hasChildren()) {
+                os << cl.vertexPoint(sides[nb][0], 0) << " " << cl.vertexPoint(sides[nb][0], 1) << "\n"
+                   << cl.vertexPoint(sides[nb][1], 0) << " " << cl.vertexPoint(sides[nb][1], 1) << "\n\n";
+            }
+        }
+    }
+}
+
+void drawPrettyMesh(std::ostream& os)
+{
+    drawPrettyMesh(os, CellRef(-1));
+}
+
+#endif
+
+
 void drawCell(std::ostream& os, cell_t const& c)
 {
     double vtc[1<<DIM][DIM];
@@ -178,6 +231,28 @@ void drawPartialCurve(std::ostream& os)
         os << c.centre(0);
         for (int d = 1; d < DIM; d++) {
             os << " " << c.centre(d);
+        }
+
+        os << "\n";
+    }
+}
+
+void drawPartialCurve(std::string fname, cell_t from, cell_t to)
+{
+    std::ofstream ofs(fname);
+    drawPartialCurve(ofs, from, to);
+}
+
+void drawPartialCurve(std::ostream& os, cell_t from, cell_t to)
+{
+    auto bgn = tagCurve::curve_iterator(from);
+    auto end = tagCurve::curve_iterator(to);
+    end++;
+
+    for (auto& cl = bgn; cl != end; cl++) {
+        os << cl->centre(0);
+        for (int d = 1; d < DIM; d++) {
+            os << " " << cl->centre(d);
         }
 
         os << "\n";

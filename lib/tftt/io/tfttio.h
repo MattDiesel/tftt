@@ -24,6 +24,17 @@ void drawMesh(std::string fname);
 void drawMesh(std::ostream& os);
 
 
+#if DIM == 2
+
+    //! Draws the leaves to file, without duplicating any lines
+    void drawPrettyMesh(std::string fname);
+
+    //! \copydoc drawPrettyMesh()
+    void drawPrettyMesh(std::ostream& os);
+
+#endif
+
+
 //! Draws the leaves of the tree whose rank is the current node
 void drawPartialMesh(std::string fname);
 
@@ -52,8 +63,13 @@ void drawCurve(std::ostream& os);
 
 //! Draws the curve of the leaves in the tree whose rank is the current node
 void drawPartialCurve(std::string fname);
-//! \copydoc drawPartialCurve()
+//! \copydoc drawPartialCurve(std::string)
 void drawPartialCurve(std::ostream& os);
+//! Draws the curve of the leaves in the tree within a range
+void drawPartialCurve(std::string fname, cell_t from, cell_t to);
+//! \copydoc drawPartialCurve(std::string, cell_t, cell_t)
+void drawPartialCurve(std::ostream& os, cell_t from, cell_t to);
+
 
 //! Draws the boundary cells
 void drawBoundaries(std::string fname);
