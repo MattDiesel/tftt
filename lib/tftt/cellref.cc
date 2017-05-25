@@ -30,11 +30,11 @@ CellRef::CellRef(int flag)
 CellRef::CellRef(TreeGroup* gr, int ind)
     : group(gr), index(ind)
 {
-    #ifdef TFTT_DEBUG
-    if (!gr) throw std::invalid_argument("Null TreeGroup given.");
-    if ((gr != gtree.root && ind < 0)
-            || ind > (1 << DIM)) throw std::invalid_argument("Child index is invalid for dimension of problem.");
-    #endif
+    // #ifdef TFTT_DEBUG
+    // if (!gr) throw std::invalid_argument("Null TreeGroup given.");
+    // if ((gr != gtree.root && ind < 0)
+    //         || ind > (1 << DIM)) throw std::invalid_argument("Child index is invalid for dimension of problem.");
+    // #endif
 }
 
 
@@ -372,12 +372,14 @@ vertex_t CellRef::vertex(int v) const
 
 double CellRef::size(int d) const
 {
+    if (isRoot()) return gtree.size[d];
     return gtree.size[d] / (2 << level());
 }
 
 
 double CellRef::origin(int d) const
 {
+    if (isRoot()) return 0.0;
     return group->origin[d] + (((index >> d) & 1) * size(d));
 }
 
