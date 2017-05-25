@@ -1,0 +1,383 @@
+
+\documentclass{IIBproject}
+\usepackage[utf8]{inputenc}
+
+\usepackage{setspace}
+\pagestyle{empty}
+\onehalfspacing
+
+\usepackage{graphicx,float,epstopdf}
+\newcommand{\grpath}{../../build/report/movecells}
+\graphicspath{{\grpath/}}
+
+\usepackage{amsmath,amsfonts,bm,physics}
+\newcommand{\vect}[1]{\bm{#1}}
+\newcommand{\mat}[1]{\mathbf{#1}}
+\newcommand{\dra}{\dashrightarrow}
+\newcommand{\dla}{\dashleftarrow}
+\newcommand{\acc}{{\mkern 0.5mu\cdot\mkern 0.5mu}}
+
+\usepackage[section]{algorithm}
+\usepackage{algpseudocode}
+\algnewcommand\algorithmicsend{\textbf{send}}
+\algnewcommand\Send{\State\algorithmicsend\ }
+\algnewcommand\algorithmicrecv{\textbf{recv}}
+\algnewcommand\Recv{\State\algorithmicrecv\ }
+\algnewcommand\algorithmicgather{\textbf{gather}}
+\algnewcommand\Gather{\State\algorithmicgather\ }
+\algnewcommand\algorithmicscatter{\textbf{scatter}}
+\algnewcommand\Scatter{\State\algorithmicscatter\ }
+\algnewcommand\algorithmicforeach{\textbf{for\ each}}
+\algblockdefx[ForEach]{ForEach}{EndFor}
+[1][]{\algorithmicforeach\ #1}
+{\textbf{end\ for}}
+
+\usepackage[shell]{gnuplottex}
+\usepackage{xpatch}
+\let\nodirfigname\figname
+\def\figname{./tmp/\nodirfigname}
+\xpatchcmd\gnuplot{\figname}{\nodirfigname}{}{}
+
+% \usepackage{minted,sourcecodepro}
+
+\usepackage[backend=biber,bibstyle=alphabetic,citestyle=alphabetic]{biblatex}
+\bibliography{refs}
+
+
+\begin{document}
+
+\date{14th November 2016}
+\author{Matt Diesel (md639)}
+\supervisor{Dr. Jie Li}
+\title{Parallel Adaptation of Orthotree Meshes}
+
+% \maketitle
+
+% \thispagestyle{empty}
+% \begin{abstract}
+% Abstract
+% \end{abstract}
+
+% \tableofcontents
+% \newpage
+\pagestyle{plain}
+
+
+% \section{Introduction}
+
+\section{Method}
+
+Hopefully already defined by this point:
+
+\begin{itemize}
+	\item $\mathbb{W} \in [0;W)$ the set of processes in the world
+	\item $p$ the rank of the current process
+	\item A cell reference $\mathcal{C}$ that has a number of methods:
+	\begin{itemize}
+		\item $\mathcal{C}\acc\textproc{rank}$ - the rank owning the cell, uses the variable $\rho$ to denote.
+		\item $\mathcal{C}\acc\textproc{data}$ - the data associated with the cell, uses the variable $\phi$ to denote.
+		\item $\mathcal{C}\acc\textproc{ident}$ - the cells identifier, uses the variable $\lambda$ to denote. 
+		\item A set of neighbours $\mathcal{C}\acc\vect{\mathcal{N}} = \{\mathcal{N}_0 , \mathcal{N}_1, \dots , \mathcal{N}_n\}$
+		\item A space filling curve
+	\end{itemize}
+	\item The set of leaves in the current process' tree $\mathbb{L}$
+\end{itemize}
+
+
+\subsection{Global Identifiers}
+
+Requires the following functions:
+\begin{itemize}
+	\item $\textproc{Find}(\lambda) \mapsto \mathcal{C}$ - Finds the cell $\mathcal{C}$ with identifier $\lambda$.
+	\item $\textproc{Insert}(\lambda) \mapsto \mathcal{C}$ - Inserts and returns a reference to the cell $\mathcal{C}$ with identifier $\lambda$.
+\end{itemize}
+
+
+\subsection{Poisson Neighbourhoods}
+
+\begin{itemize}
+	\item A poisson neighbourhood $\vect{\mathcal{P}} = \{\mathcal{P}_0 , \mathcal{P}_1, \dots , \mathcal{P}_n\}$
+	\item A set of coefficients $\vect{\beta} = \{\beta_0, \beta_1,\dots,\beta_n\}$
+	\item A central coefficient $\alpha$
+	\item A function $\textproc{CalcPoisCoefs}(\mathcal{C}) \mapsto \{ \vect{\mathcal{P}}, \vect{b}, \alpha \}$
+\end{itemize}
+
+
+\subsection{Ghosts and Borders}
+\label{sec:ghostsandborders}
+
+\begin{itemize}
+	\item The set of ghost cells for the current process' tree $\mathbb{G}$. The set of ghost cells to a specific process $p$ is $\mathbb{G}_p$. 
+
+	$\mathbb{G}_b = \bigcup_{\mathcal{C}\in\mathbb{L}} \bigcup_{\mathcal{P}\in\mathcal{C}} \mathcal{P} \forall \mathcal{P}\acc\textproc{rank} = b$
+	\item The set of border cells for the current process' tree $\mathbb{B}$. The set of border cells to a specific process $p$ is $\mathbb{B}_p$.
+	\item For two processes $a$ and $b$, $\mathbb{G}_b$ on $a$ is exactly the same as $\mathbb{B}_a$ on $b$.
+\end{itemize}
+
+
+\subsection{Distribution}
+
+
+\subsection{Ghost Synchronisation}
+
+With each iteration, the data for each processes ghost cells becomes out of date. Synchronisation is used at the end of every iteration to renew this data. 
+
+Since it is required once per iteration, ghost synchonisation is by far the most common parallel operation required. The set up described previously in Section \ref{sec:ghostsandborders} is designed to minimise this process. By making use of the equivalence of the ghost and border sets for two processes, the only information transfer required is the data from the border cells.
+
+Without compression, Algorithm \ref{alg:sync-sendrecv} is therefore the smallest transfer of information possible for this stage.
+
+\begin{algorithm}[H]
+\caption{Synchronisation}
+\label{alg:sync-sendrecv}
+
+\begin{algorithmic}
+\ForEach {process boundary $b \in \mathbb{W} \setminus p$}
+	\State $\vect{\Phi} \gets \emptyset$
+	\ForEach {border cell $\mathcal{B}_n \in \mathbb{B}_b$}
+		\State $\Phi_n \gets \mathcal{B}_n\acc\textproc{data}$
+	\EndFor
+	\Send $\vect{\Phi} \dra p_b$
+\EndFor
+\Statex
+\ForEach {process boundary $b \in \mathbb{W} \setminus p$}
+	\Recv $\hat \Phi \dla p_b$
+
+	\ForEach {ghost cell $\mathcal{G}_n \in \mathbb{G}_b$}
+		\State $\mathcal{G}_n\acc\textproc{data} \gets \Phi_n$
+	\EndFor
+\EndFor
+\end{algorithmic}
+\end{algorithm}
+
+Further small improvements are made by noting that the length of the vector $\abs{\vect{\Phi}} = \abs{\mathbb{B}_b}$ for each boundary, and so this memory block can be re\"used to save the cost of repeated allocations. 
+
+\subsection{Rebalancing}
+
+Rebalancing is achieved by calculating the average number of cells per processor, and the movement of cells between processors required to achieve a perfect balance. Since the tree is distributed using a space filling curve, the cells can only be passed by the process to the next or previous, the process at rank 0 starts with the first cell of the global curve and the process at the ultimate rank ends with the last. Regardless of the dimension of the problem, the space filling curve reduces it to one dimension. A further assumption is made that the number of cells being passed is small compared to the cell count for a process.
+
+In this way, the rebalancing of the tree, with the exception of the calculations for the pass counts, requires no knowledge of the full tree, only the list of cells being passed to/from the left/right processor. 
+
+\begin{figure}[H]
+	\label{fig:rebalance-init}
+	\caption{The starting conditions for the rebalancing example}
+	\input{\grpath/init.tex}
+\end{figure}
+
+Rebalancing is split into the following subroutines:
+
+\begin{description}
+	\item[\ref{sec:rebalancing-calc} Balance calculations] The cell count for every process is gathered on a single node, that evaluates what cell movement $\Delta$ is required.
+	\item[\ref{sec:rebalancing-updatecellranks} Update cell ranks] Each process updates the first $\Delta$ cells to their new rank.
+	\item[\ref{sec:rebalancing-notifyrank} Notify rank changes] Processes for whom the changes in rank would affect their ghosts (but aren't already involved in the exchange) are notified of the new cell ranks.
+	\item[\ref{sec:rebalancing-gensendset} Send data] The cells moving between processes, as well new ghost cells for the destination process, are transmitted. 
+	\item[\ref{sec:rebalancing-insertcells} Insert new cells] The new cells are inserted into the processes version of the tree, and the start/end pointers are updated.
+	\item[\ref{sec:rebalancing-regenghosts} Update ghost cells] The ghost and boundary sets are recreated from the new tree. 
+\end{description}
+
+
+\subsubsection{Balance Calculation}
+\label{sec:rebalancing-calc}
+
+The cell counts $\vect{c}$ from each node are gathered on rank zero. Balancing is determined necessary based on a parameter $c_{crit}$ if $\norm{\vect{c}}>c_{crit}$. Algorithm \ref{alg:rebalance-calculatepassing} is then sufficient to determine the number of cells $\Delta$ each process passes left and right to balance every process to $\bar c$. A negative value gives a cell count being received. 
+
+The loop in Algorithm \ref{alg:rebalance-calculatepassing} can be reformulated as a proof by induction that the result is the minimum $\Delta$ satisfying the conditions imposed and $\abs{\mathbb{L}}_p=\bar c$ for all $p$.
+
+\begin{algorithm}[H]
+\caption{Rebalancing Calculations}
+\label{alg:rebalance-calculatepassing}
+
+\begin{algorithmic}
+\Ensure For each process $p \in \mathbb{W}$ a pair of cell pass counts $\Delta_p = \{l,r\}$ where $l$ and $r$ are the number of cells to pass left and right respectively.
+\Statex
+% \Gather $\vect{c} \dla$ \Call{CellCount}{$p$}
+\Gather $\vect{c} \dla \abs{\mathbb{L}}_p $
+\ForEach {process $p \in \mathbb{W}$}
+	\State $l_p \gets -r_{p-1}$
+	\State $r_p \gets c_p - l_p - \bar{c}$
+\EndFor
+\end{algorithmic}
+\end{algorithm}
+
+Each process then receives from rank zero the two values in $\Delta_p$ which are enough to fully describe the following cell movements. 
+
+
+\subsubsection{Update Cell Ranks}
+\label{sec:rebalancing-updatecellranks}
+
+Each process marks the cells to be moved with their new rank, and stores the set of changes that would affect the ghost cells of other processes, by using the set of border cells $\mathbb{B}$. The process receiving the cells doesn't need to be notified of changes, as this data will be transmitted during the process of Section \ref{sec:rebalancing-gensendset}.
+
+\begin{figure}[H]
+	\label{fig:rebalance-ranks}
+	\caption{Example mesh, with 20 cells being marked to be moved from rank 0 to rank 1}
+	\input{\grpath/overlap.tex}
+\end{figure}
+
+\begin{algorithm}[H]
+\caption{Updating Cell Ranks}
+\label{alg:rebalance-updateranks}
+
+\begin{algorithmic}
+\Require Number of cells to pass left and right $\Delta = \{\Delta_l,\Delta_r\}$
+\Ensure For each border $b$, a set $\vect{N}_b \in \{\lambda,r\}^n$ of pairs of cell identifiers $\lambda$ and new rank numbers $r$.
+\Statex
+\State $\vect{N} \gets \emptyset$
+\ForEach {cell $\mathcal{C} \in \{\mathbb{L} : \text{in first }\Delta_l\} $}
+	\Comment{For right, $\mathcal{C} \in \{\mathbb{L} : \text{in last }\Delta_r\} $}
+	\State $\mathcal{C} \acc \textproc{rank} \gets p_{left}$
+	\ForEach {process border $b \in \mathbb{W} \setminus \{p, p_{left}\}$}
+		\If {$\mathcal{C} \in \mathbb{B}_b$}
+			\State $\vect{N}_b \gets \{\mathcal{C} \acc \textproc{ident} , p_{left}\}$
+		\EndIf
+	\EndFor
+\EndFor
+
+\end{algorithmic}
+\end{algorithm}
+
+The routine in Algorithm \ref{alg:rebalance-updateranks} is repeated for the cells to move right, using the same sets $\vect{N}_b$.
+
+
+\subsubsection{Notifying Rank Changes}
+\label{sec:rebalancing-notifyrank}
+
+Each process then sends its rank change sets, and receives all those relevant to its ghosts according to Algorithm \ref{alg:rebalance-notifyranks}. 
+
+This rank change stage needs to occur before the cells are moved to the new process, as the receiving process is not guaranteed to have the relevant border data required. 
+
+\begin{figure}[H]
+	\label{fig:rebalance-notify}
+	\caption{The example mesh, with the ghost cells of rank 2 whose rank will change following the rebalancing highlighted}
+	\input{\grpath/ghostnotify.tex}
+\end{figure}
+
+\begin{algorithm}[H]
+\caption{Notifying Cell Rank Changes}
+\label{alg:rebalance-notifyranks}
+
+\begin{algorithmic}
+\Require For each border $b$, a set $\vect{N}_b \in \{\lambda,\rho\}^n$ of pairs of cell identifiers $\lambda$ and new rank numbers $\rho$.
+\Statex
+\ForEach {process border $b \in \mathbb{W} \setminus p$}
+	\Send $N_b \dra p_b$
+\EndFor
+\Statex
+\ForEach {process border $b \in \mathbb{W} \setminus p$}
+	\Recv $\hat N_b \dla p_b$
+	\ForAll {$\{\lambda,\rho\} \in \hat N_b$}
+		\State $\mathcal{C}\gets\textproc{Find}(\lambda)$
+		\State $\mathcal{C}\acc\textproc{rank} \gets \rho$
+	\EndFor
+\EndFor
+\end{algorithmic}
+\end{algorithm}
+
+
+\subsubsection{Generate Send Sets}
+\label{sec:rebalancing-gensendset}
+
+Each process then generates the set of cell required to be sent. This is comprised of the cells to be moved and their poisson neighbours who are not on the rank being moved to, as these will already be present on the target process.
+
+\begin{figure}[H]
+	\label{fig:rebalance-final}
+	\caption{The example mesh, with the cells of $T_r$ highlighted}
+	\input{\grpath/Tr.tex}
+\end{figure}
+
+\begin{algorithm}[H]
+\caption{Generate Send Sets}
+\label{alg:rebalance-gensendsets}
+
+\begin{algorithmic}
+\Require Number of cells to pass left $\Delta_l$
+\Ensure A set of packed cells $\vect{T}_l \in \{\lambda, \rho, \phi\}^n$ containing the cell's identifiers $\lambda$, rank $\rho$ and data $\phi$.
+\Statex
+\State $\vect{T}_l \gets \emptyset$
+\ForEach {cell $\mathcal{C} \in \{\mathbb{L} : \text{in first }\Delta_l\} $}
+	\Comment{If sending right, $\mathcal{C} \in \{\mathbb{L} : \text{in last }\Delta_r\} $}
+	\State $T_l \gets \{\mathcal{C}\acc\textproc{ident}, \mathcal{C}\acc\textproc{rank}, \mathcal{C}\acc\textproc{data}\}$
+
+	\ForEach {cell $\mathcal{P} \in \mathcal{C}\acc\vect{\mathcal{P}}$}
+		\Comment{$\mathcal{C}\acc\vect{\mathcal{P}}$ is the poisson neighbours of $\mathcal{C}$}
+		\If {$\mathcal{P}\acc\textproc{rank} \neq p_{left}$}
+			\State $T_l \gets \{\mathcal{P}\acc\textproc{ident}, \mathcal{P}\acc\textproc{rank}, \mathcal{P}\acc\textproc{data}\}$
+		\EndIf
+	\EndFor
+\EndFor
+\end{algorithmic}
+\end{algorithm}
+
+The two sets $T_l$ and $T_r$ are then transmitted left and right respectively, and the corresponding sets from the foreign processes $U_l$ and $U_r$ are received. 
+
+\begin{algorithm}[H]
+\caption{Send Sets}
+\label{alg:rebalance-sendsets}
+
+\begin{algorithmic}
+\Require A set of packed cells $\vect{T}_l \in \{\lambda, \rho, \phi\}^n$ containing the cell's identifiers $\lambda$, rank $\rho$ and data $\phi$.
+\Statex
+\Send $\vect{T}_l \dra p_{left} \qquad\ \,;\qquad \algorithmicsend\ \vect{T}_r \dra p_{right}$
+\Recv $\vect{U}_r \dla p_{right} \qquad;\qquad \algorithmicrecv\ \vect{U}_l \dla p_{left}$
+\end{algorithmic}
+\end{algorithm}
+
+The combined set $\vect{U}=\vect{U}_l\cup\vect{U}_r$ now contains all the additional information required by the process that wasn't available prior.  
+
+\subsubsection{Insert Cell Set}
+\label{sec:rebalancing-insertcells}
+
+Each process then inserts the received cells in $\vect{U}$ and calculates the poisson neighbourhood. All the new cells must be inserted before calculating poisson neighbourhoods, as the correct neighbourhood may include new cells that wouldn't exist prior.
+
+\begin{figure}[H]
+	\label{fig:rebalance-final}
+	\caption{The rebalanced example mesh}
+	\input{\grpath/result.tex}
+\end{figure}
+
+\begin{algorithm}[H]
+\caption{Insert Received Cells}
+\label{alg:rebalance-insertset}
+
+\begin{algorithmic}
+\Require A set of received packed cells from the right $\vect{U} \in \{\lambda, \rho, d\}^n$ containing the cell's identifiers $\lambda$, rank $\rho$ and data $\phi$.
+\Statex
+\State $\vect{\Gamma} \gets \emptyset$ \Comment{Cache the cells corresponding to $\vect{U}$}
+\ForEach {packed cell $\{\lambda, \rho, \phi\} \in \vect{U}$}
+	\State $\mathcal{C} \gets \Call{Insert}{\lambda}$
+	\State $\mathcal{C}\acc\textproc{rank} \gets \rho \qquad;\qquad \mathcal{C}\acc\textproc{data} \gets \phi$
+	\State $\vect{\Gamma} \gets \mathcal{C}$
+\EndFor
+\Statex
+\ForEach {cell $\mathcal{C} \in \vect{\Gamma}$}
+	\State $\mathcal{C}\acc\{\vect{\mathcal{P}}, \vect{b}, \alpha \} \gets \textproc{CalcPoisCoefs}(\mathcal{C})$
+\EndFor
+\end{algorithmic}
+\end{algorithm}
+
+
+\subsubsection{Regenerate Ghosts}
+\label{sec:rebalancing-regenghosts}
+
+Finally, the set of ghost and border cells for each process is reconstructed. 
+
+
+% \section{Results}
+
+% \subsection{Boundary size for Hilbert Curve}
+
+% It is possible to test the size of the boundary for different practical scenarios when using The Hilbert Curve to distribute. This is done for a complex and finely detailed geometry (the Mandelbrot example) as well as a more simple geometry with smooth edges. 
+
+% Boundary sizes need min/max/mean relative to cell count for many configurations.
+
+% Comparison points of other space filling curves.
+
+% Description of optimal method.
+
+% \subsection{Performance against Thread Count}
+
+% \subsection{Cluster Operation Above Single Node Memory Limit}
+
+% \section{Conclusion}
+
+% \printbibliography
+
+\end{document}
