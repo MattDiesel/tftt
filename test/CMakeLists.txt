@@ -62,4 +62,5 @@ add_subdirectory(tools)
 add_subdirectory(poisson)
 add_subdirectory(parpois)
 add_subdirectory(parcircle)
+add_subdirectory(report)
 
