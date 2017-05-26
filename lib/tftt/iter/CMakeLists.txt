@@ -7,6 +7,7 @@ set(tfttiter_SRCS
     leaforthos.cc 
     neighbours.cc 
     cellrefiterator.cc 
+    poissonneighbours.cc 
 )
 
 add_library(tfttiter STATIC
