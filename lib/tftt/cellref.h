@@ -16,6 +16,7 @@ namespace tftt {
 
 struct TreeGroup;
 struct tagNeighbours;
+struct tagPoissonNeighbours;
 
 
 //! Flags for a CellRef structure
@@ -104,6 +105,9 @@ public:
 
     //! Returns a convenient structure allowing iteration over neighbours
     tagNeighbours neighbours() const;
+
+    //! Returns a convenient structure allowing iteration over poisson neighbours
+    tagPoissonNeighbours poissonNeighbourhood() const;
 
     //! The orientation of the space filling curve at this cell.
     int orientation() const;

@@ -186,6 +186,12 @@ tagNeighbours CellRef::neighbours() const
 }
 
 
+tagPoissonNeighbours CellRef::poissonNeighbourhood() const
+{
+    return tagPoissonNeighbours(*this);
+}
+
+
 int CellRef::orientation() const
 {
     // = f(index, group->orientation)
