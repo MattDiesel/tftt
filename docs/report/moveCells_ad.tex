@@ -1,0 +1,234 @@
+
+\ifx\du\undefined
+  \newlength{\du}
+\fi
+\setlength{\du}{15\unitlength}
+
+\begin{tikzpicture}[auto]
+\pgftransformxscale{1.000000}
+\pgftransformyscale{-1.000000}
+
+\linespread{1}
+
+\tikzset{
+    adaction/.style={
+        rectangle,
+        rounded corners,
+        draw=black,
+        very thick,
+        minimum width=4\du,minimum height=2\du,
+        align=center
+    },
+    adedge/.style={->,
+        >=stealth,
+        shorten >=1pt,
+        thick, 
+        to path={(\tikztostart) -| (\tikztotarget)}
+    },
+    adforkedge/.style={->,
+        >=stealth,
+        shorten >=1pt,
+        thick, 
+        to path={
+            (perpendicular cs: horizontal line through={(\tikztostart.south)},
+                                     vertical line through={(\tikztotarget)}) 
+            
+            -- (\tikztotarget) \tikztonodes
+        }
+    },
+    adjoinedge/.style={->,
+        >=stealth,
+        shorten >=2pt,
+        thick, 
+        to path={
+            (\tikztostart)
+            -- (perpendicular cs: horizontal line through={(\tikztotarget.north)},
+                                 vertical line through={(\tikztostart)}) \tikztonodes
+        }
+    },
+    adinit/.style={
+        circle,
+        draw,
+        fill=black,
+        inner sep=0,
+        minimum size=0.8\du
+    },
+    adfinala/.style={
+        circle,
+        draw,
+        inner sep=0,
+        minimum size=0.8\du
+    },
+    adfinalb/.style={
+        circle,
+        draw,
+        fill=black,
+        inner sep=0,
+        minimum size=0.6\du
+    },
+    adfork/.style={
+        rectangle,
+        fill=blue,
+        inner sep=0,
+        minimum width=18\du,minimum height=0.25\du,
+    },
+    adcomms/.style={->,
+        thick, blue
+    },
+    adcommtarget/.style={
+        draw=none,
+        blue
+    }
+}
+
+\begin{scope}[
+        node distance=2\du,
+        every node/.style={}
+]
+
+
+\begin{scope}[
+    node distance=1.5\du
+]
+
+\node[adinit] (init) {};
+\node[adfork, below=of init] (f1) {};
+
+\draw [adedge] (init) -- (f1);
+
+\node[adaction, below=of f1] (r2-count) {$\abs{\mathbb{L}}$};
+\node[adaction, left=3\du of r2-count] (r1-count) {$\abs{\mathbb{L}}$};
+\node[adaction, right=3\du of r2-count] (r3-count) {$\abs{\mathbb{L}}$};
+
+\end{scope}
+
+
+\begin{scope}[
+    node distance=1.5\du
+]
+
+\node[adfork, below=of r2-count] (f2) {};
+\foreach \i in {1,2,3} {
+    \draw [adforkedge] (f1) to (r\i-count);
+    \draw [adjoinedge] (r\i-count) to node [anchor=west] {$c_\i$} (f2);
+}
+
+\node[adaction, below=of f2, xshift=-1.5\du] (balanceCalc) {Balance \\ Calculations};
+
+\node[adfork, below=of balanceCalc, xshift=1.5\du] (f3) {};
+
+\draw [adforkedge] (f2) to node [anchor=west] {$\vect{c}$} (balanceCalc);
+\draw [adjoinedge] (balanceCalc) to node [anchor=west] {$\vect{\Delta}$} (f3);
+
+
+\node[adaction, below=of f3] (r2-updateRanks) {Update \\ Ranks};
+\node[adaction, left=3\du of r2-updateRanks] (r1-updateRanks) {Update \\ Ranks};
+\node[adaction, right=3\du of r2-updateRanks] (r3-updateRanks) {Update \\ Ranks};
+
+\end{scope}
+
+\foreach \i in {1,2,3} {
+    \draw [adforkedge] (f3) to node [anchor=west] {$\Delta_\i$} (r\i-updateRanks);
+
+    \node[adaction, below=3\du of r\i-updateRanks] (r\i-notify) {Notify \\ Changes};
+    \node[adaction, below=3\du of r\i-notify] (r\i-genSet) {Transfer \\ Cells};
+    \node[adaction, below=3\du of r\i-genSet] (r\i-insert) {Insert \\ Cells};
+    \node[adaction, below=3\du of r\i-insert] (r\i-ghosts) {Regen \\ Ghosts};
+
+    \draw [adedge]
+        (r\i-updateRanks.south) -- node [anchor=west] {$\vect{N}$} (r\i-notify.north);
+    \draw [adedge]
+        (r\i-notify.south) -- (r\i-genSet.north);
+    \draw [adedge]
+        (r\i-genSet.south) -- (r\i-insert.north);
+    \draw [adedge]
+        (r\i-insert.south) -- (r\i-ghosts.north);
+
+
+    \node[adcommtarget, above left=1\du of r\i-notify] (r\i-n) {$\vect{\hat N}$};
+    \draw[adcomms,double,<->,shorten >=-6pt] (r\i-notify) -- (r\i-n);
+
+    \coordinate (r\i-mid) at ($(r\i-genSet)!0.4!(r\i-insert)$);
+}
+
+
+\node[adcommtarget, below left=0.1\du of r1-genSet, draw=none, xshift=-1\du] (r0-mid) {};
+
+\draw[adcomms, shorten >=2pt] 
+    (r1-genSet) -- (r0-mid)
+    node [at start, above left] {$\vect{T}_l$};
+\draw[adcomms, shorten >=2pt] 
+    (r0-mid) -- (r1-mid)
+    node [at end, below left] {$\vect{U}_l$};
+
+% \node[adcommtarget, below right=0.1\du of r3-genSet, draw=none, xshift=1\du] (r4-mid) {};
+% \draw[adcomms, shorten >=2pt] 
+%     (r3-genSet) -- (r4-mid)
+%     node [at start, above right] {$\vect{T}_r$};
+% \draw[adcomms, shorten >=2pt] 
+%     (r4-mid) -- (r3-mid)
+%     node [at end, below right] {$\vect{U}_r$};
+
+
+\draw[adcomms, shorten >=2pt] 
+    (r1-genSet) -- (r2-mid)
+    node [at start, above right] {$\vect{T}_r$}
+    node [at end, below left] {$\vect{U}_l$};
+
+\draw[adcomms, shorten >=2pt] 
+    (r2-genSet) -- (r1-mid)
+    node [at start, above left] {$\vect{T}_l$}
+    node [at end, below right] {$\vect{U}_r$};
+
+\draw[adcomms, shorten >=2pt] 
+    (r2-genSet) -- (r3-mid)
+    node [at start, above right] {$\vect{T}_r$}
+    node [at end, below left] {$\vect{U}_l$};
+
+\draw[adcomms, shorten >=2pt] 
+    (r3-genSet) -- (r2-mid)
+    node [at start, above left] {$\vect{T}_l$}
+    node [at end, below right] {$\vect{U}_r$};
+    
+
+\node[adfork, below=3\du of r2-ghosts] (f4) {};
+
+\foreach \i in {1,2,3} {
+    \draw[adjoinedge] (r\i-ghosts) to (f4);
+}
+
+\node[adfinala, below=of f4] (finala) {};
+\node[adfinalb, below=-0.7\du of finala] (finalb) {};
+
+\draw [adedge] (f4) -- (finala);
+
+
+\node[anchor=west, xshift=-1.6\du, right=of r3-count,text width=5.2cm] {
+Every process sends its current cell count to rank zero.
+};
+
+\node[anchor=west, xshift=6.5\du, right=of balanceCalc,text width=5.2cm] {
+The cell count for every process is gathered on rank zero, that evaluates what cell movement $\Delta$ is required.};
+
+\node[anchor=west, xshift=-1.6\du, right=of r3-updateRanks,text width=5.2cm] {
+Each process updates the first $\Delta$ cells to their new rank.};
+
+\node[anchor=west, xshift=-1.6\du, right=of r3-notify,text width=5.2cm] {
+Processes with ghosts whose ranks are changing (but aren't already involved in the exchange) are notified of the new cell ranks.
+};
+
+\node[anchor=west, xshift=-1.6\du, right=of r3-genSet,text width=5.2cm] {
+The cells moving between processes, as well new ghost cells for the destination process, are transmitted.
+};
+
+\node[anchor=west, xshift=-1.6\du, right=of r3-insert,text width=5.2cm] {
+The new cells are inserted into the process' version of the tree, and the start/end pointers are updated.
+};
+
+\node[anchor=west, xshift=-1.6\du, right=of r3-ghosts,text width=5.2cm] {
+The ghost and boundary sets are recreated from the new tree.
+};
+
+\end{scope}
+
+\end{tikzpicture}
