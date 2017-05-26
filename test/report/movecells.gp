@@ -49,12 +49,12 @@ plot 'mesh.init.dat'w l ls 1 notitle, \
         'hilb.r1.init.dat'w l ls 3 title '$\mathbb{L}_1$', \
         'hilb.r2.init.dat'w l ls 4 title '$\mathbb{L}_2$', \
         'hilb.overlapl.dat'w l ls 12 title 'To Send', \
-        'ghostnotify.dat'w l ls 5 title '$\mathbb{G}_{2 \to 0}$'
+        'ghostnotify.dat'w l ls 5 title '$\vect{\hat N}_2$'
 
 # pause -1
 
 set output "Tr.tex"
-plot 'mesh.init.dat'w l lc rgb '#DDDDDD' notitle, \
+plot 'mesh.init.dat'w l ls 1 notitle, \
         'hilb.r0.init.dat'w l ls 2 title '$\mathbb{L}_0$', \
         'hilb.r1.init.dat'w l ls 3 title '$\mathbb{L}_1$', \
         'hilb.r2.init.dat'w l ls 4 title '$\mathbb{L}_2$', \

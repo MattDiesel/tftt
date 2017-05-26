@@ -43,6 +43,13 @@ struct circle {
     }
 };
 
+double dist(tftt::cell_t a, tftt::cell_t b)
+{
+    double x = a.centre(0) - b.centre(0);
+    double y = a.centre(1) - b.centre(1);
+    return x*x + y*y;
+}
+
 
 void drawCurves(std::string fnameFmt)
 {
@@ -67,7 +74,7 @@ int main(int argc, char* argv[])
 {
     // Defaults:
     int minDepth = 3, maxDepth = 5;
-    int worldSize = 3;
+    constexpr int worldSize = 3;
     int pass = 20;
 
     circle c;
@@ -131,6 +138,107 @@ int main(int argc, char* argv[])
     // Fig 1: Initial curve
     tftt::drawPrettyMesh("report/movecells/mesh.init.dat");
     drawCurves("report/movecells/hilb.r{0}.init.dat");
+
+    // Background heatmap hack
+    {
+        int steps = 2 << maxDepth;
+        std::ofstream heatmap("report/ghosts/background.dat");
+        tftt::cell_t cl;
+        double scale = 1.0 / steps;
+        double p[2];
+        for (int x = 0; x < steps; x++) {
+            for (int y = 0; y < steps; y++) {
+                p[0] = x*scale+scale*0.5;
+                p[1] = y*scale+scale*0.5;
+                cl = tftt::atPos(p);
+                heatmap << p[0] << " " << p[1] << " " << (int)cl.rank() << "\n";
+            }
+        }
+        heatmap.close();
+    }
+
+
+    // Fig 1.5: Ghost and border cells
+    {
+        tftt::drawPrettyMesh("report/ghosts/mesh.init.dat");
+
+        std::set<tftt::cell_t, tftt::cell_t::parless> Gp[worldSize][worldSize];
+        std::set<tftt::cell_t, tftt::cell_t::parless> B[worldSize];
+
+        for (auto cl : tftt::curve) {
+            for (auto P : cl.poissonNeighbourhood()) {
+                if (P.isBoundary()) continue;
+
+                if (P.rank() != cl.rank()) {
+                    Gp[cl.rank()][P.rank()].insert(P);
+                    B[cl.rank()].insert(cl);
+                }
+            }
+        }
+
+        {
+            for (int r = 0; r < worldSize; r++) {
+                for (int b = 0; b < worldSize; b++) {
+                    if (r == b) continue;
+
+                    std::ofstream gh(formatString("report/ghosts/gh.r{0}.b{1}.dat", r, b));
+                    std::ofstream bd(formatString("report/ghosts/bd.r{1}.b{0}.dat", r, b));
+                    for (auto g : Gp[r][b]) {
+                        tftt::drawCell(gh, g);
+                        tftt::drawCell(bd, g);
+                    }
+                    gh.close();
+                    bd.close();
+                }
+            }
+        }
+
+        tftt::cell_t current, next;
+        double curDist;
+        for (int r = 0; r < worldSize; r++) {
+            if (B[r].empty()) continue;
+
+            std::ofstream bd(formatString("report/ghosts/bd.r{0}.dat", r));
+
+            // Start at the leftmost
+            current = tftt::cell_t();
+            for (auto g : B[r]) {
+                if (!current.isValid()) {
+                    current = g;
+                }
+                else if (r == 2) {
+                    if (g.centre(1) > current.centre(1))
+                        current = g;
+                }
+                else if (g.centre(0) == current.centre(0)) {
+                    if (g.centre(1) > current.centre(1))
+                        current = g;
+                }
+                else if (g.centre(0) < current.centre(0)) {
+                    current = g;
+                }
+            }
+
+            B[r].erase(current);
+            bd << current.centre(0) << " " << current.centre(1) << "\n";
+
+            while (!B[r].empty()) {
+                curDist = 20.0;
+                for (auto g : B[r]) {
+                    if (dist(current, g) < curDist) {
+                        next = g;
+                        curDist = dist(current, g);
+                    }
+                }
+                current = next;
+
+                B[r].erase(current);
+                bd << current.centre(0) << " " << current.centre(1) << "\n";
+            }
+
+            bd.close();
+        }
+    }
 
     // Fig 2: Exchange
     tftt::drawPartialCurve("report/movecells/hilb.overlapl.dat",
