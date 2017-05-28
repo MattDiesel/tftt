@@ -157,8 +157,10 @@ void adaptSwBegin()
         tc = &cl.group->cells[cl.index];
         tc->adaptFlags = AF_NoAction;
 
-        tc = &cl.parent().group->cells[cl.parent().index];
-        tc->adaptFlags = AF_NoAction;
+        if (cl.parent().isValid()) {
+            tc = &cl.parent().group->cells[cl.parent().index];
+            tc->adaptFlags = AF_NoAction;
+        }
     }
 
     for (auto& vec : gtree.ghostAdaptVectors) {
@@ -219,20 +221,10 @@ void adaptSwCommit()
     adaptList.clear();
 
     for (auto cl = leaves.begin(); cl != leaves.end(); cl++) {
-    nextLeaf:
         tc = &cl->group->cells[cl->index];
 
         if (tc->adaptFlags == AF_Refine) {
-            // Store cell and increment iterator before refinement
-            CellRef old = *cl;
-            cl++;
-
-
-            adaptList.insert(old);
-            // refine(old);
-
-            // Skip child processing:
-            goto nextLeaf;
+            adaptList.insert(*cl);
         }
         else if (tc->adaptFlags == AF_Coarsen) {
             // Coarsen the parent
