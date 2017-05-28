@@ -80,7 +80,7 @@ double interpFace(cell_t cl, int fc, fnData dt)
         // Neighbour less refined
 
         int awayDir = (fc ^ 2) & ~1;
-        if (cl.index & (1<<(awayDir >> 1))) awayDir ^= 1;
+        if (cl.index() & (1<<(awayDir >> 1))) awayDir ^= 1;
 
         cell_t ngbngb = ngb.neighbour(awayDir);
 

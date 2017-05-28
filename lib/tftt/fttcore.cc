@@ -41,13 +41,13 @@ void init(double w, double h)
 
     for (int b = 0; b < 2*DIM; b++) {
         cl = CellRef(gtree.boundGroups, b);
-        cl.group->cells[cl.index].children = new TreeGroup(cl);
-        cl.group->cells[cl.index].children->setBoundary(b);
+        cl.treecell()->children = new TreeGroup(cl);
+        cl.treecell()->children->setBoundary(b);
     }
 
     for (int b = 0; b < 2*DIM; b++) {
         cl = CellRef(gtree.boundGroups, b);
-        newGrp = cl.group->cells[cl.index].children;
+        newGrp = cl.treecell()->children;
 
         for (int b2 = 0; b2 < 2*DIM; b2++) {
             if (b2 == (b ^ 1))
@@ -94,7 +94,7 @@ void refine(CellRef cl)
         throw std::runtime_error("Calling refine() on boundary.");
     #endif
 
-    cl.group->cells[cl.index].children = new TreeGroup(cl);
+    cl.treecell()->children = new TreeGroup(cl);
     gtree.ccells += (1 << DIM) - 1;
 
     // Refine boundary as needed.
@@ -102,7 +102,7 @@ void refine(CellRef cl)
     for (int nb = 0; nb < 2*DIM; nb++) {
         ngb = cl.neighbour(nb);
         if (ngb.isBoundary()) {
-            ngb.group->cells[ngb.index].children = new TreeGroup(ngb);
+            ngb.treecell()->children = new TreeGroup(ngb);
         }
     }
 }
@@ -128,17 +128,17 @@ void coarsen(CellRef cl)
                 throw std::runtime_error("Boundary level mismatch");
             #endif
 
-            delete nbc.group->cells[nbc.index].children;
-            nbc.group->cells[nbc.index].children = nullptr;
+            delete nbc.treecell()->children;
+            nbc.treecell()->children = nullptr;
         };
 
-        if (nbc.group->neighbours[nb ^ 1].group == cl.children()) {
-            nbc.group->neighbours[nb ^ 1] == cl;
+        if (nbc.group()->neighbours[nb ^ 1].group() == cl.children()) {
+            nbc.group()->neighbours[nb ^ 1] == cl;
         }
     }
 
-    delete cl.group->cells[cl.index].children;
-    cl.group->cells[cl.index].children = nullptr;
+    delete cl.treecell()->children;
+    cl.treecell()->children = nullptr;
     gtree.ccells -= (1 << DIM) - 1;
 }
 

@@ -104,7 +104,7 @@ void addGhosts(std::set<cell_t>& ghosts, cell_t cl, node_t node)
 {
     // Ghosts are any cells required by poisson coefficients
 
-    TreeCell& tc = cl.group->cells[cl.index];
+    TreeCell& tc = cl.group()->cells[cl.index()];
 
     for (int n = 0; n < tc.poisNgbC; n++) {
         if (tc.poisNgb[n].rank() != node && !tc.poisNgb[n].isBoundary()) {
@@ -264,7 +264,7 @@ void loadParTree(std::string fname)
             // Border cells are any required by the ghosts poisson coefs.
             calcFaceCoefs(gh);
 
-            TreeCell& tc = gh.group->cells[gh.index];
+            TreeCell& tc = gh.group()->cells[gh.index()];
 
             for (int p = 0; p < tc.poisNgbC; p++) {
                 if (tc.poisNgb[p].rank() == gtree.rank) {

@@ -14,8 +14,8 @@ tagLeafOrthos leaforthos;
 
 void nextLeaf(cell_t& cr)
 {
-    if (cr.index+1 >= 2*DIM) {
-        if (cr.group == gtree.root) {
+    if (cr.index()+1 >= 2*DIM) {
+        if (cr.group() == gtree.root) {
             cr = CellRef();
             return;
         }
@@ -24,7 +24,7 @@ void nextLeaf(cell_t& cr)
         return;
     }
     else {
-        cr.index++;
+        cr.stepChild();
     }
 
     while (cr.hasChildren()) {

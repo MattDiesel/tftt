@@ -57,7 +57,7 @@ void twoToOne_Add(std::set<CellRef, CellRef::less>& ls, CellRef cl, CellRef from
 
                     for (int dir = 0; dir <= 1; dir++) {
                         if (nb.level() < lvl
-                                && (dir != ((cl.index >> a) & 1))) {
+                                && (dir != ((cl.index() >> a) & 1))) {
                             // If neighbour is at a lower level, its neighbour
                             // won't be on the corner unless it's in the same direction
                             continue;
@@ -156,11 +156,11 @@ void adaptSwBegin()
 {
     TreeCell* tc;
     for (auto cl : leaves) {
-        tc = &cl.group->cells[cl.index];
+        tc = cl.treecell();
         tc->adaptFlags = AF_NoAction;
 
         if (cl.parent().isValid()) {
-            tc = &cl.parent().group->cells[cl.parent().index];
+            tc = cl.parent().treecell();
             tc->adaptFlags = AF_NoAction;
         }
     }
@@ -173,7 +173,7 @@ void adaptSwBegin()
 
 void adaptSwSetFlags(CellRef cl, ADAPTFLAGS af)
 {
-    TreeCell& tc = cl.group->cells[cl.index];
+    TreeCell* tc = cl.treecell();;
 
     if (cl.hasChildren()) {
         if (af == AF_Refine) {
@@ -190,30 +190,30 @@ void adaptSwSetFlags(CellRef cl, ADAPTFLAGS af)
     }
     else {
         if ((af == AF_Coarsen || af == AF_HoldCoarsened)) {
-            if (tc.adaptFlags != AF_NoAction)
+            if (tc->adaptFlags != AF_NoAction)
                 return; // Ignore
         }
 
-        if (tc.adaptFlags == AF_Refine && af == AF_HoldRefined)
+        if (tc->adaptFlags == AF_Refine && af == AF_HoldRefined)
             return; // Nothing to do here
 
-        if (tc.adaptFlags == af) return;
+        if (tc->adaptFlags == af) return;
 
-        if (tc.adaptFlags != AF_NoAction && tc.adaptFlags != af) {
-            if (tc.adaptFlags == AF_HoldRefined && af == AF_Refine) {
+        if (tc->adaptFlags != AF_NoAction && tc->adaptFlags != af) {
+            if (tc->adaptFlags == AF_HoldRefined && af == AF_Refine) {
             }
             else
                 throw std::runtime_error("Conflicting refinement instructions");
         }
     }
 
-    tc.adaptFlags = af;
+    tc->adaptFlags = af;
 }
 
 ADAPTFLAGS adaptSwGetFlags(CellRef cl)
 {
-    TreeCell& tc = cl.group->cells[cl.index];
-    return tc.adaptFlags;
+    TreeCell* tc = cl.treecell();;
+    return tc->adaptFlags;
 }
 
 
@@ -223,7 +223,7 @@ void adaptSwCommit()
     adaptList.clear();
 
     for (auto cl = leaves.begin(); cl != leaves.end(); cl++) {
-        tc = &cl->group->cells[cl->index];
+        tc = cl->treecell();
 
         if (tc->adaptFlags == AF_Refine) {
             adaptList.insert(*cl);

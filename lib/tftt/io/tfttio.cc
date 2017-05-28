@@ -333,7 +333,7 @@ void drawPoissonNeighbourhood(std::string fname, cell_t cl)
 void drawPoissonNeighbourhood(std::ostream& os, cell_t cl)
 {
 
-    TreeCell* tc = &cl.group->cells[cl.index];
+    TreeCell* tc = &cl.group()->cells[cl.index()];
 
     for (int n = 0; n < tc->poisNgbC; n++) {
         drawCell(os, tc->poisNgb[n]);

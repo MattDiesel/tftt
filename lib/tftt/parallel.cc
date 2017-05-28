@@ -122,19 +122,19 @@ void adaptParSwBegin()
 {
     TreeCell* tc;
     for (auto cl : leaves) {
-        tc = &cl.group->cells[cl.index];
+        tc = cl.treecell();
         tc->adaptFlags = AF_NoAction;
 
-        tc = &cl.parent().group->cells[cl.parent().index];
+        tc = cl.parent().treecell();
         tc->adaptFlags = AF_NoAction;
     }
 
     for (auto ghb : gtree.rawGhosts) {
         for (auto gh : ghb) {
 
-            TreeCell& tc = gh.group->cells[gh.index];
+            TreeCell* tc = gh.treecell();
             for (int d = 0; d < 2*DIM; d++) {
-                tc.adaptVector[d] = 0;
+                tc->adaptVector[d] = 0;
             }
         }
     }
@@ -142,19 +142,19 @@ void adaptParSwBegin()
 
 void setAdaptVector(CellRef cl, int dir, int amount)
 {
-    TreeCell& tc = cl.group->cells[cl.index];
+    TreeCell* tc = cl.treecell();
 
-    if (amount > tc.adaptVector[dir]) {
-        tc.adaptVector[dir] = amount;
+    if (amount > tc->adaptVector[dir]) {
+        tc->adaptVector[dir] = amount;
     }
 }
 
 void setAdaptHoldVector(CellRef cl, int dir, int amount)
 {
-    TreeCell& tc = cl.group->cells[cl.index];
+    TreeCell* tc = cl.treecell();
 
-    if (amount > tc.adaptHoldVector[dir]) {
-        tc.adaptHoldVector[dir] = amount;
+    if (amount > tc->adaptHoldVector[dir]) {
+        tc->adaptHoldVector[dir] = amount;
     }
 }
 
@@ -234,11 +234,11 @@ void addNeighb(std::set<cell_t>& ghosts, cell_t cl, node_t node)
 {
     // Ghosts are any cells required by poisson coefficients
 
-    TreeCell& tc = cl.group->cells[cl.index];
+    TreeCell* tc = cl.treecell();
 
-    for (int n = 0; n < tc.poisNgbC; n++) {
-        if (tc.poisNgb[n].rank() != node && !tc.poisNgb[n].isBoundary()) {
-            ghosts.insert(tc.poisNgb[n]);
+    for (int n = 0; n < tc->poisNgbC; n++) {
+        if (tc->poisNgb[n].rank() != node && !tc->poisNgb[n].isBoundary()) {
+            ghosts.insert(tc->poisNgb[n]);
         }
     }
 }
@@ -525,11 +525,11 @@ void moveCells(boost::mpi::communicator world, int left, int right)
         gtree.borders[r].clear();
     }
     for (auto cl : activecurve) {
-        TreeCell& tc = cl.group->cells[cl.index];
+        TreeCell* tc = cl.treecell();
 
-        for (int p = 0; p < tc.poisNgbC; p++) {
-            if (tc.poisNgb[p].rank() != world.rank() && !tc.poisNgb[p].isBoundary()) {
-                gtree.ghosts[tc.poisNgb[p].rank()].insert(tc.poisNgb[p]);
+        for (int p = 0; p < tc->poisNgbC; p++) {
+            if (tc->poisNgb[p].rank() != world.rank() && !tc->poisNgb[p].isBoundary()) {
+                gtree.ghosts[tc->poisNgb[p].rank()].insert(tc->poisNgb[p]);
             }
         }
     }
@@ -546,11 +546,11 @@ void moveCells(boost::mpi::communicator world, int left, int right)
             // Border cells are any required by the ghosts poisson coefs.
             calcFaceCoefs(gh);
 
-            TreeCell& tc = gh.group->cells[gh.index];
+            TreeCell* tc = gh.treecell();
 
-            for (int p = 0; p < tc.poisNgbC; p++) {
-                if (tc.poisNgb[p].rank() == gtree.rank) {
-                    gtree.borders[gh.rank()].insert(tc.poisNgb[p]);
+            for (int p = 0; p < tc->poisNgbC; p++) {
+                if (tc->poisNgb[p].rank() == gtree.rank) {
+                    gtree.borders[gh.rank()].insert(tc->poisNgb[p]);
                 }
             }
         }

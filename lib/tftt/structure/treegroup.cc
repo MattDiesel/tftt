@@ -192,16 +192,16 @@ TreeGroup::TreeGroup(CellRef p)
         prev = p.prev();
 
         if (prev.isValid()) {
-            if (prev.group->next == p)
-                prev.group->next = CellRef(this, hilbChild(orientation, 0));
+            if (prev.group()->next == p)
+                prev.group()->next = CellRef(this, hilbChild(orientation, 0));
         }
         else {
             gtree.first = CellRef(this, hilbChild(orientation, 0));
         }
 
         if (next.isValid()) {
-            if (next.group->prev == p)
-                next.group->prev = CellRef(this, hilbChild(orientation, (1<<DIM)-1));
+            if (next.group()->prev == p)
+                next.group()->prev = CellRef(this, hilbChild(orientation, (1<<DIM)-1));
         }
         else {
             gtree.last = CellRef(this, hilbChild(orientation, (1<<DIM)-1));
@@ -395,12 +395,12 @@ TreeGroup::~TreeGroup()
 
     if (!gtree.destroying && !isBoundary()) {
         if (prev.isValid()) {
-            if (prev.group != parent.group) {
+            if (prev.group() != parent.group()) {
                 if (prev.isLastInGroup()) {
-                    prev.group->next = parent;
+                    prev.group()->next = parent;
                 }
                 if (parent.isFirstInGroup()) {
-                    parent.group->prev = prev;
+                    parent.group()->prev = prev;
                 }
             }
         }
@@ -409,12 +409,12 @@ TreeGroup::~TreeGroup()
         }
 
         if (next.isValid()) {
-            if (next.group != parent.group) {
+            if (next.group() != parent.group()) {
                 if (next.isFirstInGroup()) {
-                    next.group->prev = parent;
+                    next.group()->prev = parent;
                 }
                 if (parent.isLastInGroup()) {
-                    parent.group->next = next;
+                    parent.group()->next = next;
                 }
             }
         }

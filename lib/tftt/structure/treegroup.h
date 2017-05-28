@@ -76,11 +76,11 @@ struct TreeGroup {
 
         cell_iterator operator++() {
             cell_iterator i = *this;
-            cr.index++;
+            cr.stepChild();
             return i;
         }
         cell_iterator operator++(int junk) {
-            cr.index++;
+            cr.stepChild();
             return *this;
         }
         CellRef& operator*() {

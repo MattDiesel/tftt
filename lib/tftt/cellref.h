@@ -14,6 +14,7 @@
 namespace tftt {
 
 
+struct TreeCell;
 struct TreeGroup;
 struct tagNeighbours;
 struct tagPoissonNeighbours;
@@ -30,14 +31,28 @@ enum CellRefFlags {
 //! \details This is the public interface to most of the methods in the tree to
 //! be used by the program.
 struct CellRef {
-public:
+private:
     //! the group of siblings this cell belongs to
-    TreeGroup* group;
+    TreeGroup* _group;
 
     //! The index of the child within the sibling group.
-    int index;
+    int _index;
 
 public:
+    //! the group of siblings this cell belongs to
+    TreeGroup* group() const;
+
+    //! The index of the child within the sibling group.
+    int index() const;
+
+    //! Returns the raw TreeCell data structure.
+    TreeCell* treecell() const;
+
+    //! Steps on to the next child in the current group
+    void stepChild() {
+        _index++;
+    }
+
     //! Ctor for a cell reference.
     //! \details Cell references should be generated from a call to
     //!         \ref Tree::find(), or by traversal of the tree.
@@ -225,11 +240,11 @@ public:
                 return true;
             else if (a.level() > b.level())
                 return false;
-            else if (a.group < b.group)
+            else if (a.group() < b.group())
                 return true;
-            else if (a.group > b.group)
+            else if (a.group() > b.group())
                 return false;
-            else if (a.index < b.index)
+            else if (a.index() < b.index())
                 return true;
             else
                 return false;

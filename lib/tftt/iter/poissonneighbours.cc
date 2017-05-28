@@ -19,7 +19,7 @@ void tagPoissonNeighbours::poisneighb_iterator::next()
 {
     nb++;
 
-    TreeCell& tc = cl.group->cells[cl.index];
+    TreeCell& tc = cl.group()->cells[cl.index()];
     cr = tc.poisNgb[nb];
 }
 
@@ -29,7 +29,7 @@ tagPoissonNeighbours::poisneighb_iterator::poisneighb_iterator(CellRef c, int n)
     cl = c;
     nb = n;
 
-    TreeCell& tc = cl.group->cells[cl.index];
+    TreeCell& tc = cl.group()->cells[cl.index()];
     cr = tc.poisNgb[nb];
 }
 
@@ -81,7 +81,7 @@ tagPoissonNeighbours::poisneighb_iterator tagPoissonNeighbours::begin()
 
 tagPoissonNeighbours::poisneighb_iterator tagPoissonNeighbours::end()
 {
-    TreeCell& tc = cr.group->cells[cr.index];
+    TreeCell& tc = cr.group()->cells[cr.index()];
     return tagPoissonNeighbours::poisneighb_iterator(cr, tc.poisNgbC);
 }
 

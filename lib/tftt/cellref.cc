@@ -16,19 +16,35 @@
 namespace tftt {
 
 
+TreeGroup* CellRef::group() const
+{
+    return _group;
+}
+
+int CellRef::index() const
+{
+    return _index;
+}
+
+TreeCell* CellRef::treecell() const
+{
+    return &_group->cells[_index];
+}
+
+
 CellRef::CellRef()
-    : group(nullptr), index(0)
+    : _group(nullptr), _index(0)
 {
 }
 
 CellRef::CellRef(int flag)
-    : group(nullptr), index(flag)
+    : _group(nullptr), _index(flag)
 {
 }
 
 
 CellRef::CellRef(TreeGroup* gr, int ind)
-    : group(gr), index(ind)
+    : _group(gr), _index(ind)
 {
     // #ifdef TFTT_DEBUG
     // if (!gr) throw std::invalid_argument("Null TreeGroup given.");
@@ -40,32 +56,32 @@ CellRef::CellRef(TreeGroup* gr, int ind)
 
 bool CellRef::isValid() const
 {
-    return group || index;
+    return group() || index();
 }
 
 bool CellRef::isRoot() const
 {
-    return index == -1;
+    return index() == -1;
 }
 
 
 bool CellRef::isBoundary() const
 {
-    return (group == gtree.boundGroups || group->isBoundary());
+    return (group() == gtree.boundGroups || group()->isBoundary());
 }
 
 int CellRef::boundary() const
 {
-    if (group == gtree.boundGroups) {
+    if (group() == gtree.boundGroups) {
         return children()->boundary();
     }
-    return group->boundary();
+    return group()->boundary();
 }
 
 
 CellRef CellRef::parent() const
 {
-    return group->parent;
+    return group()->parent;
 }
 
 CellRef CellRef::child(int n) const
@@ -88,7 +104,7 @@ int CellRef::childIndexOnFace(int fc, int n)
 
 bool CellRef::hasChildren() const
 {
-    return isRoot() || (group && children());
+    return isRoot() || (group() && children());
 }
 
 bool CellRef::hasGrandChildren() const
@@ -106,28 +122,28 @@ TreeGroup* CellRef::children() const
     if (isRoot())
         return gtree.root;
     else
-        return group->cells[index].children;
+        return treecell()->children;
 }
 
 
-// TreeGroup* CellRef::group() const {
+// TreeGroup* CellRef::group()() const {
 //     #ifdef TFTT_DEBUG
 //         if (isBoundary()) {
-//             throw std::runtime_error("Using boundary group as standard group");
+//             throw std::runtime_error("Using boundary group() as standard group()");
 //         }
 //     #endif
 
-//     return reinterpret_cast<TreeGroup*>(group);
+//     return reinterpret_cast<TreeGroup*>(group());
 // }
 
-// TreeGroup* CellRef::bgroup() const {
+// TreeGroup* CellRef::bgroup()() const {
 //     #ifdef TFTT_DEBUG
 //         if (!isBoundary()) {
-//             throw std::runtime_error("Using standard group as boundary group");
+//             throw std::runtime_error("Using standard group() as boundary group()");
 //         }
 //     #endif
 
-//     return reinterpret_cast<TreeBoundaryGroup*>(group);
+//     return reinterpret_cast<TreeBoundaryGroup*>(group());
 // }
 
 bool nbInParent(int ch, int nb)
@@ -141,25 +157,25 @@ bool nbInParent(int ch, int nb)
 
 CellRef CellRef::neighbour(int n) const
 {
-    if (nbInParent(index, n))
-        return CellRef(group, index ^ (1 << (n >> 1)));
+    if (nbInParent(index(), n))
+        return CellRef(group(), index() ^ (1 << (n >> 1)));
 
-    CellRef cr = group->neighbours[n];
+    CellRef cr = group()->neighbours[n];
     if (!cr.hasChildren())
         return cr;
 
-    return cr.child(index ^ (1 << (n >> 1)));
+    return cr.child(index() ^ (1 << (n >> 1)));
 }
 
 
 CellRef CellRef::diagonal(int n) const
 {
-    int ch = ~index & (2*DIM-1);
+    int ch = ~index() & (2*DIM-1);
     CellRef cr = *this;
 
     if (ch == n) {
         // In parent
-        cr = CellRef(group, ch);
+        cr = CellRef(group(), ch);
 
         if (cr.hasChildren())
             cr = cr.child(~n & (2*DIM-1));
@@ -194,19 +210,19 @@ tagPoissonNeighbours CellRef::poissonNeighbourhood() const
 
 int CellRef::orientation() const
 {
-    // = f(index, group->orientation)
+    // = f(index(), group()->orientation)
 
-    return hilbOrient(group->orientation, index);
+    return hilbOrient(group()->orientation, index());
 }
 
 
 CellRef CellRef::next() const
 {
-    int hch = hilbInvChild(group->orientation, index);
+    int hch = hilbInvChild(group()->orientation, index());
     CellRef ret;
 
-    if (hch == (1<<DIM)-1) { // Last in group
-        ret = group->next;
+    if (hch == (1<<DIM)-1) { // Last in group()
+        ret = group()->next;
 
         #ifdef TFTT_DEBUG
         if (ret.hasChildren()) {
@@ -217,7 +233,7 @@ CellRef CellRef::next() const
         return ret;
     }
 
-    ret = CellRef(group, hilbChild(group->orientation, hch+1));
+    ret = CellRef(group(), hilbChild(group()->orientation, hch+1));
 
     while (ret.hasChildren()) {
         ret = ret.child(hilbChild(ret.orientation(), 0));
@@ -229,13 +245,13 @@ CellRef CellRef::next() const
 
 CellRef CellRef::prev() const
 {
-    int hch = hilbInvChild(group->orientation, index);
+    int hch = hilbInvChild(group()->orientation, index());
 
-    if (hch == 0) { // First in group
-        return group->prev;
+    if (hch == 0) { // First in group()
+        return group()->prev;
     }
 
-    CellRef ret = CellRef(group, hilbChild(group->orientation, hch-1));
+    CellRef ret = CellRef(group(), hilbChild(group()->orientation, hch-1));
 
     while (ret.hasChildren()) {
         ret = ret.child(hilbChild(ret.orientation(), (1<<DIM)-1));
@@ -247,37 +263,37 @@ CellRef CellRef::prev() const
 
 bool CellRef::isLastInGroup() const
 {
-    return hilbIsLast(group->orientation, index);
+    return hilbIsLast(group()->orientation, index());
 }
 
 
 bool CellRef::isFirstInGroup() const
 {
-    return hilbIsFirst(group->orientation, index);
+    return hilbIsFirst(group()->orientation, index());
 }
 
 
 node_t& CellRef::rank()
 {
-    return group->cells[index].rank;
+    return treecell()->rank;
 }
 
 node_t const& CellRef::rank() const
 {
-    return group->cells[index].rank;
+    return treecell()->rank;
 }
 
 
 ident_t CellRef::id() const
 {
     if (isRoot()) return 0;
-    return group->id.id | index;
+    return group()->id.id | index();
 }
 
 int CellRef::level() const
 {
     if (isRoot()) return -1; // Todo: Needed?
-    return group->id.level();
+    return group()->id.level();
 }
 
 
@@ -289,7 +305,7 @@ data_t& CellRef::data()
     }
     #endif
 
-    data_t& ret = group->cells[index].data;
+    data_t& ret = treecell()->data;
     return ret;
 }
 
@@ -299,7 +315,7 @@ data_t const& CellRef::data() const
         throw std::runtime_error("Attempt to access data from non-leaf");
     }
 
-    data_t& ret = group->cells[index].data;
+    data_t& ret = treecell()->data;
     return ret;
 }
 
@@ -337,7 +353,7 @@ double CellRef::ngbVal(int nb, fnData dt, double* ifBoundary) const
     // }
     // else if (ngb.level() < level()) {
     //     // Neighbour is less refined
-    //     return interpChild(ngb, index ^ (1 << (nb >> 1)), nb ^ 1, dt);
+    //     return interpChild(ngb, index() ^ (1 << (nb >> 1)), nb ^ 1, dt);
     // }
     // else {
     //     // Neighbour at same level
@@ -348,19 +364,19 @@ double CellRef::ngbVal(int nb, fnData dt, double* ifBoundary) const
 #ifdef TFTT_FACES
 
 // facedata_t& CellRef::facedata(int dir) {
-//     facedata_t& ret = group->cells[index].facedata[dir];
+//     facedata_t& ret = treecell()facedata[dir];
 //     return ret;
 // }
 
 // facedata_t const& CellRef::facedata(int dir) const {
-//     facedata_t& ret = group->cells[index].facedata[dir];
+//     facedata_t& ret = treecell()facedata[dir];
 //     return ret;
 // }
 
 
 face_t CellRef::face(int dir) const
 {
-    return group->cells[index].faces[dir];
+    return treecell()->faces[dir];
 }
 
 #endif
@@ -370,7 +386,7 @@ face_t CellRef::face(int dir) const
 
 vertex_t CellRef::vertex(int v) const
 {
-    return group->cells[index].vertices[v];
+    return treecell()->vertices[v];
 }
 
 #endif
@@ -386,7 +402,7 @@ double CellRef::size(int d) const
 double CellRef::origin(int d) const
 {
     if (isRoot()) return 0.0;
-    return group->origin[d] + (((index >> d) & 1) * size(d));
+    return group()->origin[d] + (((index() >> d) & 1) * size(d));
 }
 
 
@@ -415,8 +431,8 @@ void CellRef::origins(double ret[DIM]) const
     int lvl = level();
 
     for (int d = 0; d < DIM; d++) {
-        ret[d] = group->origin[d]
-                 + (((index >> d) & 1) * (gtree.size[d] / (2 << lvl)));
+        ret[d] = group()->origin[d]
+                 + (((index() >> d) & 1) * (gtree.size[d] / (2 << lvl)));
     }
 }
 
@@ -428,7 +444,7 @@ void CellRef::vertices(double ret[1<<DIM][DIM]) const
 
     for (int d = 0; d < DIM; d++) {
         siz = gtree.size[d] / (2 << lvl);
-        org = group->origin[d] + (((index >> d) & 1) * siz);
+        org = group()->origin[d] + (((index() >> d) & 1) * siz);
 
         for (int v = 0; v < 1 << DIM; v++) {
             ret[v][d] = org + (((v >> d) & 1) * siz);
@@ -450,19 +466,19 @@ bool CellRef::containsPoint(double pt[DIM]) const
 
 bool CellRef::operator==(const CellRef& rhs) const
 {
-    return group == rhs.group && index == rhs.index;
+    return group() == rhs.group() && index() == rhs.index();
 }
 
 
 bool CellRef::operator!=(const CellRef& rhs) const
 {
-    return group != rhs.group || index != rhs.index;
+    return group() != rhs.group() || index() != rhs.index();
 }
 
 
 bool CellRef::operator<(const CellRef& rhs) const
 {
-    return group < rhs.group || index < rhs.index;
+    return group() < rhs.group() || index() < rhs.index();
 }
 
 
@@ -472,7 +488,7 @@ data_t* CellRef::operator->()
         throw std::runtime_error("Attempt to access data from non-leaf");
     }
 
-    return &group->cells[index].data;
+    return &treecell()->data;
 }
 
 data_t const* CellRef::operator->() const
@@ -481,7 +497,7 @@ data_t const* CellRef::operator->() const
         throw std::runtime_error("Attempt to access data from non-leaf");
     }
 
-    return &group->cells[index].data;
+    return &treecell()->data;
 }
 
 

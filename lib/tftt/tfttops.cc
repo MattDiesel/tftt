@@ -23,7 +23,7 @@ void calcFaceCoef(cell_t cl, TreeCell* tc, int fc, double& alpha);
 
 void calcFaceCoefs(cell_t cl)
 {
-    TreeCell* tc = &cl.group->cells[cl.index];
+    TreeCell* tc = cl.treecell();
 
     tc->poisNgbC = 0;
 
@@ -84,7 +84,7 @@ void calcFaceCoef(cell_t cl, TreeCell* tc, int fc, double& alpha)
                 cell_t ps = ngb.childOnFace(fc ^ 1, d);
 
                 int awayDir = (fc ^ 2) & ~1;
-                if (ps.index & (1<<(awayDir >> 1))) awayDir ^= 1;
+                if (ps.index() & (1<<(awayDir >> 1))) awayDir ^= 1;
 
                 cell_t ngbngb = cl.neighbour(awayDir);
 
@@ -155,7 +155,7 @@ void calcFaceCoef(cell_t cl, TreeCell* tc, int fc, double& alpha)
         // Neighbour less refined
 
         int awayDir = (fc ^ 2) & ~1;
-        if (cl.index & (1<<(awayDir >> 1))) awayDir ^= 1;
+        if (cl.index() & (1<<(awayDir >> 1))) awayDir ^= 1;
 
         cell_t ngbngb = ngb.neighbour(awayDir);
 
@@ -204,13 +204,13 @@ void relax(double omega, fnDataRef datafn, fnCell cellfn)
     double temp;
 
     for (auto& cl : tftt::activecurve) {
-        TreeCell& tc = cl.group->cells[cl.index];
+        TreeCell* tc = cl.treecell();
 
         betas = 0.0;
-        for (int n = 0; n < tc.poisNgbC; n++) {
-            betas += datafn(tc.poisNgb[n].data()) * tc.poisCoef[n]; // Todo: Rho?
+        for (int n = 0; n < tc->poisNgbC; n++) {
+            betas += datafn(tc->poisNgb[n].data()) * tc->poisCoef[n]; // Todo: Rho?
         }
-        alphas = tc.cenCoef;
+        alphas = tc->cenCoef;
 
         temp = (betas - cellfn(cl)) / alphas;
 
@@ -227,7 +227,7 @@ double resid(fnDataRef datafn, fnCell cellfn)
     cell_t maxat;
 
     for (auto& cl : activecurve) {
-        tc = &cl.group->cells[cl.index];
+        tc = cl.treecell();
 
         cl->res = -cellfn(cl) - tc->cenCoef * datafn(cl.data());
 

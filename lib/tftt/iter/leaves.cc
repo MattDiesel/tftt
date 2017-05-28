@@ -19,8 +19,8 @@ void tagLeaves::leaf_iterator::next()
     //     return;
     // }
 
-    if (cr.index+1 >= 2*DIM) {
-        if (cr.group == gtree.root) {
+    if (cr.index()+1 >= 2*DIM) {
+        if (cr.group() == gtree.root) {
             cr = CellRef();
             return;
         }
@@ -29,7 +29,7 @@ void tagLeaves::leaf_iterator::next()
         return;
     }
     else {
-        cr.index++;
+        cr.stepChild();
     }
 
     while (this->cr.hasChildren()) {

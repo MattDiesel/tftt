@@ -27,8 +27,8 @@ void tagBoundaryLeaves::bleaf_iterator::next()
         return;
     }
 
-    if (cr.index+_inc[b] > _end[b]) {
-        if (cr.parent().group == gtree.boundGroups) {
+    if (cr.index()+_inc[b] > _end[b]) {
+        if (cr.parent().group() == gtree.boundGroups) {
             cr = CellRef();
             return;
         }
@@ -37,7 +37,7 @@ void tagBoundaryLeaves::bleaf_iterator::next()
         return;
     }
     else {
-        cr.index += _inc[b];
+        cr = CellRef(cr.group(), cr.index()+_inc[b]);
     }
 
     while (this->cr.hasChildren()) {
