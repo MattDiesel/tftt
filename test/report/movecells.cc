@@ -146,13 +146,14 @@ int main(int argc, char* argv[])
         tftt::cell_t cl;
         double scale = 1.0 / steps;
         double p[2];
-        for (int x = 0; x < steps; x++) {
-            for (int y = 0; y < steps; y++) {
+        for (int y = 0; y < steps; y++) {
+            for (int x = 0; x < steps; x++) {
                 p[0] = x*scale+scale*0.5;
                 p[1] = y*scale+scale*0.5;
                 cl = tftt::atPos(p);
                 heatmap << p[0] << " " << p[1] << " " << (int)cl.rank() << "\n";
             }
+            heatmap << "\n";
         }
         heatmap.close();
     }

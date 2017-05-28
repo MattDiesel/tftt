@@ -106,7 +106,7 @@ int main(int argc, char* argv[])
     int minDepth = 0, maxDepth = 5;
     double p[2];
 
-    std::string outDir = "../docs/report/method";
+    std::string outDir = "../docs/report/method/gen";
 
 
     {
