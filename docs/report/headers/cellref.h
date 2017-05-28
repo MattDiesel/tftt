@@ -15,6 +15,8 @@ public:
     int orientation() const;           // $\mathcal{C}\acc\textproc{orient}$
     CellRef next() const;              // $\mathcal{C}\acc\textproc{next}$
     CellRef prev() const;              // $\mathcal{C}\acc\textproc{prev}$
+    CellRef firstChild() const;         // $\mathcal{C}\acc\textproc{firstChild}$
+    CellRef lastChild() const;         // $\mathcal{C}\acc\textproc{lastChild}$
 
     // Parallel 
     node_t& rank();                    // $\mathcal{C}\acc\textproc{rank}$
