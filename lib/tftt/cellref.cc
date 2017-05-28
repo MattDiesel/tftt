@@ -195,7 +195,9 @@ CellRef CellRef::diagonal(int n) const
 
     if (ch == n) {
         // In parent
-        cr = CellRef(group(), ch);
+        // cr = CellRef(group(), ch);
+        cr = CellRef(*this);
+        cr._cell += (n - index());
 
         if (cr.hasChildren())
             cr = cr.child(~n & (2*DIM-1));
