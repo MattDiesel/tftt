@@ -81,8 +81,8 @@ void init(double w, double h)
 void reset()
 {
     gtree.destroying = true;
-    delete gtree.root;
-    delete gtree.boundGroups;
+    group::free(gtree.root);
+    group::free(gtree.boundGroups);
     gtree.root = nullptr;
     gtree.ghosts.clear();
 }
@@ -129,7 +129,7 @@ void coarsen(CellRef cl)
                 throw std::runtime_error("Boundary level mismatch");
             #endif
 
-            delete nbc.treecell()->children;
+            group::free(nbc.treecell()->children);
             nbc.treecell()->children = nullptr;
         };
 
@@ -138,7 +138,7 @@ void coarsen(CellRef cl)
         }
     }
 
-    delete cl.treecell()->children;
+    group::free(cl.treecell()->children);
     cl.treecell()->children = nullptr;
     gtree.ccells -= (1 << DIM) - 1;
 }

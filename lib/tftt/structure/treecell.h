@@ -22,7 +22,7 @@ struct TreeGroup;
 #endif
 
 
-enum ADAPTFLAGS {
+enum ADAPTFLAGS : uint8_t {
     AF_NoAction = 0,
     AF_Refine,
     AF_Coarsen,
@@ -32,10 +32,17 @@ enum ADAPTFLAGS {
 
 struct TreeCell {
     TreeGroup* group;
-    int index;
+
+    int8_t index;
+    node_t rank;
+
+    int8_t poisNgbC;
+
+    ADAPTFLAGS adaptFlags;
+    uint8_t adaptVector[2*DIM];
+    uint8_t adaptHoldVector[2*DIM];
 
     data_t data;
-    node_t rank;
     TreeGroup* children;
 
     #ifdef TFTT_FACES
@@ -46,14 +53,10 @@ struct TreeCell {
     std::array<TreeVertex*, 1<<DIM> vertices;
     #endif
 
-    int poisNgbC;
     CellRef poisNgb[8];
     double poisCoef[8];
     double cenCoef;
 
-    ADAPTFLAGS adaptFlags;
-    uint8_t adaptVector[2*DIM];
-    uint8_t adaptHoldVector[2*DIM];
 };
 
 

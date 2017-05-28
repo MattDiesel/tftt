@@ -465,7 +465,7 @@ TreeGroup::~TreeGroup()
 
     for (unsigned int ch = 0; ch < cells.size(); ch++) {
         if (cells[ch].children)
-            delete cells[ch].children;
+            group::free(cells[ch].children);
     }
 }
 
