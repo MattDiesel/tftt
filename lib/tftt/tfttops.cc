@@ -19,7 +19,7 @@
 namespace tftt {
 
 
-void calcFaceCoef(cell_t cl, TreeCell* tc, int fc);
+void calcFaceCoef(cell_t cl, TreeCell* tc, int fc, double& alpha);
 
 void calcFaceCoefs(cell_t cl)
 {
@@ -27,22 +27,18 @@ void calcFaceCoefs(cell_t cl)
 
     tc->poisNgbC = 0;
 
+    double alpha;
+    double sumalphas = 0.0;
     for (int dir = 0; dir < 4; dir++) {
-        calcFaceCoef(cl, tc, dir);
+        calcFaceCoef(cl, tc, dir, alpha);
+        sumalphas += alpha;
     }
 
-    // Calc rhs
-    double alphas = 0.0;
-    for (int d = 0; d < 2*DIM; d++) {
-        alphas += tc->poisAlpha[d]; // Todo: Rho?
-        // std::cout << "\talpha[" << d << "] = " << tc.poisAlpha[d] << "\n";
-    }
-
-    tc->cenCoef = alphas;
+    tc->cenCoef = sumalphas;
 }
 
 
-void calcFaceCoef(cell_t cl, TreeCell* tc, int fc)
+void calcFaceCoef(cell_t cl, TreeCell* tc, int fc, double& alpha)
 {
     cell_t ngb = cl.neighbour(fc);
     int clLvl = cl.level();
@@ -57,16 +53,16 @@ void calcFaceCoef(cell_t cl, TreeCell* tc, int fc)
         if (gtree.isNeuman[fc]) {
             if (false) {
                 // Fake Neuman
-                tc->poisAlpha[fc] = 2.0*dbound;
+                alpha = 2.0*dbound;
                 tc->poisNgb[tc->poisNgbC] = cl;
                 tc->poisCoef[tc->poisNgbC++] = 2.0 * dbound;
             }
             else {
-                tc->poisAlpha[fc] = 0.0;
+                alpha = 0.0;
             }
         }
         else {
-            tc->poisAlpha[fc] = 2.0*dbound;
+            alpha = 2.0*dbound;
             tc->poisNgb[tc->poisNgbC] = ngb;
             tc->poisCoef[tc->poisNgbC++] = 2.0 * dbound;
         }
@@ -81,7 +77,7 @@ void calcFaceCoef(cell_t cl, TreeCell* tc, int fc)
 
         if (false) {
             // Using summation of gradients
-            tc->poisAlpha[fc] = 0.0;
+            alpha = 0.0;
             dbound *= 0.5;
 
             for (int d = 0; d < 2; d++) {
@@ -95,7 +91,7 @@ void calcFaceCoef(cell_t cl, TreeCell* tc, int fc)
                 if (ngbngb.hasChildren()) {
                     // std::cout << "2.4\n";
 
-                    tc->poisAlpha[fc] += 8.0/9.0 * dbound;
+                    alpha += 8.0/9.0 * dbound;
 
                     for (int n = 0; n < 2; n++) {
                         tmp = ngbngb.childOnFace(awayDir ^ 1, n);
@@ -114,7 +110,7 @@ void calcFaceCoef(cell_t cl, TreeCell* tc, int fc)
                 else {
                     // std::cout << "2.3\n";
 
-                    tc->poisAlpha[fc] += dbound;
+                    alpha += dbound;
 
                     tc->poisNgb[tc->poisNgbC] = ngbngb;
                     tc->poisCoef[tc->poisNgbC++] = (1.0 / 3.0) * dbound;
@@ -133,7 +129,7 @@ void calcFaceCoef(cell_t cl, TreeCell* tc, int fc)
         else {
             // Use interpolation of neighbours
 
-            tc->poisAlpha[fc] = 4.0/3.0 * dbound;
+            alpha = 4.0/3.0 * dbound;
 
             for (int n = 0; n < 2; n++) {
                 tmp = ngb.childOnFace(fc ^ 1, n);
@@ -149,7 +145,7 @@ void calcFaceCoef(cell_t cl, TreeCell* tc, int fc)
         // Same level
         // std::cout << "1\n";
 
-        tc->poisAlpha[fc] = 1.0 * dbound;
+        alpha = 1.0 * dbound;
         tc->poisNgb[tc->poisNgbC] = ngb;
         tc->poisCoef[tc->poisNgbC++] = 1.0 * dbound;
 
@@ -166,7 +162,7 @@ void calcFaceCoef(cell_t cl, TreeCell* tc, int fc)
         if (ngbngb.hasChildren()) {
             // std::cout << "4\n";
 
-            tc->poisAlpha[fc] = 2.0/3.0 * dbound;
+            alpha = 2.0/3.0 * dbound;
 
             for (int n = 0; n < 2; n++) {
                 tmp = ngbngb.childOnFace(awayDir ^ 1, n);
@@ -185,7 +181,7 @@ void calcFaceCoef(cell_t cl, TreeCell* tc, int fc)
         else {
             // std::cout << "3\n";
 
-            tc->poisAlpha[fc] = 2.0/3.0 * dbound;
+            alpha = 2.0/3.0 * dbound;
 
             tc->poisNgb[tc->poisNgbC] = ngbngb;
             tc->poisCoef[tc->poisNgbC++] = (1.0 / 6.0) * dbound;
