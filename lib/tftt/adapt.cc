@@ -22,6 +22,8 @@ void twoToOne_Add(std::set<CellRef, CellRef::less>& ls, CellRef cl, CellRef from
     int lvl = cl.level();
     CellRef nb;
 
+    if (lvl == 0) return;
+
     if (options.two2oneFlag == -1) {
         for (int n = 0; n < 2*DIM; n++) {
             nb = cl.neighbour(n);
