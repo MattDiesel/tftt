@@ -6,7 +6,6 @@
 #include "util/pars.h"
 
 #include "tftt/tftt.h"
-#include "tftt/tree.h"
 
 using namespace util; // for formatString
 
@@ -101,14 +100,14 @@ double& dtP(tftt::data_t& dt)
 int main(int argc, char* argv[])
 {
     // Defaults:
-    int minDepth = 2;
+    int minDepth = 4;
     int maxDepth = 6;
     int iterations = 100;
     int plotEvery = 1;
+    int printEvery = 1;
+    int residEvery = 1;
 
-    double dirichlet = 0.0;
-    double neuman = 0.0;
-    tftt::options.isNeuman = true;
+    double initialValue = 0.0;
 
     double omega = 1.3;
 
@@ -121,15 +120,27 @@ int main(int argc, char* argv[])
 
     tftt::options.two2oneFlag = 2;
 
+    int contin = 0;
+
+    for (int b = 0; b < 2*DIM; b++) {
+        tftt::gtree.isNeuman[b] = false;
+        tftt::gtree.dirichletValue[b] = 0.0;
+    }
+
     // Read from file:
     if (argc > 1) {
         try {
             getpars(argc, argv);
 
             tfetch("plotEvery", plotEvery);
+            tfetch("printEvery", printEvery);
+            tfetch("residEvery", residEvery);
             tfetch("minDepth", minDepth);
             tfetch("maxDepth", maxDepth);
+            tfetch("omega", omega);
+            tfetch("initialValue", initialValue);
             tfetch("iterations", iterations);
+            tfetch("contin", contin);
             tfetch("circle.start[0]", startPos[0]);
             tfetch("circle.start[1]", startPos[1]);
             tfetch("circle.end[0]", endPos[0]);
@@ -137,10 +148,14 @@ int main(int argc, char* argv[])
             tfetch("circle.radius", c.r);
             tfetch("tftt.two2one", tftt::options.two2oneFlag);
 
-            if (tfetch("neuman", neuman))
-                tftt::options.isNeuman = true;
-            if (tfetch("dirichlet", dirichlet))
-                tftt::options.isNeuman = false;
+            tfetch("neuman[0]", tftt::gtree.isNeuman[0]);
+            tfetch("dirichlet[0]", tftt::gtree.dirichletValue[0]);
+            tfetch("neuman[1]", tftt::gtree.isNeuman[1]);
+            tfetch("dirichlet[1]", tftt::gtree.dirichletValue[1]);
+            tfetch("neuman[2]", tftt::gtree.isNeuman[2]);
+            tfetch("dirichlet[2]", tftt::gtree.dirichletValue[2]);
+            tfetch("neuman[3]", tftt::gtree.isNeuman[3]);
+            tfetch("dirichlet[3]", tftt::gtree.dirichletValue[3]);
         }
         catch (std::exception& e) {
             std::cout << "Error reading parameter file: " << e.what() << std::endl;
@@ -188,17 +203,16 @@ int main(int argc, char* argv[])
     }
 
     // Initial Conditions for cells
-    double fl, fr;
     for (auto& cl : tftt::leaves) {
         cl->cc = c.cc(cl);
-        cl->P = dirichlet;
+        cl->P = 0.0;
         tftt::calcFaceCoefs(cl);
     }
 
-    if (!tftt::options.isNeuman) {
-        for (int b = 0; b < 4; b++) {
+    for (int b = 0; b < 4; b++) {
+        if (!tftt::gtree.isNeuman[b]) {
             for (auto& cl : tftt::boundaryCells(b)) {
-                cl->P = dirichlet;
+                cl->P = tftt::gtree.dirichletValue[b];
             }
         }
     }
@@ -254,10 +268,10 @@ int main(int argc, char* argv[])
 
         tftt::relax(omega, dtP, fn);
 
-        if (!tftt::options.isNeuman) {
-            for (int b = 0; b < 4; b++) {
+        for (int b = 0; b < 4; b++) {
+            if (!tftt::gtree.isNeuman[b]) {
                 for (auto& cl : tftt::boundaryCells(b)) {
-                    cl->P = dirichlet;
+                    cl->P = tftt::gtree.dirichletValue[b];
                 }
             }
         }
