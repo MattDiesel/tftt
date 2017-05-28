@@ -7,8 +7,7 @@
 \onehalfspacing
 
 \usepackage{graphicx,float,epstopdf}
-\newcommand{\grpath}{../../build/report}
-\graphicspath{{\grpath/movecells/}{\grpath/ghosts/}}
+\graphicspath{{method/}}
 
 \usepackage{tikz,ifthen,xstring,calc,pgfkeys,pgfopts}
 \usetikzlibrary{positioning}
@@ -131,7 +130,7 @@ A good space filling curve, such as the Hilbert Curve, leads to process' cells b
 \begin{figure}[H]
 	\label{fig:borderline}
 	\caption{Border cells for 3 processes}
-	\input{\grpath/ghosts/borderline.tex}
+	\input{method/borderline.tex}
 \end{figure}
 
 For rank zero, there are ghost cells on both of the other processes as shown in Figure \ref{fig:borders-r0}. 
@@ -139,7 +138,7 @@ For rank zero, there are ghost cells on both of the other processes as shown in 
 \begin{figure}[H]
 	\label{fig:borders-r0}
 	\caption{Ghost cells for rank 0}
-	\input{\grpath/ghosts/ghosts-r0.tex}
+	\input{method/ghosts-r0.tex}
 \end{figure}
 
 A highly desirable property of the border and ghost sets that greatly simplifies the retrieval of ghost cell data is that for any two processes $x$ and $y$, $\mathbb{G}_y$ on $x$ is exactly the same as $\mathbb{B}_x$ on $y$. In order to guarantee that property the sets are kept sorted according the the global identifier. 
@@ -281,7 +280,7 @@ As a graphical demonstration of the rebalancing, 20 cells will be transferred fr
 \begin{figure}[H]
 	\label{fig:rebalance-init}
 	\caption{The starting conditions for the rebalancing example}
-	\input{\grpath/movecells/init.tex}
+	\input{method/init.tex}
 \end{figure}
 
 Rebalancing is split into the following subroutines: Balance Calculations, updating cell ranks, notifying rank changes, transferring cells, inserting new cells and updating the ghost and border cell sets. These are shown as an activity diagram in Figure \ref{fig:rebalance-overview}, showing the concurrency of the processes.
@@ -289,7 +288,7 @@ Rebalancing is split into the following subroutines: Balance Calculations, updat
 \begin{figure}[H]
 	\label{fig:rebalance-overview}
 	\caption{Activity Diagram of the rebalancing procedure for any three adjacent processes. MPI operations are shown in blue.}
-	\input{moveCells_ad}
+	\input{method/moveCells_ad}
 \end{figure}
 
 
@@ -329,7 +328,7 @@ In the example case, the cells that are currently on rank 0 but will have their 
 \begin{figure}[H]
 	\label{fig:rebalance-ranks}
 	\caption{Example mesh, with 20 cells being marked to be moved from rank 0 to rank 1}
-	\input{\grpath/movecells/overlap.tex}
+	\input{method/overlap.tex}
 \end{figure}
 
 \begin{algorithm}[H]
@@ -361,7 +360,7 @@ In the example case, the only process not involved in the transfer already is th
 \begin{figure}[H]
 	\label{fig:rebalance-notify}
 	\caption{The example mesh, with the ghost cells of rank 2 whose rank will change following the rebalancing highlighted}
-	\input{\grpath/movecells/ghostnotify.tex}
+	\input{method/ghostnotify.tex}
 \end{figure}
 
 
@@ -402,7 +401,7 @@ After notifying the foreign processes of rank changes, each process then generat
 \begin{figure}[H]
 	\label{fig:rebalance-transfer}
 	\caption{The example mesh, with the cells of $T_r$ highlighted}
-	\input{\grpath/movecells/Tr.tex}
+	\input{method/Tr.tex}
 \end{figure}
 
 \begin{algorithm}[H]
@@ -478,7 +477,7 @@ The subset of the tree in each process now shows the completed transfer as in Fi
 \begin{figure}[H]
 	\label{fig:rebalance-final}
 	\caption{The rebalanced example mesh}
-	\input{\grpath/movecells/result.tex}
+	\input{method/result.tex}
 \end{figure}
 
 

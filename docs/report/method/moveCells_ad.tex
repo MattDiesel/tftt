@@ -117,8 +117,8 @@
 
 \node[adfork, below=of balanceCalc, xshift=1.5\du] (f3) {};
 
-\draw [adforkedge] (f2) to node [anchor=west] {$\vect{c}$} (balanceCalc);
-\draw [adjoinedge] (balanceCalc) to node [anchor=west] {$\vect{\Delta}$} (f3);
+\draw [adforkedge] (f2) to node [anchor=west] {$\vb{c}$} (balanceCalc);
+\draw [adjoinedge] (balanceCalc) to node [anchor=west] {$\vb{\Delta}$} (f3);
 
 
 \node[adaction, below=of f3] (r2-updateRanks) {Update \\ Ranks};
@@ -136,7 +136,7 @@
     \node[adaction, below=3\du of r\i-insert] (r\i-ghosts) {Regen \\ Ghosts};
 
     \draw [adedge]
-        (r\i-updateRanks.south) -- node [anchor=west] {$\vect{N}$} (r\i-notify.north);
+        (r\i-updateRanks.south) -- node [anchor=west] {$\vb{N}$} (r\i-notify.north);
     \draw [adedge]
         (r\i-notify.south) -- (r\i-genSet.north);
     \draw [adedge]
@@ -145,7 +145,7 @@
         (r\i-insert.south) -- (r\i-ghosts.north);
 
 
-    \node[adcommtarget, above left=1\du of r\i-notify] (r\i-n) {$\vect{\hat N}$};
+    \node[adcommtarget, above left=1\du of r\i-notify] (r\i-n) {$\vb{\hat N}$};
     \draw[adcomms,double,<->,shorten >=-6pt] (r\i-notify) -- (r\i-n);
 
     \coordinate (r\i-mid) at ($(r\i-genSet)!0.4!(r\i-insert)$);
@@ -156,39 +156,39 @@
 
 \draw[adcomms, shorten >=2pt] 
     (r1-genSet) -- (r0-mid)
-    node [at start, above left] {$\vect{T}_l$};
+    node [at start, above left] {$\vb{T}_l$};
 \draw[adcomms, shorten >=2pt] 
     (r0-mid) -- (r1-mid)
-    node [at end, below left] {$\vect{U}_l$};
+    node [at end, below left] {$\vb{U}_l$};
 
 % \node[adcommtarget, below right=0.1\du of r3-genSet, draw=none, xshift=1\du] (r4-mid) {};
 % \draw[adcomms, shorten >=2pt] 
 %     (r3-genSet) -- (r4-mid)
-%     node [at start, above right] {$\vect{T}_r$};
+%     node [at start, above right] {$\vb{T}_r$};
 % \draw[adcomms, shorten >=2pt] 
 %     (r4-mid) -- (r3-mid)
-%     node [at end, below right] {$\vect{U}_r$};
+%     node [at end, below right] {$\vb{U}_r$};
 
 
 \draw[adcomms, shorten >=2pt] 
     (r1-genSet) -- (r2-mid)
-    node [at start, above right] {$\vect{T}_r$}
-    node [at end, below left] {$\vect{U}_l$};
+    node [at start, above right] {$\vb{T}_r$}
+    node [at end, below left] {$\vb{U}_l$};
 
 \draw[adcomms, shorten >=2pt] 
     (r2-genSet) -- (r1-mid)
-    node [at start, above left] {$\vect{T}_l$}
-    node [at end, below right] {$\vect{U}_r$};
+    node [at start, above left] {$\vb{T}_l$}
+    node [at end, below right] {$\vb{U}_r$};
 
 \draw[adcomms, shorten >=2pt] 
     (r2-genSet) -- (r3-mid)
-    node [at start, above right] {$\vect{T}_r$}
-    node [at end, below left] {$\vect{U}_l$};
+    node [at start, above right] {$\vb{T}_r$}
+    node [at end, below left] {$\vb{U}_l$};
 
 \draw[adcomms, shorten >=2pt] 
     (r3-genSet) -- (r2-mid)
-    node [at start, above left] {$\vect{T}_l$}
-    node [at end, below right] {$\vect{U}_r$};
+    node [at start, above left] {$\vb{T}_l$}
+    node [at end, below right] {$\vb{U}_r$};
     
 
 \node[adfork, below=3\du of r2-ghosts] (f4) {};
