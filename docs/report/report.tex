@@ -16,6 +16,7 @@
 
 \usepackage{tikz,fp}
 \usetikzlibrary{positioning,calc,external}
+\tikzexternalize
 
 \definecolor{colorA} {rgb} {0.1686, 0.5137, 0.7294}
 \definecolor{colorB} {rgb} {0.9922, 0.6824, 0.3804}
@@ -55,681 +56,761 @@
 \usepackage[toc,page]{appendix}
 
 
-\tikzexternalize
 \begin{document}
 
-\date{14th November 2016}
+
+\date{31st May 2017}
 \author{Matt Diesel (md639)}
 \supervisor{Dr. Jie Li}
 \title{Parallel Adaptation of Orthotree Meshes}
 
-% \pagestyle{empty}
-% \maketitle
+\pagestyle{empty}
+\maketitle
 
-% \thispagestyle{empty}
-% \begin{abstract}
-% Abstract
-% \end{abstract}
+\thispagestyle{empty}
+\begin{abstract}
+Abstract
+\end{abstract}
 
-% \tableofcontents
-% \newpage
-% \pagestyle{plain}
-
-
-% \section{Introduction}
+\tableofcontents
+\newpage
+\pagestyle{plain}
 
 
-\section{Method}
+\section{Introduction} % (fold)
+    \label{sec:intro}
 
-\subsection{Orthotree Fundamentals}
+    TODO
 
-An orthotree is an N dimensional tree structure, where each cell is orthotopic \cite{coxeter73} and its children are evenly sized similar orthotopes. For this project, the 2d case (known as a Quadtree) was implemented and examined in detail. Much of the code does not depend on the dimension however, and the algorithms extend into N dimensions easily.
+% section intro (end)
 
-A cells parent is stored as a reference $\mathcal{C}\acc\textproc{parent}$.
+\section{Method} % (fold)
+    \label{sec:method}
 
-The children of a cell $\mathcal{C}$ are accessed as a list $\mathcal{C}\acc\vect{\mathcal{K}}=\{\mathcal{K}_0,\mathcal{K}_1,\cdots,\mathcal{K}_n\}$, indexed using one bit per dimension, with increasing dimension number corresponding to increasing bit significance as shown in Figure \ref{fig:childnum}.
+    \subsection{Orthotree Fundamentals} % (fold)
+        \label{sec:orthotree}
 
-\begin{figure} [H]
-    \centering
-    \begin{subfigure}[b]{.3\textwidth}
-        \centering
-        \tikzset{external/export next=false}
-        \begin{tikzpicture}[every node/.append style={
-            draw,line width=0.1mm,inner sep=0, minimum size=1cm-0.1mm}]
-            \node at (0.5,0.5) {0};
-            \node at (1.5,0.5) {1};
-            \node at (0.5,1.5) {2};
-            \node at (1.5,1.5) {3};
+        Orthotopes are defined by \cite{coxeter73} as the N-dimensional generalisation of a cube. The term is used here to generalise between squares in the 2d case and cubes in the 3d case.
 
-            \begin{scope}[xshift=3cm,every node/.append style={draw=none}]
-                \draw[->] (0,0) -- (1,0) node[anchor=west,xshift=-1mm] {$x$};
-                \draw[->] (0,0) -- (0,1) node[anchor=south,yshift=-1mm] {$y$};
-            \end{scope}
+        An orthotree is a tree structure, where each cell is orthotopic and its children are evenly sized similar orthotopes. For this project, the 2d case (known as a quadtree) was implemented and examined in detail. Almost all the methods are kept general however, to allow adaptation to the 3d octree. 
 
-            \node[draw=none] at (0, -0.5cm) {};
-        \end{tikzpicture}
-        \caption{Quadtree}
-        \label{fig:childnum-2d}
-    \end{subfigure}\hspace{2cm}%
-    \begin{subfigure}[b]{.3\textwidth}
-        \centering
-        \tikzset{external/export next=false}
-        \begin{tikzpicture}[every node/.append style={
-            draw,line width=0.1mm,inner sep=0, minimum size=1cm-0.1mm}]
-            \begin{scope}[ % x,y, z=1
-                yshift=2cm,xshift=0,every node/.append style={
-                yslant=-0.5,xslant=1},yslant=-0.5,xslant=1]
-                \node at (0.5,0.5) {4};
-                \node at (1.5,0.5) {5};
-                \node at (0.5,1.5) {6};
-                \node at (1.5,1.5) {7};
-            \end{scope}
-            \begin{scope}[ % x,z y=0
-                yshift=0,every node/.append style={
-                yslant=-0.5,xslant=0},yslant=-0.5,xslant=0]
-                \node at (0.5,0.5) {0};
-                \node at (1.5,0.5) {1};
-                \node at (0.5,1.5) {4};
-                \node at (1.5,1.5) {5};
-            \end{scope}
-            \begin{scope}[ % y,z, x=1
-                yshift=-1cm,xshift=2cm,every node/.append style={
-                yslant=0.5,xslant=0},yslant=0.5,xslant=0]
-                \node at (0.5,0.5) {1};
-                \node at (1.5,0.5) {3};
-                \node at (0.5,1.5) {5};
-                \node at (1.5,1.5) {7};
-            \end{scope}
-            \begin{scope}[xshift=5cm,every node/.append style={draw=none}]
-                \draw[->] (0,0) -- (1,0) node[anchor=west,xshift=-1mm] {$x$};
-                \draw[->] (0,0) -- (0.7,0.7) node[anchor=south west,xshift=-3mm,yshift=-3mm] {$y$};
-                \draw[->] (0,0) -- (0,1) node[anchor=south,yshift=-1mm] {$z$};
-            \end{scope}
-        \end{tikzpicture}
-        \caption{Octree}
-        \label{fig:childnum-3d}
-    \end{subfigure}%
-    \caption{Child numbering for the two common orthotree cases.}
-    \label{fig:childnum}
-\end{figure}
+        A cells parent is stored as a reference $\mathcal{C}\acc\textproc{parent}$.
 
-We refine the tree depending on the conditions of the problem being solved. Figure \ref{fig:layeredtree} shows a simple case where we refine to a simple line geometry.
+        The children of a cell $\mathcal{C}$ are accessed as a list $\mathcal{C}\acc\vect{\mathcal{K}}=\{\mathcal{K}_0,\mathcal{K}_1,\cdots,\mathcal{K}_n\}$, indexed using one bit per dimension, with increasing dimension number corresponding to increasing bit significance as shown in Figure \ref{fig:childnum}.
 
-\begin{figure} [H]
-    \input{method/layeredtree}
-    \caption{4 levels of a Quadtree refined to a line shown in blue. If a cell has children, they are shown in orange.}
-    \label{fig:layeredtree}
-\end{figure}
-
-Although cells are stored at all levels in order to make tree traversal possible and ease refinement or coarsening of cells, processing of the problem is only done on the finest possible level. The set of cells without children make up the leaves of the tree $\mathbb{L}$ and it is this set that is of interest. The number of cells in the tree is written as $\abs{\mathbb{L}}$.
-
-Cells are referred to in this document using a calligraphic typed letter, such as $\mathcal{C}$. Properties of the cell use dot member access notation, for example $\mathcal{C}\acc\textproc{data}$ is the data associated with the cell. 
-
-However, the refinement in Figure \ref{fig:layeredtree} is based on the assumption that the cells of interest are only those directly on the line. In reality, we spread the refinement levels such that for all cells, there are no cells within a parameter $P$ cell widths in the axis directions that are more than 1 level apart. This is called refinement propagation, examples of which are presented in Figure \ref{fig:refprop} .
-
-The case $P=1$ is known as Two to One Balancing, as a cell has no neighbours more than twice its size. Since the term balancing is used to refer to parallel load balancing in this report, this term will be avoided.
-
-\expandafter\newcommand\csname countL(0) \endcsname{280}
-\expandafter\newcommand\csname countL(1) \endcsname{452}
-\expandafter\newcommand\csname countL(2) \endcsname{604}
-\newcommand{\getCount} [1]{\csname countL(#1) \endcsname}
-
-\begin{figure} [H]
-    \centering
-    \foreach \i in {0,1,2} {
-        \begin{subfigure}{.3\textwidth}
+        \begin{figure} [H]
             \centering
-            \begin{tikzpicture}
-                \draw[domain=0:3.8,smooth,variable=\x,colorA, thick] plot ({\x},
-                    {0.3 + 6.189086*\x - 6.682936*\x*\x + 2.481516*\x*\x*\x - 0.2852701*\x*\x*\x*\x});
-                \input{method/gen/mesh-t\i}
-            \end{tikzpicture}
-            \caption{\\ $P=\i$ \\ $\ \ \abs{\mathbb{L}}=\getCount{\i}$}
-            \label{fig:refprop-t\i}
-        \end{subfigure}%
-    }
-    \caption{Meshes for various refinement propagation levels $P$ to the example line geometry. In all cases the maximum refinement level is $5$, giving an equivalent uniform mesh cell count of $1024$ cells.}
-    \label{fig:refprop}
-\end{figure}
+            \begin{subfigure}[b]{.3\textwidth}
+                \centering
+                \tikzset{external/export next=false}
+                \begin{tikzpicture}[every node/.append style={
+                    draw,line width=0.1mm,inner sep=0, minimum size=1cm-0.1mm}]
+                    \node at (0.5,0.5) {0};
+                    \node at (1.5,0.5) {1};
+                    \node at (0.5,1.5) {2};
+                    \node at (1.5,1.5) {3};
+
+                    \begin{scope}[xshift=3cm,every node/.append style={draw=none}]
+                        \draw[->] (0,0) -- (1,0) node[anchor=west,xshift=-1mm] {$x$};
+                        \draw[->] (0,0) -- (0,1) node[anchor=south,yshift=-1mm] {$y$};
+                    \end{scope}
+
+                    \node[draw=none] at (0, -0.5cm) {};
+                \end{tikzpicture}
+                \caption{Quadtree}
+                \label{fig:childnum-2d}
+            \end{subfigure}\hspace{2cm}%
+            \begin{subfigure}[b]{.3\textwidth}
+                \centering
+                \tikzset{external/export next=false}
+                \begin{tikzpicture}[every node/.append style={
+                    draw,line width=0.1mm,inner sep=0, minimum size=1cm-0.1mm}]
+                    \begin{scope}[ % x,y, z=1
+                        yshift=2cm,xshift=0,every node/.append style={
+                        yslant=-0.5,xslant=1},yslant=-0.5,xslant=1]
+                        \node at (0.5,0.5) {4};
+                        \node at (1.5,0.5) {5};
+                        \node at (0.5,1.5) {6};
+                        \node at (1.5,1.5) {7};
+                    \end{scope}
+                    \begin{scope}[ % x,z y=0
+                        yshift=0,every node/.append style={
+                        yslant=-0.5,xslant=0},yslant=-0.5,xslant=0]
+                        \node at (0.5,0.5) {0};
+                        \node at (1.5,0.5) {1};
+                        \node at (0.5,1.5) {4};
+                        \node at (1.5,1.5) {5};
+                    \end{scope}
+                    \begin{scope}[ % y,z, x=1
+                        yshift=-1cm,xshift=2cm,every node/.append style={
+                        yslant=0.5,xslant=0},yslant=0.5,xslant=0]
+                        \node at (0.5,0.5) {1};
+                        \node at (1.5,0.5) {3};
+                        \node at (0.5,1.5) {5};
+                        \node at (1.5,1.5) {7};
+                    \end{scope}
+                    \begin{scope}[xshift=5cm,every node/.append style={draw=none}]
+                        \draw[->] (0,0) -- (0.8,-0.4) node[anchor=west,xshift=-1mm,yshift=-2mm] {$x$};
+                        \draw[->] (0,0) -- (0.8,0.4) node[anchor=south west,xshift=-1mm,yshift=-4mm] {$y$};
+                        \draw[->] (0,0) -- (0,1) node[anchor=south,yshift=-1mm] {$z$};
+                    \end{scope}
+                \end{tikzpicture}
+                \caption{Octree}
+                \label{fig:childnum-3d}
+            \end{subfigure}%
+            \caption{Child numbering for the two common orthotree cases.}
+            \label{fig:childnum}
+        \end{figure}
+
+        The tree is refined depending on the conditions of the problem being solved. Figure \ref{fig:layeredtree} shows a trivial case refining to a simple line geometry. At each level, cells are refined if and only if the line overlaps the cell at any point. 
+
+        The cells without children form the finest level of the mesh. These are known as the leaves of the tree $\mathbb{L}$, and size of the tree is taken to be the number of leaves $\abs{\mathbb{L}}$. Parent cells aren't used in the numeric methods applied to the mesh, and since they do not impact the computational time of numeric operations are not included in the tree size. 
+
+        \begin{figure} [H]
+            \input{method/layeredtree}
+            \caption{4 levels of a quadtree refined to a line shown in blue. If a cell is not a leaf, its children are shown in orange.}
+            \label{fig:layeredtree}
+        \end{figure}
+
+        Cells are referred to in this document using a calligraphic typed letter, such as $\mathcal{C}$. Properties of the cell use dot member access notation, for example $\mathcal{C}\acc\textproc{data}$ is the data associated with the cell. 
+
+        The selection method used for Figure \ref{fig:layeredtree} is based on the assumption that the cells of interest are only those directly on the line. In practice, the refinement levels should be spread to limit the number of combinations of cell boundaries and smooth the output. One simple method is to propagate refinement levels such that there are no cells within a parameter $P$ cell widths in the axis directions that are more than one level apart. Examples of using refinement propagation at three values for $P$ are presented in Figure \ref{fig:refprop}.
+
+        \expandafter\newcommand\csname countL(0) \endcsname{280}
+        \expandafter\newcommand\csname countL(1) \endcsname{452}
+        \expandafter\newcommand\csname countL(2) \endcsname{604}
+        \newcommand{\getCount} [1]{\csname countL(#1) \endcsname}
+
+        \begin{figure} [H]
+            \centering
+            \foreach \i in {0,1,2} {
+                \begin{subfigure}{.3\textwidth}
+                    \centering
+                    \begin{tikzpicture}
+                        \draw[domain=0:3.8,smooth,variable=\x,colorA, thick] plot ({\x},
+                            {0.3 + 6.189086*\x - 6.682936*\x*\x + 2.481516*\x*\x*\x - 0.2852701*\x*\x*\x*\x});
+                        \input{method/gen/mesh-t\i}
+                    \end{tikzpicture}
+                    \caption{\\ $P=\i$ \\ $\ \ \abs{\mathbb{L}}=\getCount{\i}$}
+                    \label{fig:refprop-t\i}
+                \end{subfigure}%
+            }
+            \caption{Meshes for various refinement propagation levels $P$ to the example line geometry. In all cases the maximum refinement level is $5$, giving an equivalent uniform mesh cell count of $1024$ cells.}
+            \label{fig:refprop}
+        \end{figure}
+
+        The case $P=1$ is referred to in other literature as Two-to-One Balancing, as a cell has no neighbours more than twice its size. This is the minimum propagation level the numeric methods written for this project will work on. Since the term balancing is used to refer to parallel load balancing in this report, this term will be avoided, and "refinement propagation" used in preference as a more general term.
+
+    % subsection orthotree (end)
 
-\subsection{Fully Threaded Trees}
 
-The use of orthotree structures in Adaptive Mesh Routines was proposed by Khokhlov in \cite{Khokhlov98} . To tailor them towards solving the differential equation in fluid problems, his implementation included storing the set of neighbours $\mathcal{C}\acc\vect{\mathcal{N}}$ for each cell $\mathcal{C}$ to allow $\bigO{1}$ lookup compared to a possible $\bigO{\log n}$ lookup using tree traversal. Khoklov termed the tree with the neighbour pointers a Fully Threaded Tree (FTT) structure.
+    \subsection{Fully Threaded Trees} % (fold)
+        \label{sec:ftt}
 
-In \cite{Khokhlov98}, an optimisation is presented to reduce the memory overhead introduced by storing neighbour pointers by noting that for (in the quadtree case) the children of a cell, half the neighbours are also children of that cell. By storing groups of children together in an ortho (referred to as a quad in 2d and octo in 3d) the memory requirement for storing neighbour links is almost halved.
+        The use of orthotree structures in Adaptive Mesh Routines (AMR) was proposed by Khokhlov in \cite{Khokhlov98}. To tailor them towards solving the differential equation in fluid problems, his implementation included storing the set of neighbours $\mathcal{C}\acc\vect{\mathcal{N}}$ for each cell $\mathcal{C}$ to allow $\bigO{1}$ lookup compared to a possible $\bigO{\log n}$ lookup using tree traversal. Khoklov termed the tree with the neighbour pointers a Fully Threaded Tree (FTT) structure.
 
-Optimisation details, such as storing cells in their groups, is abstracted over by performing most operations through a cell reference class. This provides a thin layer that for each property retrieves from either the group or cell raw structure. 
+        In \cite{Khokhlov98}, an optimisation is presented to reduce the memory overhead introduced storing neighbour pointers by noting that for (in the quadtree case) the children of a cell, half the neighbours are also children of that cell. By storing groups of children together in an ortho (referred to as a quad in 2d and octo in 3d) the memory requirement for storing neighbour links is almost halved.
 
-For this implementation, the cell structures store their own index. Since the layout of the group structure is known, this is sufficient to calculate the offset to the start of the group. Other implementations, such as that used by \cite{Yung2010} rely on alignment of the groups in order to perform the same calculation. That approach has some merit, but forces the memory manager to align the groups to large intervals for negligible saving\footnote{The memory saving for this implementation happens to be zero. The structure was already being padded to an 8 byte boundary, and the index added nothing to the allocated size. } .
+        Optimisation details, such as storing cells in their groups, is abstracted over by performing most operations through a cell reference class. This provides a thin layer that for each property retrieves from either the group or cell raw structure. 
 
+        For this implementation, the cell structures store their own index. Since the layout of the group structure is known, this is sufficient to calculate the offset to the start of the group. Other implementations, such as that used by \cite{Yung2010} rely on alignment of the groups in order to perform the same calculation. That approach has some merit, but forces the memory manager to align the groups to large intervals for negligible saving\footnote{The memory saving for this implementation happens to be zero. The structure was already being padded to an 8 byte boundary, and the index added nothing to the allocated size. }.
 
-\subsection{Threaded FTT}
+    % subsection ftt (end)
 
-To distribute the $N$ dimensional orthotree onto a set of $W$ processes, it makes sense to flatten the tree into a one dimensional set of leaves $\mathbb{L}$, which can then be sliced evenly. To achieve this requires a Space Filling Curve (SFC). 
 
-Regardless of the SFC used, the implementation must provide a pair of members $\mathcal{C}\acc\textproc{prev}$ and $\mathcal{C}\acc\textproc{next}$ for each cell, forming a doubly-linked list of cells through the tree. In computing terms, this forms a thread through the structure, which is now a Threaded FTT (TFTT);
+    \subsection{Threaded FTT} % (fold)
+        \label{sec:tftt}
 
-Refinement or coarsening of cells must only change the local curve, analogous to insertion and deletion operations on the list as shown by Algorithms \ref{alg:sfc-coarsen} and \ref{alg:sfc-refine}.
+        To distribute the $N$ dimensional orthotree onto a set of $W$ processes, it makes sense to flatten the tree into a one dimensional set of leaves $\mathbb{L}$, which can then be sliced evenly. To achieve this requires a Space Filling Curve (SFC). 
 
-\begin{algorithm}[H]
-    \caption{Modifying the curve when coarsening the cell $\mathcal{C}$}
-    \label{alg:sfc-coarsen}
+        Regardless of the SFC used, the implementation must provide a pair of members $\mathcal{C}\acc\textproc{prev}$ and $\mathcal{C}\acc\textproc{next}$ for each cell, forming a doubly-linked list of cells through the tree. In computing terms, this forms a thread through the structure, which is now a Threaded FTT (TFTT);
 
-    \begin{algorithmic}
-        \State $\mathcal{C}\acc\textproc{prev}\acc\textproc{next} \Rightarrow \mathcal{C}$
-        \State $\mathcal{C}\acc\textproc{next}\acc\textproc{prev} \Rightarrow \mathcal{C}$
-    \end{algorithmic}
-\end{algorithm}
+        Refinement or coarsening of cells must only change the local curve, analogous to insertion and deletion operations on the list as shown by Algorithms \ref{alg:sfc-coarsen} and \ref{alg:sfc-refine}.
 
-\begin{algorithm}[H]
-    \caption{Modifying the curve when refining the cell $\mathcal{C}$}
-    \label{alg:sfc-refine}
+        \begin{algorithm}[H]
+            \caption{Modifying the curve when coarsening the cell $\mathcal{C}$}
+            \label{alg:sfc-coarsen}
 
-    \begin{algorithmic}
-        \Require {The internal curve of $C$.}
-        \Statex
-        \State $\mathcal{C}\acc\textproc{prev}\acc\textproc{next} \Rightarrow \textproc{firstChild}(\mathcal{C})$
-        \State $\mathcal{C}\acc\textproc{next}\acc\textproc{prev} \Rightarrow \textproc{lastChild}(\mathcal{C})$
-    \end{algorithmic}
-\end{algorithm}
+            \begin{algorithmic}
+                \State $\mathcal{C}\acc\textproc{prev}\acc\textproc{next} \Rightarrow \mathcal{C}$
+                \State $\mathcal{C}\acc\textproc{next}\acc\textproc{prev} \Rightarrow \mathcal{C}$
+            \end{algorithmic}
+        \end{algorithm}
 
-Since the tree is constructed top down, this approach implies that defining the curve order of children of a cell is sufficient to describe the curve of the tree. This approach differs from previous uses of SFCs on orthotrees in that it stores the thread through the tree rather than using the SFC definition to iterate over it as \cite{bader2013} and others have done.
+        \begin{algorithm}[H]
+            \caption{Modifying the curve when refining the cell $\mathcal{C}$}
+            \label{alg:sfc-refine}
 
-Likewise the notation must differ slightly from the commonly used rewrite systems such as the Lindenmayer system. The curves are defined by a sequence $S$ of child indices using the ordering in Figure \ref{fig:childnum}. The simplest case is a Morton curve given in Equation \ref{equ:sfc-mort2d}, which equates to the standard child order.
+            \begin{algorithmic}
+                \Require {The internal curve of $C$.}
+                \Statex
+                \State $\mathcal{C}\acc\textproc{prev}\acc\textproc{next} \Rightarrow \textproc{firstChild}(\mathcal{C})$
+                \State $\mathcal{C}\acc\textproc{next}\acc\textproc{prev} \Rightarrow \textproc{lastChild}(\mathcal{C})$
+            \end{algorithmic}
+        \end{algorithm}
 
-\begin{equation}
-    \label{equ:sfc-mort2d}
-    S_{\mathrm{mort},2d} = \left( 0 \to 1 \to 2 \to 3 \right)
-\end{equation}
+        Since the tree is constructed top down, this approach implies that defining the curve order of children of a cell is sufficient to describe the curve of the tree. This approach differs from previous uses of SFCs on orthotrees in that it stores the thread through the tree rather than using the SFC definition to iterate over it as \cite{bader2013} and others have done.
 
-An alternative space filling curve is the Hilbert Curve, proposed by David Hilbert in 1891 as a curve that guaranteed that sequential cells would always be neighbours. This removes any possibility of complete separation of the cells in a processor unit, and can be represented using the notation described above with the addition of an orientation property $\mathcal{C}\acc\textproc{orient}$, using the notation introduced by Bader \cite{bader2013} in Chapter 3.1. 
+        Likewise the notation must differ slightly from the commonly used rewrite systems such as the Lindenmayer system. The curves are defined by a sequence $S$ of child indices using the ordering in Figure \ref{fig:childnum}. The simplest case is a Morton curve given in Equation \ref{equ:sfc-mort2d}, which equates to the standard child order.
 
-\begin{equation}
-    S_{\mathrm{hilb,2d}}\left(\mathcal{C}\acc\textproc{orient}\right) =
-    \begin{cases}
-        \left( 0 \to 2 \to 3 \to 1\right) & \qif \mathcal{C}\acc\textproc{orient}=H \\
-        \left( 3 \to 1 \to 0 \to 2\right) & \qif \mathcal{C}\acc\textproc{orient}=C \\
-        \left( 0 \to 1 \to 3 \to 2\right) & \qif \mathcal{C}\acc\textproc{orient}=A \\
-        \left( 3 \to 2 \to 0 \to 1\right) & \qif \mathcal{C}\acc\textproc{orient}=B
-    \end{cases}
-\end{equation}
+        \begin{equation}
+            \label{equ:sfc-mort2d}
+            S_{\mathrm{mort},2d} = \left( 0 \to 1 \to 2 \to 3 \right)
+        \end{equation}
 
-On refinement, the orientation of child cells $\mathcal{C}\acc\mathcal{K}_c\acc\textproc{orient}$ as shown in Table \ref{tab:hilb-Dc} is a function of the parent orientation $\mathcal{C}\acc\textproc{orient}$ using the production rules given by Bader \cite{bader2013}. They are rewritten into this projects child order convention, as opposed to his presentation in Hilbert child order. This makes the pattern in the inheritance less obvious, but is more suited to use during the refinement process.
+        An alternative space filling curve is the Hilbert Curve, proposed by David Hilbert in 1891 as a curve that guaranteed that sequential cells would always be neighbours. This removes any possibility of complete separation of the cells in a processor unit, and can be represented using the notation described above with the addition of an orientation property $\mathcal{C}\acc\textproc{orient}$, using the notation introduced by Bader \cite{bader2013} in Chapter 3.1. 
 
-\begin{table}[H]
-    \centering
-    \caption{Lookup table for child orientation $\mathcal{C}\acc\mathcal{K}_c\acc\textproc{orient}$, as a function of the parent orientation $\mathcal{C}\acc\textproc{orient}$}
-    \label{tab:hilb-Dc}
-    \begin{tabular}{ll|llll}
-                         &   & \multicolumn{4}{c}{$\mathcal{C}\acc\textproc{orient}$} \\
-                         &   & H    & C    & A    & B    \\ \hline
-    \multirow{4}{*}{$c$} & 0 & A    & C    & H    & B    \\
-                         & 1 & B    & C    & A    & H    \\
-                         & 2 & H    & A    & C    & B    \\
-                         & 3 & H    & B    & A    & C   
-    \end{tabular}
-\end{table}
+        \begin{equation}
+            S_{\mathrm{hilb,2d}}\left(\mathcal{C}\acc\textproc{orient}\right) =
+            \begin{cases}
+                \left( 0 \to 2 \to 3 \to 1\right) & \qif \mathcal{C}\acc\textproc{orient}=H \\
+                \left( 3 \to 1 \to 0 \to 2\right) & \qif \mathcal{C}\acc\textproc{orient}=C \\
+                \left( 0 \to 1 \to 3 \to 2\right) & \qif \mathcal{C}\acc\textproc{orient}=A \\
+                \left( 3 \to 2 \to 0 \to 1\right) & \qif \mathcal{C}\acc\textproc{orient}=B
+            \end{cases}
+        \end{equation}
 
-In both cases, the Hilbert curve satisfies the requirement that no knowledge of the rest of the tree is required for refinement and coarsening. The Hilbert curve has been defined by a number of independent sources in N dimensions, such as Butz in \cite{butz71}, and can be adapted to the above notation and method of implementation easily retaining similar properties. 
+        On refinement, the orientation of child cells $\mathcal{C}\acc\mathcal{K}_c\acc\textproc{orient}$ as shown in Table \ref{tab:hilb-Dc} is a function of the parent orientation $\mathcal{C}\acc\textproc{orient}$ using the production rules given by Bader \cite{bader2013}. They are rewritten into this projects child order convention, as opposed to his presentation in Hilbert child order. This makes the pattern in the inheritance less obvious, but is more suited to use during the refinement process.
 
+        \begin{table}[H]
+            \centering
+            \caption{Lookup table for child orientation $\mathcal{C}\acc\mathcal{K}_c\acc\textproc{orient}$, as a function of the parent orientation $\mathcal{C}\acc\textproc{orient}$}
+            \label{tab:hilb-Dc}
+            \begin{tabular}{ll|llll}
+                                 &   & \multicolumn{4}{c}{$\mathcal{C}\acc\textproc{orient}$} \\
+                                 &   & H    & C    & A    & B    \\ \hline
+            \multirow{4}{*}{$c$} & 0 & A    & C    & H    & B    \\
+                                 & 1 & B    & C    & A    & H    \\
+                                 & 2 & H    & A    & C    & B    \\
+                                 & 3 & H    & B    & A    & C   
+            \end{tabular}
+        \end{table}
 
-\subsection{Parallel TFTT}
+        In both cases, the Hilbert curve satisfies the requirement that no knowledge of the rest of the tree is required for refinement and coarsening. The Hilbert curve has been defined by a number of independent sources in N dimensions, such as Butz in \cite{butz71}, and can be adapted to the above notation and method of implementation easily retaining similar properties. 
 
+    % subsection tftt (end)
 
-\subsection{Global Identifiers}
 
-To enable inter-process communication, a cell identifier format is required that is guaranteed to be unique within the tree. Furthermore, the identifier must be constant for the same cell existing on multiple processes.
+    \subsection{Parallel TFTT} % (fold)
+        \label{sec:parallel}
 
-The identifier of a cell is accessed as $\mathcal{C}\acc\textproc{ident}$. Two functions are required for finding (\ref{fun:find}) and inserting (\ref{fun:insert}) the cell with a given identifier $\lambda$ into the tree.
+        The TFTT structure is now 
 
-\begin{align}
-    \label{fun:find}
-    \textproc{Find}(\lambda) \mapsto \mathcal{C} \\
-    \label{fun:insert}
-    \textproc{Insert}(\lambda) \mapsto \mathcal{C}
-\end{align}
+    % subsection partftt (end)
 
-The implementation chosen for this project encodes both the level and location of the cell as an unsigned integer, hence uniquely identifying it within the entire tree, and allowing logarithmic lookup and insertion times. Retrieving the level, child and parent identifiers, or the child index of the cell is done with bitwise arithmetic.
 
-The most significant byte of the integer encodes the level. The remainder of the bits encodes the child orthant for each successive step down the tree with the highest level being in the least significant bits. The number of bits needed to encode an orthant is equal to the number of dimensions of the problem. Using a 64 bit integer this allows for a maximum tree depth of 28 levels in a quadtree, or 18 octree levels.
+    \subsection{Global Identifiers} % (fold)
+        \label{sec:globalid}
 
+        To enable inter-process communication, a cell identifier format is required that is guaranteed to be unique within the tree. Furthermore, the identifier must be constant for the same cell existing on multiple processes.
 
-\subsection{Poisson Neighbourhoods}
+        The identifier of a cell is accessed as $\mathcal{C}\acc\textproc{ident}$. Two functions are required for finding (\ref{fun:find}) and inserting (\ref{fun:insert}) the cell with a given identifier $\lambda$ into the tree.
 
-To solve on the adaptive mesh, interpolation is required in cases where the level of adjacent cells do not match. It is possible to move the expensive interpolation operation outside of the tight solver loop by instead storing a list of cells required along with the co\"efficient they would have been scaled by using direct interpolation. This list of cells is known as the poisson neighbourhood for a cell $\mathcal{C}$ and is represented by the vector $\mathcal{C}\acc\vect{\mathcal{P}}$. The respective neighbour co\"efficients are represented by the vector $\mathcal{C}\acc\vect{\beta}$ and the central co\"efficient is a scalar $\mathcal{C}\acc\alpha$.
-
-The poisson neighbourhood is important for cells close to the border between processes, as it represents the necessary set of cells to perform the calculations.
-
-Calculating the co\"efficients for the different cases is explored in detail by \cite{Yung2010} including for higher order solvers. The methods used here are independent of the order of the solver, and the determining the neighbourhood is abstracted to Function \ref{fun:CalcPoisCoefs}.
-
-\begin{equation}
-    \label{fun:CalcPoisCoefs}
-    \textproc{CalcPoisCoefs}(\mathcal{C}) \mapsto \{ \vect{\mathcal{P}}, \vect{b}, \alpha \}
-\end{equation}
+        \begin{align}
+            \label{fun:find}
+            \textproc{Find}(\lambda) \mapsto \mathcal{C} \\
+            \label{fun:insert}
+            \textproc{Insert}(\lambda) \mapsto \mathcal{C}
+        \end{align}
 
-\subsection{Ghosts and Borders}
-\label{sec:ghostsandborders}
-
-For each process near its boundaries there are cells who require the data from poisson neighbours outside the tree of the process. These are known as ghost cells, and in order to solve in parallel their values must be retrieved at each iteration. For a process $x$ the set of ghost cells whose rank is another process $y$ is written as $\mathbb{G}_y$.
-
-Each process also stores the set of cells it owns, who are ghost cells of foreign processes. These are called the border cells, and for a process $x$ the set of border cells to another process $y$ is written as $\mathbb{B}_y$.
-
-A good space filling curve, such as the Hilbert Curve, leads to process' cells being closely grouped and close to square, for example the 3 processes in Figure \ref{fig:borderline} are grouped reasonably well with few peninsulas.
-
-\begin{figure}[H]
-    \input{method/gen/borderline.tex}
-    \caption{Border cells for 3 processes}
-    \label{fig:borderline}
-\end{figure}
-
-For rank zero, there are ghost cells on both of the other processes as shown in Figure \ref{fig:borders-r0}.
-
-\begin{figure}[H]
-    \input{method/gen/ghosts-r0.tex}
-    \caption{Ghost cells for rank 0}
-    \label{fig:borders-r0}
-\end{figure}
+        The implementation chosen for this project encodes both the level and location of the cell as an unsigned integer, hence uniquely identifying it within the entire tree, and allowing logarithmic lookup and insertion times.
 
-A highly desirable property of the border and ghost sets that greatly simplifies the retrieval of ghost cell data is that for any two processes $x$ and $y$, $\mathbb{G}_y$ on $x$ is exactly the same as $\mathbb{B}_x$ on $y$. In order to guarantee that property the sets are kept sorted according the the global identifier.
+        Retrieving the level, child and parent identifiers, or the child index of the cell is done with bitwise arithmetic. The most significant byte of the integer encodes the level. The remainder of the bits encodes the child orthant for each successive step down the tree with the highest level being in the least significant bits. The number of bits needed to encode an orthant is equal to the number of dimensions of the problem. Using a 64 bit integer this allows for a maximum tree depth of 28 levels in a quadtree, or 18 octree levels.
 
-Individual processes do not have enough information to generate their own ghost sets. As a result, the ghost sets for all processes is transferred with the initial cell distribution as outlined in Section \ref{sec:distribution}. However, knowledge of a processes own cell and ghost sets is sufficient to generate the border set using the method in Algorithm \ref{alg:borders-gen}.
+    % subsection globalid (end)
 
-\begin{algorithm}[H]
-    \caption{Building the border set on process $p$}
-    \label{alg:borders-gen}
 
-    \begin{algorithmic}
-        \Require A complete ghost set $\mathbb{G}$ for the process $p$.
-        \Statex
-        \State $\mathbb{B} \gets \emptyset$
-        \ForEach {ghost cell $\mathcal{G} \in \mathbb{G}$}
-            \ForEach {poisson neighbour $\mathcal{P} \in \mathcal{G}\acc\vect{\mathcal{P}}$}
-                \If {$\mathcal{P}\acc\textproc{rank} = p$}
-                    \State $\mathbb{B}_{\mathcal{G}\acc\textproc{rank}} \gets \mathcal{P}$
-                \EndIf
-            \EndFor
-        \EndFor
-    \end{algorithmic}
-\end{algorithm}
-
-
-\subsection{Distribution}
-\label{sec:distribution}
-
-Initial distribution is performed as a single process. The tree is refined to its initial mesh, typically according the the known geometry of the problem. The number of cells to be allocated to each process is calculated by dividing the cell count for the initial tree by the number of processes. The procedure in Algorithm \ref{alg:distrib-assign} then iterates over the space filling curve, setting cells to the current value of a rank counter and incrementing the counter when the processes cell count is reached.
-
-\begin{algorithm}[H]
-    \caption{Building the border set on process $p$}
-    \label{alg:distrib-assign}
+    \subsection{Poisson Neighbourhoods} % (fold)
+        \label{sec:poissonneighbours}
 
-    \begin{algorithmic}
-        \Require An initialised complete tree $\mathbb{L}$
-        \Statex
-        \State $\bar{c} \gets \frac{\abs{\mathbb{L}}}{\abs{\mathbb{W}}}$ \Comment {Cells per rank}
-        \State $\rho \gets 0$ \Comment {Rank counter}
-        \State $c \gets \bar c$ \Comment {Cell count remaining for the current rank}
-        \ForEach {cell $\mathcal{C} \in \mathbb{L}$ in SFC order}
-            \State $\mathcal{C}\acc\textproc{rank} \gets \rho$
-            \State $c \gets c-1$
-            \If {c = 0} \Comment {Step onto the next rank}
-                \State $\rho \gets \rho+1$
-                \State $c \gets \bar c$
-            \EndIf
-        \EndFor
-    \end{algorithmic}
-\end{algorithm}
+        To solve on the adaptive mesh, interpolation is required in cases where the level of adjacent cells do not match. It is possible to move the expensive interpolation operation outside of the tight solver loop by instead storing a list of cells required along with the co\"efficient they would have been scaled by using direct interpolation. This list of cells is known as the poisson neighbourhood for a cell $\mathcal{C}$ and is represented by the vector $\mathcal{C}\acc\vect{\mathcal{P}}$. The respective neighbour co\"efficients are represented by the vector $\mathcal{C}\acc\vect{\beta}$ and the central co\"efficient is a scalar $\mathcal{C}\acc\alpha$.
 
-Since it is not possible for a process to determine its own set of ghost cells without more knowledge of the tree, the starting process then generates all the ghost sets for every rank by using the poisson neighbourhood.
+        The poisson neighbourhood is important for cells close to the border between processes, as it represents the necessary set of cells to perform the calculations.
 
-\begin{algorithm}[H]
-    \caption{Generating the ghost sets for all processes}
-    \label{alg:distrib-ghosts}
+        Calculating the co\"efficients for the different cases is explored in detail by \cite{Yung2010} including for higher order solvers. The methods used here are independent of the order of the solver, and the determining the neighbourhood is abstracted to Function \ref{fun:CalcPoisCoefs}.
 
-    \begin{algorithmic}
-        \Require An initialised complete tree $\mathbb{L}$, with cell ranks assigned for every leaf.
-        \Ensure A complete ghost set $\mathbb{G}_{\rho\gets b}$, for every pair of processes $\rho$ and $b$
-        \Statex
-        \State $\mathbb{G} \gets \emptyset$
-        \ForEach {leaf $\mathcal{C} \in \mathbb{L}$}
-            \ForEach {poisson neighbour $\mathcal{P} \in \mathcal{C}\acc\vect{\mathcal{P}}$}
-                \If {$\mathcal{P}\acc\textproc{rank} \neq \mathcal{C}\acc\textproc{rank}$}
-                    \State $G_{\mathcal{C}\acc\textproc{rank}\gets\mathcal{P}\acc\textproc{rank}} \gets \mathcal{P}$
-                \EndIf
-            \EndFor
-        \EndFor
-    \end{algorithmic}
-\end{algorithm}
+        \begin{equation}
+            \label{fun:CalcPoisCoefs}
+            \textproc{CalcPoisCoefs}(\mathcal{C}) \mapsto \{ \vect{\mathcal{P}}, \vect{b}, \alpha \}
+        \end{equation}
 
-The tree is then serialised into a list for every process $\vect{N}_p=\{\lambda,\rho\}^n$ containing pairs of cell identifiers $\lambda$ and ranks $\rho$ referring to either an active cell or a ghost cell of the target process. These are sent to the processes, which unpack them according to the logic in Algorithm \ref{alg:distrib-unpack}.
+    % subsection poissonneighbours (end)
 
-\begin{algorithm}[H]
-    \caption{Building the subset of the tree on process $p$}
-    \label{alg:distrib-unpack}
 
-    \begin{algorithmic}
-        \Require A list $\vect{\hat N}=\{\lambda,\rho\}^n$ containing the cells required by this process.
-        \Statex
-        \State $\mathbb{G} \gets \emptyset$ \Comment{Ghost set is initially empty}
-        \ForEach {packed cell $\{\lambda,\rho\} \in \vect{\hat N}$}
-            \State $\mathcal{C} \gets \textproc{Insert}(\lambda)$ \Comment{$\mathcal{C}$ is a temporary cell reference}
-            \State $\mathcal{C}\acc\textproc{rank} \gets \rho$
-            \If {$\rho \neq p$} \Comment {$\mathcal{C}$ must be a ghost if its rank is not the current process}
-                \State $\mathbb{G}_\rho \gets \mathcal{C}$
-            \EndIf
-        \EndFor
-    \end{algorithmic}
-\end{algorithm}
+    \subsection{Ghosts and Borders} % (fold)
+        \label{sec:ghostsandborders}
 
-Finally, each process generates its own border set $\mathbb{B}$ using the procedure in Algorithm \ref{alg:borders-gen}.
+        For each process near its boundaries there are cells who require the data from poisson neighbours outside the tree of the process. These are known as ghost cells, and in order to solve in parallel their values must be retrieved at each iteration. For a process $x$ the set of ghost cells whose rank is another process $y$ is written as $\mathbb{G}_y$.
 
+        Each process also stores the set of cells it owns, who are ghost cells of foreign processes. These are called the border cells, and for a process $x$ the set of border cells to another process $y$ is written as $\mathbb{B}_y$.
 
-\subsection{Ghost Synchronisation}
+        A good space filling curve, such as the Hilbert Curve, leads to process' cells being closely grouped and close to square, for example the 3 processes in Figure \ref{fig:borderline} are grouped reasonably well with few peninsulas.
 
-With each iteration, the data for each processes ghost cells becomes out of date. Synchronisation is used at the end of every iteration to renew this data.
+        \begin{figure}[H]
+            \input{method/gen/borderline.tex}
+            \caption{Border cells for 3 processes}
+            \label{fig:borderline}
+        \end{figure}
 
-Since it is required once per iteration, ghost synchronisation is by far the most common parallel operation required. The set up described previously in Section \ref{sec:ghostsandborders} is designed to minimise this process. By making use of the equivalence of the ghost and border sets for two processes, the only information transfer required is the data from the border cells.
+        For rank zero, there are ghost cells on both of the other processes as shown in Figure \ref{fig:borders-r0}.
 
-Without compression, Algorithm \ref{alg:sync-sendrecv} is therefore the smallest transfer of information possible for this stage.
+        \begin{figure}[H]
+            \input{method/gen/ghosts-r0.tex}
+            \caption{Ghost cells for rank 0}
+            \label{fig:borders-r0}
+        \end{figure}
 
-\begin{algorithm}[H]
-    \caption{Synchronisation}
-    \label{alg:sync-sendrecv}
+        A highly desirable property of the border and ghost sets that greatly simplifies the retrieval of ghost cell data is that for any two processes $x$ and $y$, $\mathbb{G}_y$ on $x$ is exactly the same as $\mathbb{B}_x$ on $y$. In order to guarantee that property the sets are kept sorted according the the global identifier.
 
-    \begin{algorithmic}
-        \ForEach {process boundary $b \in \mathbb{W} \setminus p$}
-            \State $\vect{\Phi} \gets \emptyset$
-            \ForEach {border cell $\mathcal{B}_n \in \mathbb{B}_b$}
-                \State $\Phi_n \gets \mathcal{B}_n\acc\textproc{data}$
-            \EndFor
-            \Send $\vect{\Phi} \dra p_b$
-        \EndFor
-        \Statex
-        \ForEach {process boundary $b \in \mathbb{W} \setminus p$}
-            \Recv $\hat \Phi \dla p_b$
+        Individual processes do not have enough information to generate their own ghost sets. As a result, the ghost sets for all processes is transferred with the initial cell distribution as outlined in Section \ref{sec:distribution}. However, knowledge of a processes own cell and ghost sets is sufficient to generate the border set using the method in Algorithm \ref{alg:borders-gen}.
 
-            \ForEach {ghost cell $\mathcal{G}_n \in \mathbb{G}_b$}
-                \State $\mathcal{G}_n\acc\textproc{data} \gets \Phi_n$
-            \EndFor
-        \EndFor
-    \end{algorithmic}
-\end{algorithm}
+        \begin{algorithm}[H]
+            \caption{Building the border set on process $p$}
+            \label{alg:borders-gen}
 
-Further small improvements are made by noting that the length of the vector $\abs{\vect{\Phi}} = \abs{\mathbb{B}_b}$ for each boundary, and so this memory block can be re\"used to save the cost of repeated allocations.
+            \begin{algorithmic}
+                \Require A complete ghost set $\mathbb{G}$ for the process $p$.
+                \Statex
+                \State $\mathbb{B} \gets \emptyset$
+                \ForEach {ghost cell $\mathcal{G} \in \mathbb{G}$}
+                    \ForEach {poisson neighbour $\mathcal{P} \in \mathcal{G}\acc\vect{\mathcal{P}}$}
+                        \If {$\mathcal{P}\acc\textproc{rank} = p$}
+                            \State $\mathbb{B}_{\mathcal{G}\acc\textproc{rank}} \gets \mathcal{P}$
+                        \EndIf
+                    \EndFor
+                \EndFor
+            \end{algorithmic}
+        \end{algorithm}
 
+    % subsection ghostsandborders (end)
 
-\subsection{Rebalancing}
 
-Rebalancing is achieved by calculating the average number of cells per processor, and the movement of cells between processors required to achieve a perfect balance. Since a processes cells are contiguous along the space filling curve, cells can only be passed to the next or previous rank. The process at rank 0 starts with the first cell of the global curve and the process at the ultimate rank ends with the last. Regardless of the dimension of the problem, the space filling curve reduces it to one dimension. A further assumption is made that the number of cells being passed is small compared to the cell count for a process.
+    \subsection{Distribution} % (fold)
+        \label{sec:distribution}
 
-In this way, the rebalancing of the tree, with the exception of the calculations for the pass counts, requires no knowledge of the full tree, only the list of cells being passed to/from the left/right processor.
+        Initial distribution is performed as a single process. The tree is refined to its initial mesh, typically according the the known geometry of the problem. The number of cells to be allocated to each process is calculated by dividing the cell count for the initial tree by the number of processes. The procedure in Algorithm \ref{alg:distrib-assign} then iterates over the space filling curve, setting cells to the current value of a rank counter and incrementing the counter when the processes cell count is reached.
 
-As a graphical demonstration of the rebalancing, 20 cells will be transferred from rank 0 to rank 1, starting from the mesh shown in Figure \ref{fig:rebalance-init}.
+        \begin{algorithm}[H]
+            \caption{Building the border set on process $p$}
+            \label{alg:distrib-assign}
 
-\begin{figure}[H]
-    \input{method/gen/init.tex}
-    \caption{The starting conditions for the rebalancing example}
-    \label{fig:rebalance-init}
-\end{figure}
+            \begin{algorithmic}
+                \Require An initialised complete tree $\mathbb{L}$
+                \Statex
+                \State $\bar{c} \gets \frac{\abs{\mathbb{L}}}{\abs{\mathbb{W}}}$ \Comment {Cells per rank}
+                \State $\rho \gets 0$ \Comment {Rank counter}
+                \State $c \gets \bar c$ \Comment {Cell count remaining for the current rank}
+                \ForEach {cell $\mathcal{C} \in \mathbb{L}$ in SFC order}
+                    \State $\mathcal{C}\acc\textproc{rank} \gets \rho$
+                    \State $c \gets c-1$
+                    \If {c = 0} \Comment {Step onto the next rank}
+                        \State $\rho \gets \rho+1$
+                        \State $c \gets \bar c$
+                    \EndIf
+                \EndFor
+            \end{algorithmic}
+        \end{algorithm}
 
-Rebalancing is split into the following subroutines: Balance Calculations, updating cell ranks, notifying rank changes, transferring cells, inserting new cells and updating the ghost and border cell sets. These are shown as an activity diagram in Figure \ref{fig:rebalance-overview}, showing the concurrency of the processes.
-
-\begin{figure}[H]
-    \input{method/moveCells_ad}
-    \caption{Activity Diagram of the rebalancing procedure for any three adjacent processes. MPI operations are shown in blue.}
-    \label{fig:rebalance-overview}
-\end{figure}
-
-
-\subsubsection{Balance Calculation}
-\label{sec:rebalancing-calc}
-
-The cell counts $\vect{c}$ from each node are gathered on rank zero. Balancing is determined necessary based on a parameter $c_{crit}$ if $\norm{\vect{c}}>c_{crit}$. Algorithm \ref{alg:rebalance-calculatepassing} is then sufficient to determine the number of cells $\Delta$ each process passes left and right to balance every process to the average cell count $\bar c$. A negative value of $\Delta$ gives a cell count being received.
-
-The loop in Algorithm \ref{alg:rebalance-calculatepassing} can be reformulated as a proof by induction that the result is the minimum $\Delta$ satisfying the conditions imposed and $\abs{\mathbb{L}}_p=\bar c$ for all $p$.
+        Since it is not possible for a process to determine its own set of ghost cells without more knowledge of the tree, the starting process then generates all the ghost sets for every rank by using the poisson neighbourhood.
 
-\begin{algorithm}[H]
-    \caption{Rebalancing Calculations}
-    \label{alg:rebalance-calculatepassing}
-
-    \begin{algorithmic}
-        \Ensure For each process $p \in \mathbb{W}$ a pair of cell pass counts $\Delta_p = \{l,r\}$ where $l$ and $r$ are the number of cells to pass left and right respectively.
-        \Statex
-        % \Gather $\vect{c} \dla$ \Call{CellCount}{$p$}
-        \Gather $\vect{c} \dla \abs{\mathbb{L}}_p $
-        \ForEach {process $p \in \mathbb{W}$}
-            \State $l_p \gets -r_{p-1}$
-            \State $r_p \gets c_p - l_p - \bar{c}$
-        \EndFor
-    \end{algorithmic}
-\end{algorithm}
-
-Each process then receives from rank zero the two values in $\Delta_p$ which are enough to fully describe the following cell movements.
-
-
-\subsubsection{Update Cell Ranks}
-\label{sec:rebalancing-updatecellranks}
-
-Based on the movement amount $\Delta$ each process marks the cells to be moved with their new rank, storing the set of changes that would affect the ghost cells of other processes in order to notify them of the change in the next phase of rebalancing in Section \ref{sec:rebalancing-notifyrank}. The processes that need to be notified of changes is known by using the set of border cells $\mathbb{B}$. The process receiving the cells does not need to be notified of changes, as this data will be transmitted as part of the send sets in Section \ref{sec:rebalancing-gensendset}.
-
-In the example case, the cells that are currently on rank 0 but will have their ranks updated to equal 1 are shown in red in Figure \ref{fig:rebalance-ranks}.
-
-\begin{figure}[H]
-    \input{method/gen/overlap.tex}
-    \caption{Example mesh, with 20 cells being marked to be moved from rank 0 to rank 1}
-    \label{fig:rebalance-ranks}
-\end{figure}
-
-\begin{algorithm}[H]
-    \caption{Updating Cell Ranks}
-    \label{alg:rebalance-updateranks}
-
-    \begin{algorithmic}
-        \Require Number of cells to pass left and right $\Delta = \{\Delta_l,\Delta_r\}$
-        \Ensure For each border $b$, a set $\vect{N}_b \in \{\lambda,r\}^n$ of pairs of cell identifiers $\lambda$ and new rank numbers $r$.
-        \Statex
-        \State $\vect{N} \gets \emptyset$
-        \ForEach {cell $\mathcal{C} \in \{\mathbb{L} : \text{in first }\Delta_l\} $}
-            \Comment{For right, $\mathcal{C} \in \{\mathbb{L} : \text{in last }\Delta_r\} $}
-            \State $\mathcal{C} \acc \textproc{rank} \gets p_{left}$
-            \ForEach {process border $b \in \mathbb{W} \setminus \{p, p_{left}\}$}
-                \If {$\mathcal{C} \in \mathbb{B}_b$}
-                    \State $\vect{N}_b \gets \{\mathcal{C} \acc \textproc{ident} , p_{left}\}$
-                \EndIf
-            \EndFor
-        \EndFor
-    \end{algorithmic}
-\end{algorithm}
-
-The routine in Algorithm \ref{alg:rebalance-updateranks} is repeated for the cells to move right, using the same sets $\vect{N}_b$.
-
-In the example case, the only process not involved in the transfer already is the one at rank 2. The cells currently on rank 0, but being transferred to rank 1, that border it form the set $\vect{N}_2$ shown in Figure \ref{fig:rebalance-notify}.
-
-\begin{figure}[H]
-    \input{method/gen/ghostnotify.tex}
-    \caption{The example mesh, with the ghost cells of rank 2 whose rank will change following the rebalancing highlighted}
-    \label{fig:rebalance-notify}
-\end{figure}
-
-
-\subsubsection{Notifying Rank Changes}
-\label{sec:rebalancing-notifyrank}
-
-The rank change lists stored in the previous section are now sent. Each process then receives all the changes relevant to its ghosts according to Algorithm \ref{alg:rebalance-notifyranks}.
-
-This rank change stage needs to occur before the cells are moved to the new process, as the receiving process is not guaranteed to have the relevant border data required.
-
-\begin{algorithm}[H]
-    \caption{Notifying Cell Rank Changes}
-    \label{alg:rebalance-notifyranks}
-
-    \begin{algorithmic}
-        \Require For each border $b$, a set $\vect{N}_b \in \{\lambda,\rho\}^n$ of pairs of cell identifiers $\lambda$ and new rank numbers $\rho$.
-        \Statex
-        \ForEach {process border $b \in \mathbb{W} \setminus p$}
-            \Send $N_b \dra p_b$
-        \EndFor
-        \Statex
-        \ForEach {process border $b \in \mathbb{W} \setminus p$}
-            \Recv $\hat N_b \dla p_b$
-            \ForAll {$\{\lambda,\rho\} \in \hat N_b$}
-                \State $\mathcal{C}\gets\textproc{Find}(\lambda)$
-                \State $\mathcal{C}\acc\textproc{rank} \gets \rho$
-            \EndFor
-        \EndFor
-    \end{algorithmic}
-\end{algorithm}
-
-
-\subsubsection{Generate Send Sets}
-\label{sec:rebalancing-gensendset}
+        \begin{algorithm}[H]
+            \caption{Generating the ghost sets for all processes}
+            \label{alg:distrib-ghosts}
 
-After notifying the foreign processes of rank changes, each process then generates the set of cell required to be sent. In addition to the cells being moved, cells in their poisson neighbourhoods not on the rank of the receiving process must also be included in the sets as seen in Figure \ref{fig:rebalance-transfer}.
+            \begin{algorithmic}
+                \Require An initialised complete tree $\mathbb{L}$, with cell ranks assigned for every leaf.
+                \Ensure A complete ghost set $\mathbb{G}_{\rho\gets b}$, for every pair of processes $\rho$ and $b$
+                \Statex
+                \State $\mathbb{G} \gets \emptyset$
+                \ForEach {leaf $\mathcal{C} \in \mathbb{L}$}
+                    \ForEach {poisson neighbour $\mathcal{P} \in \mathcal{C}\acc\vect{\mathcal{P}}$}
+                        \If {$\mathcal{P}\acc\textproc{rank} \neq \mathcal{C}\acc\textproc{rank}$}
+                            \State $G_{\mathcal{C}\acc\textproc{rank}\gets\mathcal{P}\acc\textproc{rank}} \gets \mathcal{P}$
+                        \EndIf
+                    \EndFor
+                \EndFor
+            \end{algorithmic}
+        \end{algorithm}
 
-\begin{figure}[H]
-    \input{method/gen/Tr.tex}
-    \caption{The example mesh, with the cells of $T_r$ highlighted}
-    \label{fig:rebalance-transfer}
-\end{figure}
+        The tree is then serialised into a list for every process $\vect{N}_p=\{\lambda,\rho\}^n$ containing pairs of cell identifiers $\lambda$ and ranks $\rho$ referring to either an active cell or a ghost cell of the target process. These are sent to the processes, which unpack them according to the logic in Algorithm \ref{alg:distrib-unpack}.
 
-\begin{algorithm}[H]
-    \caption{Generate Send Sets}
-    \label{alg:rebalance-gensendsets}
+        \begin{algorithm}[H]
+            \caption{Building the subset of the tree on process $p$}
+            \label{alg:distrib-unpack}
 
-    \begin{algorithmic}
-        \Require Number of cells to pass left $\Delta_l$
-        \Ensure A set of packed cells $\vect{T}_l \in \{\lambda, \rho, \phi\}^n$ containing the cell's identifiers $\lambda$, rank $\rho$ and data $\phi$.
-        \Statex
-        \State $\vect{T}_l \gets \emptyset$
-        \ForEach {cell $\mathcal{C} \in \{\mathbb{L} : \text{in first }\Delta_l\} $}
-            \Comment{If sending right, $\mathcal{C} \in \{\mathbb{L} : \text{in last }\Delta_r\} $}
-            \State $T_l \gets \{\mathcal{C}\acc\textproc{ident}, \mathcal{C}\acc\textproc{rank}, \mathcal{C}\acc\textproc{data}\}$
+            \begin{algorithmic}
+                \Require A list $\vect{\hat N}=\{\lambda,\rho\}^n$ containing the cells required by this process.
+                \Statex
+                \State $\mathbb{G} \gets \emptyset$ \Comment{Ghost set is initially empty}
+                \ForEach {packed cell $\{\lambda,\rho\} \in \vect{\hat N}$}
+                    \State $\mathcal{C} \gets \textproc{Insert}(\lambda)$ \Comment{$\mathcal{C}$ is a temporary cell reference}
+                    \State $\mathcal{C}\acc\textproc{rank} \gets \rho$
+                    \If {$\rho \neq p$} \Comment {$\mathcal{C}$ must be a ghost if its rank is not the current process}
+                        \State $\mathbb{G}_\rho \gets \mathcal{C}$
+                    \EndIf
+                \EndFor
+            \end{algorithmic}
+        \end{algorithm}
 
-            \ForEach {cell $\mathcal{P} \in \mathcal{C}\acc\vect{\mathcal{P}}$}
-                \Comment{$\mathcal{C}\acc\vect{\mathcal{P}}$ is the poisson neighbours of $\mathcal{C}$}
-                \If {$\mathcal{P}\acc\textproc{rank} \neq p_{left}$}
-                    \State $T_l \gets \{\mathcal{P}\acc\textproc{ident}, \mathcal{P}\acc\textproc{rank}, \mathcal{P}\acc\textproc{data}\}$
-                \EndIf
-            \EndFor
-        \EndFor
-    \end{algorithmic}
-\end{algorithm}
+        Finally, each process generates its own border set $\mathbb{B}$ using the procedure in Algorithm \ref{alg:borders-gen}.
 
-The two sets $T_l$ and $T_r$ are then transmitted left and right respectively, and the corresponding sets from the foreign processes $U_l$ and $U_r$ are received.
+    % subsection distribution (end)
 
-\begin{algorithm}[H]
-    \caption{Send Sets}
-    \label{alg:rebalance-sendsets}
 
-    \begin{algorithmic}
-        \Require A set of packed cells $\vect{T}_l \in \{\lambda, \rho, \phi\}^n$ containing the cell's identifiers $\lambda$, rank $\rho$ and data $\phi$.
-        \Statex
-        \Send $\vect{T}_l \dra p_{left} \qquad\ \,;\qquad \algorithmicsend\ \vect{T}_r \dra p_{right}$
-        \Recv $\vect{U}_r \dla p_{right} \qquad;\qquad \algorithmicrecv\ \vect{U}_l \dla p_{left}$
-    \end{algorithmic}
-\end{algorithm}
+    \subsection{Ghost Synchronisation} % (fold)
+        \label{sec:ghostsync}
 
-The combined set $\vect{U}=\vect{U}_l\cup\vect{U}_r$ now contains all the additional information required by the process that wasn't available prior.
+        With each iteration, the data for each processes ghost cells becomes out of date. Synchronisation is used at the end of every iteration to renew this data.
 
-\subsubsection{Insert Cell Set}
-\label{sec:rebalancing-insertcells}
+        Since it is required once per iteration, ghost synchronisation is by far the most common parallel operation required. The set up described previously in Section \ref{sec:ghostsandborders} is designed to minimise this process. By making use of the equivalence of the ghost and border sets for two processes, the only information transfer required is the data from the border cells.
 
-Each process then inserts the received cells in $\vect{U}$ and calculates the poisson neighbourhood. All the new cells must be inserted before calculating poisson neighbourhoods, as the correct neighbourhood may include new cells that wouldn't exist prior.
+        Without compression, Algorithm \ref{alg:sync-sendrecv} is therefore the smallest transfer of information possible for this stage.
 
-\begin{algorithm}[H]
-    \caption{Insert Received Cells}
-    \label{alg:rebalance-insertset}
+        \begin{algorithm}[H]
+            \caption{Synchronisation}
+            \label{alg:sync-sendrecv}
 
-    \begin{algorithmic}
-        \Require A set of received packed cells from the right $\vect{U} \in \{\lambda, \rho, d\}^n$ containing the cell's identifiers $\lambda$, rank $\rho$ and data $\phi$.
-        \Statex
-        \State $\vect{\Gamma} \gets \emptyset$ \Comment{Cache the cells corresponding to $\vect{U}$}
-        \ForEach {packed cell $\{\lambda, \rho, \phi\} \in \vect{U}$}
-            \State $\mathcal{C} \gets \Call{Insert}{\lambda}$
-            \State $\mathcal{C}\acc\textproc{rank} \gets \rho \qquad;\qquad \mathcal{C}\acc\textproc{data} \gets \phi$
-            \State $\vect{\Gamma} \gets \mathcal{C}$
-        \EndFor
-        \Statex
-        \ForEach {cell $\mathcal{C} \in \vect{\Gamma}$}
-            \State $\mathcal{C}\acc\{\vect{\mathcal{P}}, \vect{b}, \alpha \} \gets \textproc{CalcPoisCoefs}(\mathcal{C})$
-        \EndFor
-    \end{algorithmic}
-\end{algorithm}
+            \begin{algorithmic}
+                \ForEach {process boundary $b \in \mathbb{W} \setminus p$}
+                    \State $\vect{\Phi} \gets \emptyset$
+                    \ForEach {border cell $\mathcal{B}_n \in \mathbb{B}_b$}
+                        \State $\Phi_n \gets \mathcal{B}_n\acc\textproc{data}$
+                    \EndFor
+                    \Send $\vect{\Phi} \dra p_b$
+                \EndFor
+                \Statex
+                \ForEach {process boundary $b \in \mathbb{W} \setminus p$}
+                    \Recv $\hat \Phi \dla p_b$
 
+                    \ForEach {ghost cell $\mathcal{G}_n \in \mathbb{G}_b$}
+                        \State $\mathcal{G}_n\acc\textproc{data} \gets \Phi_n$
+                    \EndFor
+                \EndFor
+            \end{algorithmic}
+        \end{algorithm}
 
-\subsubsection{Regenerate Ghosts}
-\label{sec:rebalancing-regenghosts}
+        Further small improvements are made by noting that the length of the vector $\abs{\vect{\Phi}} = \abs{\mathbb{B}_b}$ for each boundary, and so this memory block can be re\"used to save the cost of repeated allocations.
 
-The subset of the tree in each process now shows the completed transfer as in Figure \ref{fig:rebalance-final} for the example case. The ghost and border sets are now outdated however, so must be amended.
+    % subsection ghostsync (end)
 
-\begin{figure}[H]
-    \input{method/gen/result.tex}
-    \caption{The rebalanced example mesh}
-    \label{fig:rebalance-final}
-\end{figure}
 
+    \subsection{Rebalancing} % (fold)
+        \label{sec:rebalancing}
 
-Although enough information exists to work out the changes required to be made to the border and ghost sets, it is much simpler in practice to reconstruct them completely. Since rebalancing is performed irregularly, the performance cost is negligible.
+        Rebalancing is achieved by calculating the average number of cells per processor, and the movement of cells between processors required to achieve a perfect balance. Since a processes cells are contiguous along the space filling curve, cells can only be passed to the next or previous rank. The process at rank 0 starts with the first cell of the global curve and the process at the ultimate rank ends with the last. Regardless of the dimension of the problem, the space filling curve reduces it to one dimension. A further assumption is made that the number of cells being passed is small compared to the cell count for a process.
 
-The method for reconstruction is equivalent to Algorithm \ref{alg:distrib-ghosts}, but since all cells in $\mathbb{L}$ have rank $p$ the result is the ghost set for the current context. Border cells are regenerated exactly as in Algorithm \ref{alg:borders-gen}.
+        In this way, the rebalancing of the tree, with the exception of the calculations for the pass counts, requires no knowledge of the full tree, only the list of cells being passed to/from the left/right processor.
 
+        As a graphical demonstration of the rebalancing, 20 cells will be transferred from rank 0 to rank 1, starting from the mesh shown in Figure \ref{fig:rebalance-init}.
 
-% \section{Results}
+        \begin{figure}[H]
+            \input{method/gen/init.tex}
+            \caption{The starting conditions for the rebalancing example}
+            \label{fig:rebalance-init}
+        \end{figure}
 
-% \subsection{Boundary size for Hilbert Curve}
-% \label{sec:boundarysize}
+        Rebalancing is split into the following subroutines: Balance Calculations, updating cell ranks, notifying rank changes, transferring cells, inserting new cells and updating the ghost and border cell sets. These are shown as an activity diagram in Figure \ref{fig:rebalance-overview}, showing the concurrency of the processes.
 
-% It is possible to test the size of the boundary for different practical scenarios when using The Hilbert Curve to distribute. This is done for a complex and finely detailed geometry (the Mandelbrot example) as well as a more simple geometry with smooth edges.
+        \begin{figure}[H]
+            \input{method/moveCells_ad}
+            \caption{Activity Diagram of the rebalancing procedure for any three adjacent processes. MPI operations are shown in blue.}
+            \label{fig:rebalance-overview}
+        \end{figure}
 
-% Boundary sizes need min/max/mean relative to cell count for many configurations.
 
-% Comparison points of other space filling curves.
+        \subsubsection{Balance Calculation} % (fold)
+            \label{sec:rebalancing-calc}
 
-% Description of optimal method.
+            The cell counts $\vect{c}$ from each node are gathered on rank zero. Balancing is determined necessary based on a parameter $c_{crit}$ if $\norm{\vect{c}}>c_{crit}$. Algorithm \ref{alg:rebalance-calculatepassing} is then sufficient to determine the number of cells $\Delta$ each process passes left and right to balance every process to the average cell count $\bar c$. A negative value of $\Delta$ gives a cell count being received.
 
-% \subsection{Performance against Thread Count}
+            The loop in Algorithm \ref{alg:rebalance-calculatepassing} can be reformulated as a proof by induction that the result is the minimum $\Delta$ satisfying the conditions imposed and $\abs{\mathbb{L}}_p=\bar c$ for all $p$.
 
-% \subsection{Cluster Operation Above Single Node Memory Limit}
+            \begin{algorithm}[H]
+                \caption{Rebalancing Calculations}
+                \label{alg:rebalance-calculatepassing}
 
-% \section{Conclusion}
+                \begin{algorithmic}
+                    \Ensure For each process $p \in \mathbb{W}$ a pair of cell pass counts $\Delta_p = \{l,r\}$ where $l$ and $r$ are the number of cells to pass left and right respectively.
+                    \Statex
+                    % \Gather $\vect{c} \dla$ \Call{CellCount}{$p$}
+                    \Gather $\vect{c} \dla \abs{\mathbb{L}}_p $
+                    \ForEach {process $p \in \mathbb{W}$}
+                        \State $l_p \gets -r_{p-1}$
+                        \State $r_p \gets c_p - l_p - \bar{c}$
+                    \EndFor
+                \end{algorithmic}
+            \end{algorithm}
 
-% \printbibliography
+            Each process then receives from rank zero the two values in $\Delta_p$ which are enough to fully describe the following cell movements.
+
+        % subsubsection rebalancing-calc (end)
+
+
+        \subsubsection{Update Cell Ranks} % (fold)
+            \label{sec:rebalancing-updatecellranks}
+
+            Based on the movement amount $\Delta$ each process marks the cells to be moved with their new rank, storing the set of changes that would affect the ghost cells of other processes in order to notify them of the change in the next phase of rebalancing in Section \ref{sec:rebalancing-notifyrank}. The processes that need to be notified of changes is known by using the set of border cells $\mathbb{B}$. The process receiving the cells does not need to be notified of changes, as this data will be transmitted as part of the send sets in Section \ref{sec:rebalancing-gensendset}.
+
+            In the example case, the cells that are currently on rank 0 but will have their ranks updated to equal 1 are shown in red in Figure \ref{fig:rebalance-ranks}.
+
+            \begin{figure}[H]
+                \input{method/gen/overlap.tex}
+                \caption{Example mesh, with 20 cells being marked to be moved from rank 0 to rank 1}
+                \label{fig:rebalance-ranks}
+            \end{figure}
+
+            \begin{algorithm}[H]
+                \caption{Updating Cell Ranks}
+                \label{alg:rebalance-updateranks}
+
+                \begin{algorithmic}
+                    \Require Number of cells to pass left and right $\Delta = \{\Delta_l,\Delta_r\}$
+                    \Ensure For each border $b$, a set $\vect{N}_b \in \{\lambda,r\}^n$ of pairs of cell identifiers $\lambda$ and new rank numbers $r$.
+                    \Statex
+                    \State $\vect{N} \gets \emptyset$
+                    \ForEach {cell $\mathcal{C} \in \{\mathbb{L} : \text{in first }\Delta_l\} $}
+                        \Comment{For right, $\mathcal{C} \in \{\mathbb{L} : \text{in last }\Delta_r\} $}
+                        \State $\mathcal{C} \acc \textproc{rank} \gets p_{left}$
+                        \ForEach {process border $b \in \mathbb{W} \setminus \{p, p_{left}\}$}
+                            \If {$\mathcal{C} \in \mathbb{B}_b$}
+                                \State $\vect{N}_b \gets \{\mathcal{C} \acc \textproc{ident} , p_{left}\}$
+                            \EndIf
+                        \EndFor
+                    \EndFor
+                \end{algorithmic}
+            \end{algorithm}
+
+            The routine in Algorithm \ref{alg:rebalance-updateranks} is repeated for the cells to move right, using the same sets $\vect{N}_b$.
+
+            In the example case, the only process not involved in the transfer already is the one at rank 2. The cells currently on rank 0, but being transferred to rank 1, that border it form the set $\vect{N}_2$ shown in Figure \ref{fig:rebalance-notify}.
+
+            \begin{figure}[H]
+                \input{method/gen/ghostnotify.tex}
+                \caption{The example mesh, with the ghost cells of rank 2 whose rank will change following the rebalancing highlighted}
+                \label{fig:rebalance-notify}
+            \end{figure}
+
+        % subsubsection rebalancing-updatecellranks (end)
+
+
+        \subsubsection{Notifying Rank Changes} % (fold)
+            \label{sec:rebalancing-notifyrank}
+
+            The rank change lists stored in the previous section are now sent. Each process then receives all the changes relevant to its ghosts according to Algorithm \ref{alg:rebalance-notifyranks}.
+
+            This rank change stage needs to occur before the cells are moved to the new process, as the receiving process is not guaranteed to have the relevant border data required.
+
+            \begin{algorithm}[H]
+                \caption{Notifying Cell Rank Changes}
+                \label{alg:rebalance-notifyranks}
+
+                \begin{algorithmic}
+                    \Require For each border $b$, a set $\vect{N}_b \in \{\lambda,\rho\}^n$ of pairs of cell identifiers $\lambda$ and new rank numbers $\rho$.
+                    \Statex
+                    \ForEach {process border $b \in \mathbb{W} \setminus p$}
+                        \Send $N_b \dra p_b$
+                    \EndFor
+                    \Statex
+                    \ForEach {process border $b \in \mathbb{W} \setminus p$}
+                        \Recv $\hat N_b \dla p_b$
+                        \ForAll {$\{\lambda,\rho\} \in \hat N_b$}
+                            \State $\mathcal{C}\gets\textproc{Find}(\lambda)$
+                            \State $\mathcal{C}\acc\textproc{rank} \gets \rho$
+                        \EndFor
+                    \EndFor
+                \end{algorithmic}
+            \end{algorithm}
+
+        % subsubsection rebalancing-notifyrank (end)
+
+
+        \subsubsection{Generate Send Sets} % (fold)
+            \label{sec:rebalancing-gensendset}
+
+            After notifying the foreign processes of rank changes, each process then generates the set of cell required to be sent. In addition to the cells being moved, cells in their poisson neighbourhoods not on the rank of the receiving process must also be included in the sets as seen in Figure \ref{fig:rebalance-transfer}.
+
+            \begin{figure}[H]
+                \input{method/gen/Tr.tex}
+                \caption{The example mesh, with the cells of $T_r$ highlighted}
+                \label{fig:rebalance-transfer}
+            \end{figure}
+
+            \begin{algorithm}[H]
+                \caption{Generate Send Sets}
+                \label{alg:rebalance-gensendsets}
+
+                \begin{algorithmic}
+                    \Require Number of cells to pass left $\Delta_l$
+                    \Ensure A set of packed cells $\vect{T}_l \in \{\lambda, \rho, \phi\}^n$ containing the cell's identifiers $\lambda$, rank $\rho$ and data $\phi$.
+                    \Statex
+                    \State $\vect{T}_l \gets \emptyset$
+                    \ForEach {cell $\mathcal{C} \in \{\mathbb{L} : \text{in first }\Delta_l\} $}
+                        \Comment{If sending right, $\mathcal{C} \in \{\mathbb{L} : \text{in last }\Delta_r\} $}
+                        \State $T_l \gets \{\mathcal{C}\acc\textproc{ident}, \mathcal{C}\acc\textproc{rank}, \mathcal{C}\acc\textproc{data}\}$
+
+                        \ForEach {cell $\mathcal{P} \in \mathcal{C}\acc\vect{\mathcal{P}}$}
+                            \Comment{$\mathcal{C}\acc\vect{\mathcal{P}}$ is the poisson neighbours of $\mathcal{C}$}
+                            \If {$\mathcal{P}\acc\textproc{rank} \neq p_{left}$}
+                                \State $T_l \gets \{\mathcal{P}\acc\textproc{ident}, \mathcal{P}\acc\textproc{rank}, \mathcal{P}\acc\textproc{data}\}$
+                            \EndIf
+                        \EndFor
+                    \EndFor
+                \end{algorithmic}
+            \end{algorithm}
+
+            The two sets $T_l$ and $T_r$ are then transmitted left and right respectively, and the corresponding sets from the foreign processes $U_l$ and $U_r$ are received.
+
+            \begin{algorithm}[H]
+                \caption{Send Sets}
+                \label{alg:rebalance-sendsets}
+
+                \begin{algorithmic}
+                    \Require A set of packed cells $\vect{T}_l \in \{\lambda, \rho, \phi\}^n$ containing the cell's identifiers $\lambda$, rank $\rho$ and data $\phi$.
+                    \Statex
+                    \Send $\vect{T}_l \dra p_{left} \qquad\ \,;\qquad \algorithmicsend\ \vect{T}_r \dra p_{right}$
+                    \Recv $\vect{U}_r \dla p_{right} \qquad;\qquad \algorithmicrecv\ \vect{U}_l \dla p_{left}$
+                \end{algorithmic}
+            \end{algorithm}
+
+            The combined set $\vect{U}=\vect{U}_l\cup\vect{U}_r$ now contains all the additional information required by the process that wasn't available prior.
+
+        % subsubset rebalancing-gensendset (end)
+
+
+        \subsubsection{Insert Cell Set} % (fold)
+            \label{sec:rebalancing-insertcells}
+
+            Each process then inserts the received cells in $\vect{U}$ and calculates the poisson neighbourhood. All the new cells must be inserted before calculating poisson neighbourhoods, as the correct neighbourhood may include new cells that wouldn't exist prior.
+
+            \begin{algorithm}[H]
+                \caption{Insert Received Cells}
+                \label{alg:rebalance-insertset}
+
+                \begin{algorithmic}
+                    \Require A set of received packed cells from the right $\vect{U} \in \{\lambda, \rho, d\}^n$ containing the cell's identifiers $\lambda$, rank $\rho$ and data $\phi$.
+                    \Statex
+                    \State $\vect{\Gamma} \gets \emptyset$ \Comment{Cache the cells corresponding to $\vect{U}$}
+                    \ForEach {packed cell $\{\lambda, \rho, \phi\} \in \vect{U}$}
+                        \State $\mathcal{C} \gets \Call{Insert}{\lambda}$
+                        \State $\mathcal{C}\acc\textproc{rank} \gets \rho \qquad;\qquad \mathcal{C}\acc\textproc{data} \gets \phi$
+                        \State $\vect{\Gamma} \gets \mathcal{C}$
+                    \EndFor
+                    \Statex
+                    \ForEach {cell $\mathcal{C} \in \vect{\Gamma}$}
+                        \State $\mathcal{C}\acc\{\vect{\mathcal{P}}, \vect{b}, \alpha \} \gets \textproc{CalcPoisCoefs}(\mathcal{C})$
+                    \EndFor
+                \end{algorithmic}
+            \end{algorithm}
+
+        % subsubsection rebalancing-insertcells (end)
+
+
+        \subsubsection{Regenerate Ghosts} % (fold)
+            \label{sec:rebalancing-regenghosts}
+
+            The subset of the tree in each process now shows the completed transfer as in Figure \ref{fig:rebalance-final} for the example case. The ghost and border sets are now outdated however, so must be amended.
+
+            \begin{figure}[H]
+                \input{method/gen/result.tex}
+                \caption{The rebalanced example mesh}
+                \label{fig:rebalance-final}
+            \end{figure}
+
+
+            Although enough information exists to work out the changes required to be made to the border and ghost sets, it is much simpler in practice to reconstruct them completely. Since rebalancing is performed irregularly, the performance cost is negligible.
+
+            The method for reconstruction is equivalent to Algorithm \ref{alg:distrib-ghosts}, but since all cells in $\mathbb{L}$ have rank $p$ the result is the ghost set for the current context. Border cells are regenerated exactly as in Algorithm \ref{alg:borders-gen}.
+
+        % subsubsection rebalancing-regenghosts (end)
+
+    % subsection rebalancing (end)
+
+% section method (end)
+
+
+\section{Results} % (fold)
+    \label{sec:results}
+
+    \subsection{Boundary size for Hilbert Curve}
+        \label{sec:results-boundarysize}
+
+        It is possible to test the size of the boundary for different practical scenarios when using The Hilbert Curve to distribute. This is done for a complex and finely detailed geometry (the Mandelbrot example) as well as a more simple geometry with smooth edges.
+
+        Boundary sizes need min/max/mean relative to cell count for many configurations.
+
+        Comparison points of other space filling curves.
+
+        Description of optimal method.
+
+    % subsection results-boundarysize (end)
+
+
+    \subsection{Performance against Thread Count} % (fold)
+        \label{sec:results-performance}
+
+    % subsection results-performance (end)
+
+
+    \subsection{Cluster Operation Above Single Node Memory Limit}
+        \label{sec:results-memory}
+
+    % subsection results-memory (end)
+
+% section results (end)
+
+
+\section{Conclusion} % (fold)
+    \label{sec:conclusions}
+
+% section conclusion (end)
+
+
+\printbibliography
+
 
 \clearpage
 \appendix
-\section{Appendix}
 
-\subsection{Key Source Headers}
+\section{Appendix} % (fold)
+    \label{sec:appendix}
 
-% \listoflistings
+    \subsection{Key Source Headers} % (fold)
+        \label{sec:appendix-headers}
 
-\begin{listing}[ht]
-\caption{Types Header}
-\label{src:types}
-\inputminted[mathescape,fontsize=\footnotesize]{cpp}{headers/types.h}
-\end{listing}
+        % \listoflistings
 
-\begin{listing}[ht]
-\caption{CellRef Header}
-\label{src:cellref}
-\inputminted[mathescape,fontsize=\footnotesize]{cpp}{headers/cellref.h}
-\end{listing}
+        \begin{listing}[ht]
+            \caption{Types Header}
+            \label{src:types}
+            \inputminted[mathescape,fontsize=\footnotesize]{cpp}{headers/types.h}
+        \end{listing}
 
-\begin{listing}[ht]
-\caption{TreeCell Header}
-\label{src:treecell}
-\inputminted[mathescape,fontsize=\footnotesize]{cpp}{headers/treecell.h}
-\end{listing}
+        \begin{listing}[ht]
+            \caption{CellRef Header}
+            \label{src:cellref}
+            \inputminted[mathescape,fontsize=\footnotesize]{cpp}{headers/cellref.h}
+        \end{listing}
 
-\begin{listing}[ht]
-\caption{TreeGroup Header}
-\label{src:treegroup}
-\inputminted[mathescape,fontsize=\footnotesize]{cpp}{headers/treegroup.h}
-\end{listing}
+        \begin{listing}[ht]
+            \caption{TreeCell Header}
+            \label{src:treecell}
+            \inputminted[mathescape,fontsize=\footnotesize]{cpp}{headers/treecell.h}
+        \end{listing}
 
-\begin{listing}[ht]
-\caption{Tree Header}
-\label{src:tree}
-\inputminted[mathescape,fontsize=\footnotesize]{cpp}{headers/tree.h}
-\end{listing}
+        \begin{listing}[ht]
+            \caption{TreeGroup Header}
+            \label{src:treegroup}
+            \inputminted[mathescape,fontsize=\footnotesize]{cpp}{headers/treegroup.h}
+        \end{listing}
+
+        \begin{listing}[ht]
+            \caption{Tree Header}
+            \label{src:tree}
+            \inputminted[mathescape,fontsize=\footnotesize]{cpp}{headers/tree.h}
+        \end{listing}
+
+    % subsection appendix-headers (end)
+
+% section appendix (end)
 
 \end{document}
