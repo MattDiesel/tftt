@@ -3,6 +3,9 @@
 #define TFTT_STRUCTURE_GROUPMEMORY_H
 
 
+#include <cstddef>
+
+
 namespace tftt {
 
 struct TreeGroup;
@@ -28,7 +31,8 @@ inline int getCellIndex(TreeCell* tc)
 
 inline TreeGroup* getCellGroup(TreeCell* tc)
 {
-    return tc->group;
+    return reinterpret_cast<TreeGroup*>(
+               reinterpret_cast<char*>(tc) - (tc->index*sizeof(TreeCell)) - offsetof(TreeGroup, cells));
 }
 
 

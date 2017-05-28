@@ -31,8 +31,6 @@ enum ADAPTFLAGS : uint8_t {
 };
 
 struct TreeCell {
-    TreeGroup* group;
-
     int8_t index;
     node_t rank;
 

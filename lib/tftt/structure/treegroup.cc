@@ -8,6 +8,7 @@
 #include "../hilbert.h"
 #include "treeface.h"
 #include "treevertex.h"
+#include "groupmemory.h"
 
 #include "treegroup.h"
 
@@ -21,7 +22,6 @@ TreeGroup::TreeGroup()
         cells[i].children = nullptr;
         cells[i].rank = -1;
         cells[i].index = i;
-        cells[i].group = this;
     }
 
     id = 0;
@@ -137,7 +137,6 @@ TreeGroup::TreeGroup(int b)
         cells[i].children = nullptr;
         cells[i].rank = -1;
         cells[i].index = i;
-        cells[i].group = this;
     }
 
     id = ident_t::boundary(b);
@@ -169,13 +168,9 @@ TreeGroup::TreeGroup(CellRef p)
         cells[i].children = nullptr;
         cells[i].rank = p.rank();
         cells[i].index = i;
-        cells[i].group = this;
     }
 
-    if (p.isBoundary())
-        id = p.id();
-    else
-        id = p.id().firstchild();
+    id = p.id().firstchild();
 
     for (int i = 0; i < DIM; i++) {
         origin[i] = p.origin(i);
