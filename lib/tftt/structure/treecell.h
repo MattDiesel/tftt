@@ -31,6 +31,9 @@ enum ADAPTFLAGS {
 };
 
 struct TreeCell {
+    TreeGroup* group;
+    int index;
+
     data_t data;
     node_t rank;
     TreeGroup* children;

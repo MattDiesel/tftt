@@ -20,6 +20,8 @@ TreeGroup::TreeGroup()
     for (int i = 0; i < (1<<DIM); i++) {
         cells[i].children = nullptr;
         cells[i].rank = -1;
+        cells[i].index = i;
+        cells[i].group = this;
     }
 
     id = 0;
@@ -134,6 +136,8 @@ TreeGroup::TreeGroup(int b)
     for (int i = 0; i < (1<<DIM); i++) {
         cells[i].children = nullptr;
         cells[i].rank = -1;
+        cells[i].index = i;
+        cells[i].group = this;
     }
 
     id = ident_t::boundary(b);
@@ -164,6 +168,8 @@ TreeGroup::TreeGroup(CellRef p)
     for (int i = 0; i < (1<<DIM); i++) {
         cells[i].children = nullptr;
         cells[i].rank = p.rank();
+        cells[i].index = i;
+        cells[i].group = this;
     }
 
     if (p.isBoundary())

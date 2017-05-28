@@ -6,6 +6,7 @@
 #include "cellref.h"
 #include "structure/tree.h"
 #include "structure/treegroup.h"
+#include "structure/groupmemory.h"
 #include "iter/all.h"
 #include "adapt.h"
 
@@ -28,12 +29,12 @@ void init(double w, double h)
     gtree.size[1] = h;
 
     // for (int b = 0; b < 2*DIM; b++) {
-    gtree.boundGroups = new TreeGroup(0);
+    gtree.boundGroups = group::create(0);
     gtree.boundGroups->setBoundary(0);
     // }
 
     // Init top level cells
-    gtree.root = new TreeGroup();
+    gtree.root = group::create();
     cell_t cl;
     cell_t bch;
     TreeGroup* newGrp;
@@ -41,7 +42,7 @@ void init(double w, double h)
 
     for (int b = 0; b < 2*DIM; b++) {
         cl = CellRef(gtree.boundGroups, b);
-        cl.treecell()->children = new TreeGroup(cl);
+        cl.treecell()->children = group::create(cl);
         cl.treecell()->children->setBoundary(b);
     }
 
@@ -94,7 +95,7 @@ void refine(CellRef cl)
         throw std::runtime_error("Calling refine() on boundary.");
     #endif
 
-    cl.treecell()->children = new TreeGroup(cl);
+    cl.treecell()->children = group::create(cl);
     gtree.ccells += (1 << DIM) - 1;
 
     // Refine boundary as needed.
@@ -102,7 +103,7 @@ void refine(CellRef cl)
     for (int nb = 0; nb < 2*DIM; nb++) {
         ngb = cl.neighbour(nb);
         if (ngb.isBoundary()) {
-            ngb.treecell()->children = new TreeGroup(ngb);
+            ngb.treecell()->children = group::create(ngb);
         }
     }
 }
