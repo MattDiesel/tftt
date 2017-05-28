@@ -275,7 +275,7 @@ void moveCells(boost::mpi::communicator world, int left, int right)
                 auto search = gtree.borders[b].find(*it);
                 if (search != gtree.borders[b].end()) {
                     // std::cout << *it << " is a border cell to " << b << "\n";
-                    rankChanges[b].push_back({it->id(), world.rank()-1});
+                    rankChanges[b].push_back({it->id(), node_t(world.rank()-1)});
                 }
             }
 
@@ -295,7 +295,7 @@ void moveCells(boost::mpi::communicator world, int left, int right)
                 auto search = gtree.borders[b].find(*it);
                 if (search != gtree.borders[b].end()) {
                     // std::cout << *it << " is a border cell to " << b << "\n";
-                    rankChanges[b].push_back({it->id(), world.rank()+1});
+                    rankChanges[b].push_back({it->id(), node_t(world.rank()+1)});
                 }
             }
 
