@@ -82,10 +82,6 @@ Abstract
 
     TODO
 
-% section intro (end)
-
-\section{Method} % (fold)
-    \label{sec:method}
 
     \subsection{Orthotree Fundamentals} % (fold)
         \label{sec:orthotree}
@@ -94,112 +90,123 @@ Abstract
 
         An orthotree is a tree structure, where each cell is orthotopic and its children are evenly sized similar orthotopes. For this project, the 2d case (known as a quadtree) was implemented and examined in detail. Almost all the methods are kept general however, to allow adaptation to the 3d octree. 
 
-        A cells parent is stored as a reference $\mathcal{C}\acc\textproc{parent}$.
+        \subsubsection{Layer Links} % (fold)
+            \label{sec:orthotree-layers}
 
-        The children of a cell $\mathcal{C}$ are accessed as a list $\mathcal{C}\acc\vect{\mathcal{K}}=\{\mathcal{K}_0,\mathcal{K}_1,\cdots,\mathcal{K}_n\}$, indexed using one bit per dimension, with increasing dimension number corresponding to increasing bit significance as shown in Figure \ref{fig:childnum}.
+            A cells parent is stored as a reference $\mathcal{C}\acc\textproc{parent}$.
 
-        \begin{figure} [H]
-            \centering
-            \begin{subfigure}[b]{.3\textwidth}
+            The children of a cell $\mathcal{C}$ are accessed as a list $\mathcal{C}\acc\vect{\mathcal{K}}=\{\mathcal{K}_0,\mathcal{K}_1,\cdots,\mathcal{K}_n\}$, indexed using one bit per dimension, with increasing dimension number corresponding to increasing bit significance as shown in Figure \ref{fig:childnum}.
+
+            \begin{figure} [H]
                 \centering
-                \tikzset{external/export next=false}
-                \begin{tikzpicture}[every node/.append style={
-                    draw,line width=0.1mm,inner sep=0, minimum size=1cm-0.1mm}]
-                    \node at (0.5,0.5) {0};
-                    \node at (1.5,0.5) {1};
-                    \node at (0.5,1.5) {2};
-                    \node at (1.5,1.5) {3};
-
-                    \begin{scope}[xshift=3cm,every node/.append style={draw=none}]
-                        \draw[->] (0,0) -- (1,0) node[anchor=west,xshift=-1mm] {$x$};
-                        \draw[->] (0,0) -- (0,1) node[anchor=south,yshift=-1mm] {$y$};
-                    \end{scope}
-
-                    \node[draw=none] at (0, -0.5cm) {};
-                \end{tikzpicture}
-                \caption{Quadtree}
-                \label{fig:childnum-2d}
-            \end{subfigure}\hspace{2cm}%
-            \begin{subfigure}[b]{.3\textwidth}
-                \centering
-                \tikzset{external/export next=false}
-                \begin{tikzpicture}[every node/.append style={
-                    draw,line width=0.1mm,inner sep=0, minimum size=1cm-0.1mm}]
-                    \begin{scope}[ % x,y, z=1
-                        yshift=2cm,xshift=0,every node/.append style={
-                        yslant=-0.5,xslant=1},yslant=-0.5,xslant=1]
-                        \node at (0.5,0.5) {4};
-                        \node at (1.5,0.5) {5};
-                        \node at (0.5,1.5) {6};
-                        \node at (1.5,1.5) {7};
-                    \end{scope}
-                    \begin{scope}[ % x,z y=0
-                        yshift=0,every node/.append style={
-                        yslant=-0.5,xslant=0},yslant=-0.5,xslant=0]
+                \begin{subfigure}[b]{.3\textwidth}
+                    \centering
+                    \tikzset{external/export next=false}
+                    \begin{tikzpicture}[every node/.append style={
+                        draw,line width=0.1mm,inner sep=0, minimum size=1cm-0.1mm}]
                         \node at (0.5,0.5) {0};
                         \node at (1.5,0.5) {1};
-                        \node at (0.5,1.5) {4};
-                        \node at (1.5,1.5) {5};
-                    \end{scope}
-                    \begin{scope}[ % y,z, x=1
-                        yshift=-1cm,xshift=2cm,every node/.append style={
-                        yslant=0.5,xslant=0},yslant=0.5,xslant=0]
-                        \node at (0.5,0.5) {1};
-                        \node at (1.5,0.5) {3};
-                        \node at (0.5,1.5) {5};
-                        \node at (1.5,1.5) {7};
-                    \end{scope}
-                    \begin{scope}[xshift=5cm,every node/.append style={draw=none}]
-                        \draw[->] (0,0) -- (0.8,-0.4) node[anchor=west,xshift=-1mm,yshift=-2mm] {$x$};
-                        \draw[->] (0,0) -- (0.8,0.4) node[anchor=south west,xshift=-1mm,yshift=-4mm] {$y$};
-                        \draw[->] (0,0) -- (0,1) node[anchor=south,yshift=-1mm] {$z$};
-                    \end{scope}
-                \end{tikzpicture}
-                \caption{Octree}
-                \label{fig:childnum-3d}
-            \end{subfigure}%
-            \caption{Child numbering for the two common orthotree cases.}
-            \label{fig:childnum}
-        \end{figure}
+                        \node at (0.5,1.5) {2};
+                        \node at (1.5,1.5) {3};
 
-        The tree is refined depending on the conditions of the problem being solved. Figure \ref{fig:layeredtree} shows a trivial case refining to a simple line geometry. At each level, cells are refined if and only if the line overlaps the cell at any point. 
+                        \begin{scope}[xshift=3cm,every node/.append style={draw=none}]
+                            \draw[->] (0,0) -- (1,0) node[anchor=west,xshift=-1mm] {$x$};
+                            \draw[->] (0,0) -- (0,1) node[anchor=south,yshift=-1mm] {$y$};
+                        \end{scope}
 
-        The cells without children form the finest level of the mesh. These are known as the leaves of the tree $\mathbb{L}$, and size of the tree is taken to be the number of leaves $\abs{\mathbb{L}}$. Parent cells aren't used in the numeric methods applied to the mesh, and since they do not impact the computational time of numeric operations are not included in the tree size. 
-
-        \begin{figure} [H]
-            \input{method/layeredtree}
-            \caption{4 levels of a quadtree refined to a line shown in blue. If a cell is not a leaf, its children are shown in orange.}
-            \label{fig:layeredtree}
-        \end{figure}
-
-        Cells are referred to in this document using a calligraphic typed letter, such as $\mathcal{C}$. Properties of the cell use dot member access notation, for example $\mathcal{C}\acc\textproc{data}$ is the data associated with the cell. 
-
-        The selection method used for Figure \ref{fig:layeredtree} is based on the assumption that the cells of interest are only those directly on the line. In practice, the refinement levels should be spread to limit the number of combinations of cell boundaries and smooth the output. One simple method is to propagate refinement levels such that there are no cells within a parameter $P$ cell widths in the axis directions that are more than one level apart. Examples of using refinement propagation at three values for $P$ are presented in Figure \ref{fig:refprop}.
-
-        \expandafter\newcommand\csname countL(0) \endcsname{280}
-        \expandafter\newcommand\csname countL(1) \endcsname{452}
-        \expandafter\newcommand\csname countL(2) \endcsname{604}
-        \newcommand{\getCount} [1]{\csname countL(#1) \endcsname}
-
-        \begin{figure} [H]
-            \centering
-            \foreach \i in {0,1,2} {
-                \begin{subfigure}{.3\textwidth}
-                    \centering
-                    \begin{tikzpicture}
-                        \draw[domain=0:3.8,smooth,variable=\x,colorA, thick] plot ({\x},
-                            {0.3 + 6.189086*\x - 6.682936*\x*\x + 2.481516*\x*\x*\x - 0.2852701*\x*\x*\x*\x});
-                        \input{method/gen/mesh-t\i}
+                        \node[draw=none] at (0, -0.5cm) {};
                     \end{tikzpicture}
-                    \caption{\\ $P=\i$ \\ $\ \ \abs{\mathbb{L}}=\getCount{\i}$}
-                    \label{fig:refprop-t\i}
+                    \caption{Quadtree}
+                    \label{fig:childnum-2d}
+                \end{subfigure}\hspace{2cm}%
+                \begin{subfigure}[b]{.3\textwidth}
+                    \centering
+                    \tikzset{external/export next=false}
+                    \begin{tikzpicture}[every node/.append style={
+                        draw,line width=0.1mm,inner sep=0, minimum size=1cm-0.1mm}]
+                        \begin{scope}[ % x,y, z=1
+                            yshift=2cm,xshift=0,every node/.append style={
+                            yslant=-0.5,xslant=1},yslant=-0.5,xslant=1]
+                            \node at (0.5,0.5) {4};
+                            \node at (1.5,0.5) {5};
+                            \node at (0.5,1.5) {6};
+                            \node at (1.5,1.5) {7};
+                        \end{scope}
+                        \begin{scope}[ % x,z y=0
+                            yshift=0,every node/.append style={
+                            yslant=-0.5,xslant=0},yslant=-0.5,xslant=0]
+                            \node at (0.5,0.5) {0};
+                            \node at (1.5,0.5) {1};
+                            \node at (0.5,1.5) {4};
+                            \node at (1.5,1.5) {5};
+                        \end{scope}
+                        \begin{scope}[ % y,z, x=1
+                            yshift=-1cm,xshift=2cm,every node/.append style={
+                            yslant=0.5,xslant=0},yslant=0.5,xslant=0]
+                            \node at (0.5,0.5) {1};
+                            \node at (1.5,0.5) {3};
+                            \node at (0.5,1.5) {5};
+                            \node at (1.5,1.5) {7};
+                        \end{scope}
+                        \begin{scope}[xshift=5cm,every node/.append style={draw=none}]
+                            \draw[->] (0,0) -- (0.8,-0.4) node[anchor=west,xshift=-1mm,yshift=-2mm] {$x$};
+                            \draw[->] (0,0) -- (0.8,0.4) node[anchor=south west,xshift=-1mm,yshift=-4mm] {$y$};
+                            \draw[->] (0,0) -- (0,1) node[anchor=south,yshift=-1mm] {$z$};
+                        \end{scope}
+                    \end{tikzpicture}
+                    \caption{Octree}
+                    \label{fig:childnum-3d}
                 \end{subfigure}%
-            }
-            \caption{Meshes for various refinement propagation levels $P$ to the example line geometry. In all cases the maximum refinement level is $5$, giving an equivalent uniform mesh cell count of $1024$ cells.}
-            \label{fig:refprop}
-        \end{figure}
+                \caption{Child numbering for the two common orthotree cases.}
+                \label{fig:childnum}
+            \end{figure}
 
-        The case $P=1$ is referred to in other literature as Two-to-One Balancing, as a cell has no neighbours more than twice its size. This is the minimum propagation level the numeric methods written for this project will work on. Since the term balancing is used to refer to parallel load balancing in this report, this term will be avoided, and "refinement propagation" used in preference as a more general term.
+            The tree is refined depending on the conditions of the problem being solved. Figure \ref{fig:layeredtree} shows a trivial case refining to a simple line geometry. At each level, cells are refined if and only if the line overlaps the cell at any point. 
+
+            The cells without children form the finest level of the mesh. These are known as the leaves of the tree $\mathbb{L}$, and size of the tree is taken to be the number of leaves $\abs{\mathbb{L}}$. Parent cells aren't used in the numeric methods applied to the mesh, and since they do not impact the computational time of numeric operations are not included in the tree size. 
+
+            \begin{figure} [H]
+                \input{method/layeredtree}
+                \caption{4 levels of a quadtree refined to a line shown in blue. If a cell is not a leaf, its children are shown in orange.}
+                \label{fig:layeredtree}
+            \end{figure}
+
+            Cells are referred to in this document using a calligraphic typed letter, such as $\mathcal{C}$. Properties of the cell use dot member access notation, for example $\mathcal{C}\acc\textproc{data}$ is the data associated with the cell. 
+
+        % subsubsection orthotree-layers (end)
+
+
+        \subsubsection{Refinement Propagation} % (fold)
+            \label{sec:orthotree-refprop}
+
+            The selection method used for Figure \ref{fig:layeredtree} is based on the assumption that the cells of interest are only those directly on the line. In practice, the refinement levels should be spread to limit the number of combinations of cell boundaries and smooth the output. One simple method is to propagate refinement levels such that there are no cells within a parameter $P$ cell widths in the axis directions that are more than one level apart. Examples of using refinement propagation at three values for $P$ are presented in Figure \ref{fig:refprop}.
+
+            \expandafter\newcommand\csname countL(0) \endcsname{280}
+            \expandafter\newcommand\csname countL(1) \endcsname{452}
+            \expandafter\newcommand\csname countL(2) \endcsname{604}
+            \newcommand{\getCount} [1]{\csname countL(#1) \endcsname}
+
+            \begin{figure} [H]
+                \centering
+                \foreach \i in {0,1,2} {
+                    \begin{subfigure}{.3\textwidth}
+                        \centering
+                        \begin{tikzpicture}
+                            \draw[domain=0:3.8,smooth,variable=\x,colorA, thick] plot ({\x},
+                                {0.3 + 6.189086*\x - 6.682936*\x*\x + 2.481516*\x*\x*\x - 0.2852701*\x*\x*\x*\x});
+                            \input{method/gen/mesh-t\i}
+                        \end{tikzpicture}
+                        \caption{\\ $P=\i$ \\ $\ \ \abs{\mathbb{L}}=\getCount{\i}$}
+                        \label{fig:refprop-t\i}
+                    \end{subfigure}%
+                }
+                \caption{Meshes for various refinement propagation levels $P$ to the example line geometry. In all cases the maximum refinement level is $5$, giving an equivalent uniform mesh cell count of $1024$ cells.}
+                \label{fig:refprop}
+            \end{figure}
+
+            The case $P=1$ is referred to in other literature as Two-to-One Balancing, as a cell has no neighbours more than twice its size. This is the minimum propagation level the numeric methods written for this project will work on. Since the term balancing is used to refer to parallel load balancing in this report, this term will be avoided, and "refinement propagation" used in preference as a more general term.
+
+        % subsubsection orthotree-refprop (end)
 
     % subsection orthotree (end)
 
@@ -218,12 +225,34 @@ Abstract
     % subsection ftt (end)
 
 
+    \subsection{Poisson Neighbourhoods} % (fold)
+        \label{sec:poissonneighbours}
+
+        To solve on the adaptive mesh, interpolation is required in cases where the level of adjacent cells do not match. It is possible to move the expensive interpolation operation outside of the tight solver loop by instead storing a list of cells required along with the co\"efficient they would have been scaled by using direct interpolation. This list of cells is known as the poisson neighbourhood for a cell $\mathcal{C}$ and is represented by the vector $\mathcal{C}\acc\vect{\mathcal{P}}$. The respective neighbour co\"efficients are represented by the vector $\mathcal{C}\acc\vect{\beta}$ and the central co\"efficient is a scalar $\mathcal{C}\acc\alpha$.
+
+        Calculating the coefficients for the different cases is explored in detail by \cite{Yung2010} including for higher order solvers. The methods used here are independent of the order of the solver, and the determining the neighbourhood is abstracted to Function \ref{fun:CalcPoisCoefs}.
+
+        \begin{equation}
+            \label{fun:CalcPoisCoefs}
+            \textproc{CalcPoisCoefs}(\mathcal{C}) \mapsto \{ \vect{\mathcal{P}}, \vect{\beta}, \alpha \}
+        \end{equation}
+
+    % subsection poissonneighbours (end)
+
+% section intro (end)
+
+
+\section{Method} % (fold)
+    \label{sec:method}
+
     \subsection{Threaded FTT} % (fold)
         \label{sec:tftt}
 
         To distribute the $N$ dimensional orthotree onto a set of $W$ processes, it makes sense to flatten the tree into a one dimensional set of leaves $\mathbb{L}$, which can then be sliced evenly. To achieve this requires a Space Filling Curve (SFC). 
 
-        Regardless of the SFC used, the implementation must provide a pair of members $\mathcal{C}\acc\textproc{prev}$ and $\mathcal{C}\acc\textproc{next}$ for each cell, forming a doubly-linked list of cells through the tree. In computing terms, this forms a thread through the structure, which is now a Threaded FTT (TFTT);
+        Regardless of the SFC used, the implementation must provide a pair of members $\mathcal{C}\acc\textproc{prev}$ and $\mathcal{C}\acc\textproc{next}$ for each cell, forming a doubly-linked list of cells through the tree. In computing terms, this forms a thread through the structure, which is now a Threaded FTT (TFTT).
+
+        For simplicity, an additional constraint is imposed that the curve must not leave and re-enter a cell. This rules out some classes of SFC such as the Peano curve. Whilst it would be possible to implement such SFCs on a single processor, keeping local will allow subsections of the tree to change without knowledge of the full curve. This constraint is allows for the trivial implementation of  an additional pair of properties; the first and last children of a cell $C$ in the local curve. These are accessed as $\mathcal{C}\acc\textproc{firstChild}$ and $\mathcal{C}\acc\textproc{lastChild}$ respectively.
 
         Refinement or coarsening of cells must only change the local curve, analogous to insertion and deletion operations on the list as shown by Algorithms \ref{alg:sfc-coarsen} and \ref{alg:sfc-refine}.
 
@@ -232,8 +261,8 @@ Abstract
             \label{alg:sfc-coarsen}
 
             \begin{algorithmic}
-                \State $\mathcal{C}\acc\textproc{prev}\acc\textproc{next} \Rightarrow \mathcal{C}$
-                \State $\mathcal{C}\acc\textproc{next}\acc\textproc{prev} \Rightarrow \mathcal{C}$
+                \State $\mathcal{C}\acc\textproc{firstChild}\acc\textproc{prev}\acc\textproc{next} \Rightarrow \mathcal{C}$
+                \State $\mathcal{C}\acc\textproc{lastChild}\acc\textproc{next}\acc\textproc{prev} \Rightarrow \mathcal{C}$
             \end{algorithmic}
         \end{algorithm}
 
@@ -244,8 +273,8 @@ Abstract
             \begin{algorithmic}
                 \Require {The internal curve of $C$.}
                 \Statex
-                \State $\mathcal{C}\acc\textproc{prev}\acc\textproc{next} \Rightarrow \textproc{firstChild}(\mathcal{C})$
-                \State $\mathcal{C}\acc\textproc{next}\acc\textproc{prev} \Rightarrow \textproc{lastChild}(\mathcal{C})$
+                \State $\mathcal{C}\acc\textproc{prev}\acc\textproc{next} \Rightarrow \mathcal{C}\acc\textproc{firstChild}$
+                \State $\mathcal{C}\acc\textproc{next}\acc\textproc{prev} \Rightarrow \mathcal{C}\acc\textproc{lastChild}$
             \end{algorithmic}
         \end{algorithm}
 
@@ -294,7 +323,13 @@ Abstract
     \subsection{Parallel TFTT} % (fold)
         \label{sec:parallel}
 
-        The TFTT structure is now 
+        The first stage in adapting the TFTT structure for use in parallel is allowing for only subset of the full domain to exist. 
+
+        The constraint is imposed that the subset of the tree present on a process must for a contiguous section of the space filling curve.
+
+        Refinement propagation as described in Section \ref{sec:orthotree-refprop} is relaxed outside of the active area to a propagation length $P=1$. Using $p=0$ leads to issues maintaining the SFC outside the active region, which itself makes the later moving of cells along the curve between processes hard.
+
+        Pointers are stored with the tree root to the first and last cells in the active range. This allows simple iteration over the sub-domain. 
 
     % subsection partftt (end)
 
@@ -318,23 +353,6 @@ Abstract
         Retrieving the level, child and parent identifiers, or the child index of the cell is done with bitwise arithmetic. The most significant byte of the integer encodes the level. The remainder of the bits encodes the child orthant for each successive step down the tree with the highest level being in the least significant bits. The number of bits needed to encode an orthant is equal to the number of dimensions of the problem. Using a 64 bit integer this allows for a maximum tree depth of 28 levels in a quadtree, or 18 octree levels.
 
     % subsection globalid (end)
-
-
-    \subsection{Poisson Neighbourhoods} % (fold)
-        \label{sec:poissonneighbours}
-
-        To solve on the adaptive mesh, interpolation is required in cases where the level of adjacent cells do not match. It is possible to move the expensive interpolation operation outside of the tight solver loop by instead storing a list of cells required along with the co\"efficient they would have been scaled by using direct interpolation. This list of cells is known as the poisson neighbourhood for a cell $\mathcal{C}$ and is represented by the vector $\mathcal{C}\acc\vect{\mathcal{P}}$. The respective neighbour co\"efficients are represented by the vector $\mathcal{C}\acc\vect{\beta}$ and the central co\"efficient is a scalar $\mathcal{C}\acc\alpha$.
-
-        The poisson neighbourhood is important for cells close to the border between processes, as it represents the necessary set of cells to perform the calculations.
-
-        Calculating the co\"efficients for the different cases is explored in detail by \cite{Yung2010} including for higher order solvers. The methods used here are independent of the order of the solver, and the determining the neighbourhood is abstracted to Function \ref{fun:CalcPoisCoefs}.
-
-        \begin{equation}
-            \label{fun:CalcPoisCoefs}
-            \textproc{CalcPoisCoefs}(\mathcal{C}) \mapsto \{ \vect{\mathcal{P}}, \vect{b}, \alpha \}
-        \end{equation}
-
-    % subsection poissonneighbours (end)
 
 
     \subsection{Ghosts and Borders} % (fold)
