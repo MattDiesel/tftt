@@ -20,10 +20,15 @@ namespace tftt {
 //! TreeGroups should never be directly edited by the user.
 struct TreeGroup {
 
-    int boundary;
     bool isBoundary() const {
-        return boundary != -1;
+        return id.isBoundary();
     };
+    int boundary() const {
+        return id.boundary();
+    }
+    void setBoundary(int b) {
+        id = ident_t::boundary(b);
+    }
 
     // Base Tree
     TreeGroup();

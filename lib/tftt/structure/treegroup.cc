@@ -15,7 +15,7 @@
 namespace tftt {
 
 TreeGroup::TreeGroup()
-    : boundary(-1), parent()
+    : parent()
 {
     for (int i = 0; i < (1<<DIM); i++) {
         cells[i].children = nullptr;
@@ -128,7 +128,7 @@ TreeGroup::TreeGroup()
 }
 
 TreeGroup::TreeGroup(int b)
-    : boundary(b), parent()
+    : parent()
 {
 
     for (int i = 0; i < (1<<DIM); i++) {
@@ -136,7 +136,7 @@ TreeGroup::TreeGroup(int b)
         cells[i].rank = -1;
     }
 
-    id = 0;
+    id = ident_t::boundary(b);
     for (int i = 0; i < DIM; i++) {
         origin[i] = 0.0;
     }
@@ -154,8 +154,6 @@ TreeGroup::TreeGroup(int b)
 TreeGroup::TreeGroup(CellRef p)
     : parent(p)
 {
-    boundary = p.group->boundary;
-
     #ifdef TFTT_DEBUG
     if (!p.isValid() || p.hasChildren()) {
         throw std::invalid_argument("Invalid cell ref for group parent.");
@@ -168,7 +166,10 @@ TreeGroup::TreeGroup(CellRef p)
         cells[i].rank = p.rank();
     }
 
-    id = p.id().firstchild();
+    if (p.isBoundary())
+        id = p.id();
+    else
+        id = p.id().firstchild();
 
     for (int i = 0; i < DIM; i++) {
         origin[i] = p.origin(i);
@@ -176,7 +177,7 @@ TreeGroup::TreeGroup(CellRef p)
 
     // Update FTT
     for (int n = 0; n < 2*DIM; n++) {
-        if (boundary != -1 && n != (boundary ^ 1)) continue;
+        if (isBoundary() && n != (boundary() ^ 1)) continue;
 
         neighbours[n] = p.neighbour(n);
         if (neighbours[n].hasChildren()) {
@@ -185,7 +186,7 @@ TreeGroup::TreeGroup(CellRef p)
     }
 
     // Thread
-    if (boundary == -1) {
+    if (!isBoundary()) {
         orientation = p.orientation();
         next = p.next();
         prev = p.prev();
@@ -246,7 +247,7 @@ TreeGroup::TreeGroup(CellRef p)
 
     cell_t cl;
     for (int n = 0; n < 2*DIM; n++) {
-        if (boundary != -1 && n != (boundary ^ 1)) continue;
+        if (isBoundary() && n != (boundary() ^ 1)) continue;
 
         if (neighbours[n].level() <= p.level()) {
             // Add faces
@@ -392,7 +393,7 @@ TreeGroup::~TreeGroup()
     };
     #endif
 
-    if (!gtree.destroying && boundary == -1) {
+    if (!gtree.destroying && !isBoundary()) {
         if (prev.isValid()) {
             if (prev.group != parent.group) {
                 if (prev.isLastInGroup()) {

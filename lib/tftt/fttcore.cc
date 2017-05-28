@@ -28,7 +28,8 @@ void init(double w, double h)
     gtree.size[1] = h;
 
     // for (int b = 0; b < 2*DIM; b++) {
-    gtree.boundGroups = new TreeGroup(-1);
+    gtree.boundGroups = new TreeGroup(0);
+    gtree.boundGroups->setBoundary(0);
     // }
 
     // Init top level cells
@@ -41,13 +42,13 @@ void init(double w, double h)
     for (int b = 0; b < 2*DIM; b++) {
         cl = CellRef(gtree.boundGroups, b);
         cl.group->cells[cl.index].children = new TreeGroup(cl);
+        cl.group->cells[cl.index].children->setBoundary(b);
     }
 
     for (int b = 0; b < 2*DIM; b++) {
         cl = CellRef(gtree.boundGroups, b);
         newGrp = cl.group->cells[cl.index].children;
 
-        newGrp->boundary = b;
         for (int b2 = 0; b2 < 2*DIM; b2++) {
             if (b2 == (b ^ 1))
                 newGrp->neighbours[b2] = CellRef(gtree.root, -1);
@@ -56,7 +57,6 @@ void init(double w, double h)
         }
         gtree.root->neighbours[b] = CellRef(gtree.boundGroups, b);
 
-        newGrp->id = 0;
         for (int d = 0; d < DIM; d++) {
             newGrp->origin[d] = 0.0;
 

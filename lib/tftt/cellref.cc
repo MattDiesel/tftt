@@ -57,9 +57,9 @@ bool CellRef::isBoundary() const
 int CellRef::boundary() const
 {
     if (group == gtree.boundGroups) {
-        return children()->boundary;
+        return children()->boundary();
     }
-    return group->boundary;
+    return group->boundary();
 }
 
 
