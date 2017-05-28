@@ -1,7 +1,7 @@
 
 projroot = '../../../'
 files = projroot . 'build/report/movecells/'
-target = ''
+target = 'gen/'
 
 set terminal epslatex input size 6in,3in
 

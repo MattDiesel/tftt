@@ -1,7 +1,7 @@
 
 projroot = '../../../'
 files = projroot . 'build/report/ghosts/'
-target = ''
+target = 'gen/'
 
 set terminal epslatex input size 6in,3in
 

@@ -13,7 +13,7 @@
         %         \input{layer\i-t0}
         %     }
         % \end{scope}
-        \input{mesh-t0}
+        \input{gen/mesh-t0}
 
         % y = 0.3 + 6.189086*x - 6.682936*x^2 + 2.481516*x^3 - 0.2852701*x^4
         \draw[domain=0:3.8,smooth,variable=\x,colorA, ultra thick] plot ({\x},
@@ -36,11 +36,11 @@
             \else
                 \FPeval{\result}{round(\i+1, 0)}%
                 \begin{scope}[every node/.append style={colorB}]
-                    \input{layer\result-t0}
+                    \input{gen/layer\result-t0}
                 \end{scope}
             \fi
 
-            \input{layer\i-t0}
+            \input{gen/layer\i-t0}
             \draw[black,very thick] (0,0) rectangle (4,4);
 
         \end{scope}

@@ -3,15 +3,22 @@
 \usepackage[utf8]{inputenc}
 
 \usepackage{setspace}
-\pagestyle{empty}
 \onehalfspacing
 
-\usepackage{graphicx,float,epstopdf}
-\graphicspath{{method/}}
+\usepackage{graphicx,float,epstopdf,subcaption}
+\graphicspath{{method/}{method/gen}}
 
-\usepackage{tikz,ifthen,xstring,calc,pgfkeys,pgfopts}
-\usetikzlibrary{positioning}
-\usetikzlibrary{chains,scopes,calc}
+\makeatletter
+\def\input@path{{method/}{method/gen}}
+\makeatother
+
+\usepackage{tikz,fp}
+\usetikzlibrary{positioning,calc}
+
+\definecolor{colorA}{rgb}{0.1686, 0.5137, 0.7294}
+\definecolor{colorB}{rgb}{0.9922, 0.6824, 0.3804}
+\definecolor{colorC}{rgb}{0.4706, 0.6745, 0.4392}
+\definecolor{colorD}{rgb}{0.8431, 0.0980, 0.1137}
 
 \usepackage{amsmath,amsfonts,bm,physics}
 \newcommand{\vect}[1]{\bm{#1}}
@@ -19,6 +26,8 @@
 \newcommand{\dra}{\dashrightarrow}
 \newcommand{\dla}{\dashleftarrow}
 \newcommand{\acc}{{\mkern 0.5mu\cdot\mkern 0.5mu}}
+\renewcommand{\O}[1]{\mathcal{O}(#1)}
+
 
 \usepackage[section]{algorithm}
 \usepackage{algpseudocode}
@@ -35,12 +44,6 @@
 [1][]{\algorithmicforeach\ #1}
 {\textbf{end\ for}}
 
-\usepackage[shell]{gnuplottex}
-\usepackage{xpatch}
-\let\nodirfigname\figname
-\def\figname{./tmp/\nodirfigname}
-\xpatchcmd\gnuplot{\figname}{\nodirfigname}{}{}
-
 % \usepackage{minted,sourcecodepro}
 
 \usepackage[backend=biber,bibstyle=alphabetic,citestyle=alphabetic]{biblatex}
@@ -54,6 +57,7 @@
 \supervisor{Dr. Jie Li}
 \title{Parallel Adaptation of Orthotree Meshes}
 
+% \pagestyle{empty}
 % \maketitle
 
 % \thispagestyle{empty}
@@ -63,7 +67,7 @@
 
 % \tableofcontents
 % \newpage
-\pagestyle{plain}
+% \pagestyle{plain}
 
 
 % \section{Introduction}
@@ -81,11 +85,62 @@ Hopefully already defined by this point:
 		\item A set of neighbours $\mathcal{C}\acc\vect{\mathcal{N}} = \{\mathcal{N}_0 , \mathcal{N}_1, \dots , \mathcal{N}_n\}$
 		\item A space filling curve
 	\end{itemize}
-	\item The set of leaves in the current process' tree $\mathbb{L}$
 \end{itemize}
 
 
 \section{Method}
+
+\subsection{Orthotree Fundamentals}
+
+An orthotree is an N dimensional tree structure, where each cell is orthotopic \cite{coxeter73} and its children are evenly sized similar orthotopes. For this project, the 2d case (known as a Quadtree) was implemented and examined in detail. Much of the code does not depend on the dimension however, and the algorithms extend into N dimensions easily.
+
+We refine the tree depending on the conditions of the problem being solved. Figure \ref{fig:layeredtree} shows a simple case where we refine to a simple line geometry.
+
+\begin{figure}[H]
+	\caption{4 levels of a Quadtree refined to a line shown in blue. If a cell has children, they are shown in orange.}
+	\label{fig:layeredtree}
+	\input{method/layeredtree}
+\end{figure}
+
+Although cells are stored at all levels in order to make tree traversal possible and ease refinement or coarsening of cells, processing of the problem is only done on the finest possible level. The set of cells without children make up the leaves of the tree $\mathbb{L}$ and it is this set that is of interest. The number of cells in the tree is written as $\abs{\mathbb{L}}$.
+
+However, the refinement in Figure \ref{fig:layeredtree} is based on the assumption that the cells of interest are only those directly on the line. In reality, we spread the refinement levels such that for all cells, there are no cells within a parameter $P$ cell widths in the axis directions that are more than 1 level apart. This is called refinement propagation, examples of which are presented in Figure \ref{fig:refprop}.
+
+The case $P=1$ is known as Two to One Balancing, as a cell has no neighbours more than twice its size. Since the term balancing is used to refer to parallel load balancing in this report, this term will be avoided. 
+
+\expandafter\newcommand\csname countL(0) \endcsname{280}
+\expandafter\newcommand\csname countL(1) \endcsname{452}
+\expandafter\newcommand\csname countL(2) \endcsname{604}
+\newcommand{\getCount}[1]{\csname countL(#1) \endcsname}
+
+\begin{figure}[H]
+\centering
+\foreach \i in {0,1,2} {
+	\begin{subfigure}{.3\textwidth}
+	  \centering
+		\begin{tikzpicture}
+	        \draw[domain=0:3.8,smooth,variable=\x,colorA, thick] plot ({\x},
+	            {0.3 + 6.189086*\x - 6.682936*\x*\x + 2.481516*\x*\x*\x - 0.2852701*\x*\x*\x*\x});
+			\input{method/gen/mesh-t\i}
+		\end{tikzpicture}
+	  \caption{\\ $P=\i$ \\ $\ \ \abs{\mathbb{L}}=\getCount{\i}$}
+	  \label{fig:refprop-t\i}
+	\end{subfigure}%
+}
+\caption{Meshes for various refinement propagation levels $P$ to the example line geometry. In all cases the maximum refinement level is $5$, giving an equivalent uniform mesh cell count of $1024$ cells.}
+\label{fig:refprop}
+\end{figure}
+
+\subsection{Fully Threaded Trees}
+
+The use of orthotree structures in Adaptive Mesh Routines was proposed by Khokhlov in \cite{Khokhlov98}. To tailor them towards solving the differential equation in fluid problems, his implementation included linking cells to all their neighbours to allow $\mathcal{O}(1)$ lookup compared to a possible $\mathcal{O}(\log n)$ lookup using tree traversal. Khoklov termed the tree with the neighbour pointers a Fully Threaded Tree (FTT) structure. 
+
+In \cite{Khokhlov98}, an optimisation is presented to reduce the memory overhead introduced by storing neighbour pointers by noting that for (in the quadtree case) the children of a cell, half the neighbours are also children of that cell. By storing groups of children together in an ortho (referred to as a quad in 2d and octo in 3d) the memory requirement for storing neighbour links is almost halved.
+
+
+
+\subsection{Threaded FTT}
+
 
 \subsection{Global Identifiers}
 
@@ -128,17 +183,17 @@ Each process also stores the set of cells it owns, who are ghost cells of foreig
 A good space filling curve, such as the Hilbert Curve, leads to process' cells being closely grouped and close to square, for example the 3 processes in Figure \ref{fig:borderline} are grouped reasonably well with few peninsulas. 
 
 \begin{figure}[H]
-	\label{fig:borderline}
 	\caption{Border cells for 3 processes}
-	\input{method/borderline.tex}
+	\label{fig:borderline}
+	\input{method/gen/borderline.tex}
 \end{figure}
 
 For rank zero, there are ghost cells on both of the other processes as shown in Figure \ref{fig:borders-r0}. 
 
 \begin{figure}[H]
-	\label{fig:borders-r0}
 	\caption{Ghost cells for rank 0}
-	\input{method/ghosts-r0.tex}
+	\label{fig:borders-r0}
+	\input{method/gen/ghosts-r0.tex}
 \end{figure}
 
 A highly desirable property of the border and ghost sets that greatly simplifies the retrieval of ghost cell data is that for any two processes $x$ and $y$, $\mathbb{G}_y$ on $x$ is exactly the same as $\mathbb{B}_x$ on $y$. In order to guarantee that property the sets are kept sorted according the the global identifier. 
@@ -278,16 +333,16 @@ In this way, the rebalancing of the tree, with the exception of the calculations
 As a graphical demonstration of the rebalancing, 20 cells will be transferred from rank 0 to rank 1, starting from the mesh shown in Figure \ref{fig:rebalance-init}.
 
 \begin{figure}[H]
-	\label{fig:rebalance-init}
 	\caption{The starting conditions for the rebalancing example}
-	\input{method/init.tex}
+	\label{fig:rebalance-init}
+	\input{method/gen/init.tex}
 \end{figure}
 
 Rebalancing is split into the following subroutines: Balance Calculations, updating cell ranks, notifying rank changes, transferring cells, inserting new cells and updating the ghost and border cell sets. These are shown as an activity diagram in Figure \ref{fig:rebalance-overview}, showing the concurrency of the processes.
 
 \begin{figure}[H]
-	\label{fig:rebalance-overview}
 	\caption{Activity Diagram of the rebalancing procedure for any three adjacent processes. MPI operations are shown in blue.}
+	\label{fig:rebalance-overview}
 	\input{method/moveCells_ad}
 \end{figure}
 
@@ -326,9 +381,9 @@ Based on the movement amount $\Delta$ each process marks the cells to be moved w
 In the example case, the cells that are currently on rank 0 but will have their ranks updated to equal 1 are shown in red in Figure \ref{fig:rebalance-ranks}.
 
 \begin{figure}[H]
-	\label{fig:rebalance-ranks}
 	\caption{Example mesh, with 20 cells being marked to be moved from rank 0 to rank 1}
-	\input{method/overlap.tex}
+	\label{fig:rebalance-ranks}
+	\input{method/gen/overlap.tex}
 \end{figure}
 
 \begin{algorithm}[H]
@@ -358,9 +413,9 @@ The routine in Algorithm \ref{alg:rebalance-updateranks} is repeated for the cel
 In the example case, the only process not involved in the transfer already is the one at rank 2. The cells currently on rank 0, but being transferred to rank 1, that border it form the set $\vect{N}_2$ shown in Figure \ref{fig:rebalance-notify}.
 
 \begin{figure}[H]
-	\label{fig:rebalance-notify}
 	\caption{The example mesh, with the ghost cells of rank 2 whose rank will change following the rebalancing highlighted}
-	\input{method/ghostnotify.tex}
+	\label{fig:rebalance-notify}
+	\input{method/gen/ghostnotify.tex}
 \end{figure}
 
 
@@ -399,9 +454,9 @@ This rank change stage needs to occur before the cells are moved to the new proc
 After notifying the foreign processes of rank changes, each process then generates the set of cell required to be sent. In addition to the cells being moved, cells in their poisson neighbourhoods not on the rank of the receiving process must also be included in the sets as seen in Figure \ref{fig:rebalance-transfer}.
 
 \begin{figure}[H]
-	\label{fig:rebalance-transfer}
 	\caption{The example mesh, with the cells of $T_r$ highlighted}
-	\input{method/Tr.tex}
+	\label{fig:rebalance-transfer}
+	\input{method/gen/Tr.tex}
 \end{figure}
 
 \begin{algorithm}[H]
@@ -475,9 +530,9 @@ Each process then inserts the received cells in $\vect{U}$ and calculates the po
 The subset of the tree in each process now shows the completed transfer as in Figure \ref{fig:rebalance-final} for the example case. The ghost and border sets are now outdated however, so must be amended.
 
 \begin{figure}[H]
-	\label{fig:rebalance-final}
 	\caption{The rebalanced example mesh}
-	\input{method/result.tex}
+	\label{fig:rebalance-final}
+	\input{method/gen/result.tex}
 \end{figure}
 
 
