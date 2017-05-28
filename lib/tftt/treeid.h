@@ -13,20 +13,20 @@ namespace tftt {
 
 //! A Cell Identifier in a TFT Tree
 //! Encapsulates identifier encoding of path and tree level.
-//! 
+//!
 //! The storage format is variable sized, and can be arbitrarily large (provided a datatype exists).
 //!
 //! The most significant byte encodes the level, with the first group of cells being level zero. This is always fixed at
 //! a single byte regardless of datatype size.
 //!
 //! The remaining bits encode the path, in tuples of bits depending on the dimension of the tree (1 bit per dimension),
-//! each tuple is the index of the child, as defined in treecellorder.h. 
+//! each tuple is the index of the child, as defined in treecellorder.h.
 //!
 //! This encoding scheme guarentees that an identifier for a cell will be unique within the tree. The identifier is also
-//! sufficient to know the cells location within the tree, making it ideal for use across processing unit boundaries. 
+//! sufficient to know the cells location within the tree, making it ideal for use across processing unit boundaries.
 template<
-            typename T         //!< The base type of the identifier. Must be an unsigned arithmetic type.
-        >
+    typename T         //!< The base type of the identifier. Must be an unsigned arithmetic type.
+    >
 struct TreeId {
     // Template Parameter Checks
     static_assert(std::is_unsigned<T>(), "ID Type must be an unsigned integral type.");
@@ -47,7 +47,15 @@ struct TreeId {
 
     //! The level of the cell within the tree
     inline unsigned char level() const {
-        return id >> LEVELSHIFT;
+        return (id >> LEVELSHIFT) & 127;
+    }
+
+    inline bool isBoundary() const {
+        return (id >> LEVELSHIFT) & 128;
+    }
+
+    inline unsigned int boundary() const {
+        return orthant(0);
     }
 
     //! The first id of the children in the group
@@ -72,15 +80,15 @@ struct TreeId {
 
     //! Returns the orthant of the nth level cell.
     inline unsigned int orthant(
-                int n                   //!< The level to retrieve the orthant of, the top cell in the tree is level zero.
-            ) const {
+        int n                   //!< The level to retrieve the orthant of, the top cell in the tree is level zero.
+    ) const {
         return (id >> ((level() - n) * DIM)) & PATHMASK;
     }
 
     //! Returns the id of a child cell
     inline TreeId child(
-                unsigned int orth       //!< The orthant of the child cell
-            ) const {
+        unsigned int orth       //!< The orthant of the child cell
+    ) const {
         return firstchild().id | orth;
     }
 
@@ -91,8 +99,8 @@ struct TreeId {
 
     //! Test two identifiers for equality
     bool operator==(
-                TreeId<T> rhs        //!< The second identifier to be compared.
-            ) const {
+        TreeId<T> rhs        //!< The second identifier to be compared.
+    ) const {
         return id == rhs.id;
     }
 
@@ -105,6 +113,10 @@ struct TreeId {
     // operator T() {
     //  return id;
     // }
+
+    static TreeId<T> boundary(int b) {
+        return TreeId<T>((T(128) << LEVELSHIFT) | T(b));
+    }
 };
 
 
@@ -123,9 +135,10 @@ struct TreeId {
 //! The path is human readable, the resulting string will be unique within the tree.
 template<typename T>
 std::ostream& operator<<(
-            std::ostream& os,           //!< The output stream to write to
-            tftt::TreeId<T> id          //!< The identifier to write
-        ) {
+    std::ostream& os,           //!< The output stream to write to
+    tftt::TreeId<T> id          //!< The identifier to write
+)
+{
     for (int i = 0; i < id.level(); i++) {
         os << id.orthant(i) << "-";
     }
