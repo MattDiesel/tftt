@@ -168,8 +168,17 @@ bool nbInParent(int ch, int nb)
 
 CellRef CellRef::neighbour(int n) const
 {
-    if (nbInParent(index(), n))
-        return CellRef(group(), index() ^ (1 << (n >> 1)));
+    int ind = index();
+
+    if (nbInParent(ind, n)) {
+        // return CellRef(group(), index() ^ (1 << (n >> 1)));
+
+        int diff = (ind ^ (1 << (n >> 1))) - ind;
+        CellRef ret(*this);
+
+        ret._cell += diff;
+        return ret;
+    }
 
     CellRef cr = group()->neighbours[n];
     if (!cr.hasChildren())
