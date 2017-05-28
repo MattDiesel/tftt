@@ -1,0 +1,50 @@
+
+
+\begin{tikzpicture}
+    \newcommand\topLayer{3}
+
+    \begin{scope}[
+        yshift=0,every node/.append style={
+        yslant=0.5,xslant=-1},yslant=0.5,xslant=-1]
+        \draw[black,very thick] (0,0) rectangle (4,4);
+
+        % \begin{scope}[every node/.append style={}]
+        %     \foreach \i in {\topLayer,...,0} {
+        %         \input{layer\i-t0}
+        %     }
+        % \end{scope}
+        \input{mesh-t0}
+
+        % y = 0.3 + 6.189086*x - 6.682936*x^2 + 2.481516*x^3 - 0.2852701*x^4
+        \draw[domain=0:3.8,smooth,variable=\x,colorA, ultra thick] plot ({\x},
+            {0.3 + 6.189086*\x - 6.682936*\x*\x + 2.481516*\x*\x*\x - 0.2852701*\x*\x*\x*\x});
+
+    \end{scope} %end of drawing grids
+    \node[anchor=west,text width=7cm] at (5cm,2cm) {The resultant mesh is comprised of all the cells without children - the "leaves" of the tree.};
+        
+    \foreach \i in {\topLayer,...,0} {
+        \begin{scope}[
+            yshift=5cm+2cm*(\topLayer-\i),every node/.append style={
+                yslant=0.5,xslant=-1},yslant=0.5,xslant=-1
+              ]
+            \fill[white,fill opacity=0.9] (0,0) rectangle (4,4);
+            % y = 0.3 + 6.189086*x - 6.682936*x^2 + 2.481516*x^3 - 0.2852701*x^4
+            \draw[domain=0:3.8,smooth,variable=\x,colorA, thin] plot ({\x},
+                {0.3 + 6.189086*\x - 6.682936*\x*\x + 2.481516*\x*\x*\x - 0.2852701*\x*\x*\x*\x});
+
+            \ifnum \i=\topLayer
+            \else
+                \FPeval{\result}{round(\i+1, 0)}%
+                \begin{scope}[every node/.append style={colorB}]
+                    \input{layer\result-t0}
+                \end{scope}
+            \fi
+
+            \input{layer\i-t0}
+            \draw[black,very thick] (0,0) rectangle (4,4);
+
+        \end{scope}
+
+        \node[yshift=7cm+2cm*(\topLayer-\i), anchor=west,text width=6cm] at (5cm,0) {Level \i};
+    }
+\end{tikzpicture}
