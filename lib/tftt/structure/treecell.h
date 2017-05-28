@@ -44,8 +44,8 @@ struct TreeCell {
     #endif
 
     int poisNgbC;
-    CellRef poisNgb[12];
-    double poisCoef[12];
+    CellRef poisNgb[8];
+    double poisCoef[8];
     double cenCoef;
 
     ADAPTFLAGS adaptFlags;
