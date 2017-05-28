@@ -11,22 +11,22 @@ struct TreeCell;
 namespace group {
 
 template<class ...Us>
-TreeGroup* create(Us... args)
+inline TreeGroup* create(Us... args)
 {
     return new TreeGroup(args...);
 }
 
-void free(TreeGroup* grp)
+inline void free(TreeGroup* grp)
 {
     delete grp;
 }
 
-int getCellIndex(TreeCell* tc)
+inline int getCellIndex(TreeCell* tc)
 {
     return tc->index;
 }
 
-TreeGroup* getCellGroup(TreeCell* tc)
+inline TreeGroup* getCellGroup(TreeCell* tc)
 {
     return tc->group;
 }

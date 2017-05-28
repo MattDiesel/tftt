@@ -52,7 +52,7 @@ void init(double w, double h)
 
         for (int b2 = 0; b2 < 2*DIM; b2++) {
             if (b2 == (b ^ 1))
-                newGrp->neighbours[b2] = CellRef(gtree.root, -1);
+                newGrp->neighbours[b2] = CellRef(-1);
             else
                 newGrp->neighbours[b2] = CellRef();
         }

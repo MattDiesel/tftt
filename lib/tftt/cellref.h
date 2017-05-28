@@ -32,11 +32,8 @@ enum CellRefFlags {
 //! be used by the program.
 struct CellRef {
 private:
-    //! the group of siblings this cell belongs to
-    TreeGroup* _group;
-
-    //! The index of the child within the sibling group.
-    int _index;
+    //! The raw pointer to the treecell.
+    TreeCell* _cell;
 
 public:
     //! the group of siblings this cell belongs to
@@ -49,9 +46,7 @@ public:
     TreeCell* treecell() const;
 
     //! Steps on to the next child in the current group
-    void stepChild() {
-        _index++;
-    }
+    void stepChild();
 
     //! Ctor for a cell reference.
     //! \details Cell references should be generated from a call to

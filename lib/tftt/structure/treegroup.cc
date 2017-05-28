@@ -182,12 +182,21 @@ TreeGroup::TreeGroup(CellRef p)
     }
 
     // Update FTT
-    for (int n = 0; n < 2*DIM; n++) {
-        if (isBoundary() && n != (boundary() ^ 1)) continue;
+    if (p.group() == gtree.boundGroups) {
+        for (int n = 0; n < 2*DIM; n++) {
+            if (isBoundary() && n != (boundary() ^ 1)) continue;
 
-        neighbours[n] = p.neighbour(n);
-        if (neighbours[n].hasChildren()) {
-            neighbours[n].children()->neighbours[n ^ 1] = p;
+            neighbours[n] = CellRef(-1);
+        }
+    }
+    else {
+        for (int n = 0; n < 2*DIM; n++) {
+            if (isBoundary() && n != (boundary() ^ 1)) continue;
+
+            neighbours[n] = p.neighbour(n);
+            if (neighbours[n].hasChildren()) {
+                neighbours[n].children()->neighbours[n ^ 1] = p;
+            }
         }
     }
 

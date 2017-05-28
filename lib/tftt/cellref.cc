@@ -7,6 +7,7 @@
 #include "structure/tree.h"
 #include "structure/treecell.h"
 #include "structure/treegroup.h"
+#include "structure/groupmemory.h"
 #include "hilbert.h"
 #include "iter/all.h"
 
@@ -16,36 +17,46 @@
 namespace tftt {
 
 
+TreeCell rootCell;
+
+
 TreeGroup* CellRef::group() const
 {
-    return _group;
+    return group::getCellGroup(_cell);
 }
 
 int CellRef::index() const
 {
-    return _index;
+    return group::getCellIndex(_cell);
 }
 
 TreeCell* CellRef::treecell() const
 {
-    return &_group->cells[_index];
+    return _cell;
+}
+
+void CellRef::stepChild()
+{
+    _cell++;
 }
 
 
 CellRef::CellRef()
-    : _group(nullptr), _index(0)
+    : _cell(nullptr)
 {
 }
 
 CellRef::CellRef(int flag)
-    : _group(nullptr), _index(flag)
+    : _cell(nullptr)
 {
+    if (flag == -1)
+        _cell = &rootCell;
 }
 
 
 CellRef::CellRef(TreeGroup* gr, int ind)
-    : _group(gr), _index(ind)
 {
+    _cell = &gr->cells[ind];
     // #ifdef TFTT_DEBUG
     // if (!gr) throw std::invalid_argument("Null TreeGroup given.");
     // if ((gr != gtree.root && ind < 0)
@@ -56,12 +67,12 @@ CellRef::CellRef(TreeGroup* gr, int ind)
 
 bool CellRef::isValid() const
 {
-    return group() || index();
+    return treecell();
 }
 
 bool CellRef::isRoot() const
 {
-    return index() == -1;
+    return treecell() == &rootCell;
 }
 
 
@@ -73,7 +84,7 @@ bool CellRef::isBoundary() const
 int CellRef::boundary() const
 {
     if (group() == gtree.boundGroups) {
-        return children()->boundary();
+        return index();
     }
     return group()->boundary();
 }
@@ -225,7 +236,7 @@ CellRef CellRef::next() const
         ret = group()->next;
 
         #ifdef TFTT_DEBUG
-        if (ret.hasChildren()) {
+        if (ret.isValid() && ret.hasChildren()) {
             throw std::runtime_error("Curve broken, next element has children.");
         }
         #endif
@@ -466,19 +477,19 @@ bool CellRef::containsPoint(double pt[DIM]) const
 
 bool CellRef::operator==(const CellRef& rhs) const
 {
-    return group() == rhs.group() && index() == rhs.index();
+    return treecell() == rhs.treecell();
 }
 
 
 bool CellRef::operator!=(const CellRef& rhs) const
 {
-    return group() != rhs.group() || index() != rhs.index();
+    return treecell() != rhs.treecell();
 }
 
 
 bool CellRef::operator<(const CellRef& rhs) const
 {
-    return group() < rhs.group() || index() < rhs.index();
+    return treecell() < rhs.treecell();
 }
 
 
