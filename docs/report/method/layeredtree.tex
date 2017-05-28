@@ -6,7 +6,10 @@
     \begin{scope}[
         yshift=0,every node/.append style={
         yslant=0.5,xslant=-1},yslant=0.5,xslant=-1]
-        \draw[black,very thick] (0,0) rectangle (4,4);
+        % \draw[black,ultra thick] (0,0) rectangle (4,4);
+
+        \draw[black,line width=2.5pt] (0,4) -- (0,0) -- (4,0);
+        \draw[black,line width=1.5pt] (0,4) -- (4,4) -- (4,0);
 
         % \begin{scope}[every node/.append style={}]
         %     \foreach \i in {\topLayer,...,0} {
@@ -24,7 +27,7 @@
         
     \foreach \i in {\topLayer,...,0} {
         \begin{scope}[
-            yshift=5cm+2cm*(\topLayer-\i),every node/.append style={
+            yshift=5cm+1.8cm*(\topLayer-\i),every node/.append style={
                 yslant=0.5,xslant=-1},yslant=0.5,xslant=-1
               ]
             \fill[white,fill opacity=0.9] (0,0) rectangle (4,4);
@@ -41,7 +44,8 @@
             \fi
 
             \input{gen/layer\i-t0}
-            \draw[black,very thick] (0,0) rectangle (4,4);
+            \draw[black,line width=2.5pt] (0,4) -- (0,0) -- (4,0);
+            \draw[black,line width=1.5pt] (0,4) -- (4,4) -- (4,0);
 
         \end{scope}
 
