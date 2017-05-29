@@ -187,7 +187,7 @@ TEST(TfttTest, drawMesh)
     // Todo: Better test than just string comparison
 
     std::ostringstream oss;
-    tftt::drawMesh(oss);
+    tftt::plot::mesh(oss);
 
     std::string shouldBe =
         "0 0\n2 0\n2 1\n0 1\n0 0\n\n"
@@ -247,7 +247,7 @@ TEST(TfttTest, insert)
 
     ASSERT_EQ(cl.isValid(), true);
 
-    tftt::drawMesh("testInsert.dat");
+    tftt::plot::mesh("testInsert.dat");
 }
 
 
@@ -270,11 +270,11 @@ TEST(TfttTest, saveLoad)
     ASSERT_EQ(cl.isValid(), true);
 
     tftt::saveTree("testTree.tr");
-    tftt::drawMesh(fileBefore);
+    tftt::plot::mesh(fileBefore);
     tftt::reset();
     // TODO: Reimplement test once loadTree is implemented
     // tftt::loadTree("testTree.tr");
-    // tftt::drawMesh(fileAfter);
+    // tftt::plot::mesh(fileAfter);
 
     // ASSERT_EQ(compareFiles(fileBefore, fileAfter), true);
 }
@@ -296,7 +296,7 @@ TEST(TfttTest, saveParTree)
     tftt::cell_t cl = tftt::insert(idt);
     ASSERT_EQ(cl.isValid(), true);
 
-    tftt::drawMesh(fileBefore);
+    tftt::plot::mesh(fileBefore);
 
     tftt::distribute(4);
     tftt::saveParTree("testPartTree.r{0}.tr", 4);
@@ -306,8 +306,8 @@ TEST(TfttTest, saveParTree)
         tftt::reset();
         tftt::loadParTree(formatString("testPartTree.r{0}.tr", n));
 
-        tftt::drawPartialMesh(formatString("testPartTree.r{0}.dat", n));
-        tftt::drawGhosts(formatString("ghosts.r{0}.dat", n));
+        tftt::plot::partialMesh(formatString("testPartTree.r{0}.dat", n));
+        tftt::plot::ghostMesh(formatString("ghosts.r{0}.dat", n));
 
         std::cout << "\tGhosts: " << tftt::gtree.ghosts.size() << "\n";
     }
@@ -354,7 +354,7 @@ TEST(TfttTest, interpFace)
     cl3.child(3)->P = 330;
 
 
-    tftt::drawMesh("interpFace.mesh.dat");
+    tftt::plot::mesh("interpFace.mesh.dat");
     tftt::drawMatrix("interpFace.matrix.pgm", 400, 400, [](tftt::data_t& dt, int max) {
         return (dt.P / 400)*max;
     });

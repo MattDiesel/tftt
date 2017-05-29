@@ -3,6 +3,10 @@
 #define TFTT_IO_SERIALIZE_H
 
 
+#include <string>
+#include <ostream>
+
+
 namespace tftt {
 
 

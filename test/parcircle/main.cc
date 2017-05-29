@@ -406,7 +406,7 @@ int main(int argc, char* argv[])
             tftt::calcFaceCoefs(cl);
         }
 
-        tftt::drawMesh("parcircle/mesh.init.dat");
+        tftt::plot::mesh("parcircle/mesh.init.dat");
 
         tftt::distribute(world.size());
         tftt::saveParTree("parcircle.r{0}.tr", world.size());
@@ -418,13 +418,13 @@ int main(int argc, char* argv[])
 
     tftt::loadParTree(formatString("parcircle.r{0}.tr", world.rank()));
 
-    tftt::drawPartialMesh(formatString("parcircle/mesh.r{0}.init.dat", world.rank()));
-    tftt::drawPartialCurve(formatString("parcircle/hilb.r{0}.init.dat", world.rank()));
+    tftt::plot::partialMesh(formatString("parcircle/mesh.r{0}.init.dat", world.rank()));
+    tftt::plot::partialHilbert(formatString("parcircle/hilb.r{0}.init.dat", world.rank()));
     for (int b = 0; b < world.size(); b++) {
         if (b == world.rank()) continue;
 
-        tftt::drawGhosts(formatString("parcircle/ghosts.r{0}.b{1}.init.dat", world.rank(), b), b);
-        tftt::drawBorder(formatString("parcircle/border.r{0}.b{1}.init.dat", world.rank(), b), b);
+        tftt::plot::ghostMesh(formatString("parcircle/ghosts.r{0}.b{1}.init.dat", world.rank(), b), b);
+        tftt::plot::borderMesh(formatString("parcircle/border.r{0}.b{1}.init.dat", world.rank(), b), b);
 
         std::cout << "[" << world.rank() << "] Ghosts to " << b
                   << ": " << tftt::gtree.ghosts[b].size() << "\n";
@@ -447,11 +447,11 @@ int main(int argc, char* argv[])
     }
 
 
-    tftt::drawPartialMesh(formatString("parcircle/mesh.r{0}.final.dat", world.rank()));
-    tftt::drawPartialCurve(formatString("parcircle/hilb.r{0}.final.dat", world.rank()));
+    tftt::plot::partialMesh(formatString("parcircle/mesh.r{0}.final.dat", world.rank()));
+    tftt::plot::partialHilbert(formatString("parcircle/hilb.r{0}.final.dat", world.rank()));
     for (int b = 0; b < world.size(); b++) {
-        tftt::drawGhosts(formatString("parcircle/ghosts.r{0}.b{1}.final.dat", world.rank(), b), b);
-        tftt::drawBorder(formatString("parcircle/border.r{0}.b{1}.final.dat", world.rank(), b), b);
+        tftt::plot::ghostMesh(formatString("parcircle/ghosts.r{0}.b{1}.final.dat", world.rank(), b), b);
+        tftt::plot::borderMesh(formatString("parcircle/border.r{0}.b{1}.final.dat", world.rank(), b), b);
     }
 
     return 0;

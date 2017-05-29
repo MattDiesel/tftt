@@ -186,9 +186,9 @@ int main(int argc, char* argv[])
         }
     }
 
-    // tftt::drawMesh("pois/mesh.min.dat");
-    // tftt::drawCurve("pois/hilb.min.dat");
-    // tftt::drawBoundaries("pois/bound.min.dat");
+    // tftt::plot::mesh("pois/mesh.min.dat");
+    // tftt::plot::hilbert("pois/hilb.min.dat");
+    // tftt::plot::boundariesMesh("pois/bound.min.dat");
 
     // Refine to circle.
     for (int d = minDepth; d < maxDepth; d++) {
@@ -217,9 +217,9 @@ int main(int argc, char* argv[])
         }
     }
 
-    tftt::drawMesh("pois/mesh.init.dat");
-    tftt::drawCurve("pois/hilb.init.dat");
-    tftt::drawBoundaries("pois/bound.init.dat");
+    tftt::plot::mesh("pois/mesh.init.dat");
+    tftt::plot::hilbert("pois/hilb.init.dat");
+    tftt::plot::boundariesMesh("pois/bound.init.dat");
 
 
     // tftt::drawMatrix("pois/cc.init.pgm", 512, 512, [](tftt::data_t& dt, int max) {
@@ -281,21 +281,21 @@ int main(int argc, char* argv[])
         std::cout << std::endl;
 
         if (ITER % plotEvery == 0) {
-            tftt::plotMatrix(formatString("pois/P.{0}.dat", ITER), [](tftt::data_t& dt) {
-                return dt.P;
+            tftt::plot3d::scatter(formatString("pois/P.{0}.dat", ITER), [](tftt::cell_t& cl) {
+                return cl->P;
             });
 
-            tftt::plotMatrix(formatString("pois/res.{0}.dat", ITER), [](tftt::data_t& dt) {
-                return dt.res;
+            tftt::plot3d::scatter(formatString("pois/res.{0}.dat", ITER), [](tftt::cell_t& cl) {
+                return cl->res;
             });
         }
     }
 
-    tftt::plotMatrix("pois/P.final.dat", [](tftt::data_t& dt) {
-        return dt.P;
+    tftt::plot3d::scatter("pois/P.final.dat", [](tftt::cell_t& cl) {
+        return cl->P;
     });
-    tftt::plotMatrix("pois/res.final.dat", [](tftt::data_t& dt) {
-        return dt.res;
+    tftt::plot3d::scatter("pois/res.final.dat", [](tftt::cell_t& cl) {
+        return cl->res;
     });
 
     return 0;

@@ -61,7 +61,7 @@ void initCondition() {
         tftt::adaptCommit();
     }
 
-    tftt::drawMesh("init.mesh");
+    tftt::plot::mesh("init.mesh");
 
     // Set VoF for all cells
 

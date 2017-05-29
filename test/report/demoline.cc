@@ -150,7 +150,7 @@ int main(int argc, char* argv[])
 
         tftt::tikz::mesh(formatString("{0}/mesh-t{1}.tex", outDir, two2one), maxDepth);
 
-        tftt::drawCurve(formatString("{0}/hilb-t{1}.dat", outDir, two2one));
+        tftt::plot::hilbert(formatString("{0}/hilb-t{1}.dat", outDir, two2one));
 
         for (int l = 0; l < maxDepth; l++) {
             tftt::tikz::meshLayer(formatString("{0}/layer{2}-t{1}.tex", outDir, two2one, l), l);

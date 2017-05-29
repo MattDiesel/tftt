@@ -71,5 +71,5 @@ void physInit(void)
 
     std::cout << "ng = " << ng << std::endl;
 
-    tftt::drawMesh("initMesh.dat");
+    tftt::plot::mesh("initMesh.dat");
 }

@@ -208,7 +208,7 @@ int main(int argc, char* argv[])
 
     miscChecks();
 
-    tftt::drawMesh("circle2data/mesh.min.dat");
+    tftt::plot::mesh("circle2data/mesh.min.dat");
 
     // Refine to circle.
     for (int d = minDepth; d < maxDepth; d++) {
@@ -221,10 +221,10 @@ int main(int argc, char* argv[])
 
         tftt::adaptSwCommit();
 
-        tftt::drawMesh(formatString("circle2data/mesh.init.{0}.dat", d-minDepth));
+        tftt::plot::mesh(formatString("circle2data/mesh.init.{0}.dat", d-minDepth));
     }
 
-    tftt::drawMesh("circle2data/mesh.init.dat");
+    tftt::plot::mesh("circle2data/mesh.init.dat");
 
     tftt::cell_t tmp;
     for (ITER = 1; ITER <= iterations; ITER++) {
@@ -253,7 +253,7 @@ int main(int argc, char* argv[])
 
         std::cout << "\tCell Count: " << tftt::gtree.ccells << "\n";
 
-        tftt::drawMesh(formatString("circle2data/mesh.{0}.dat", ITER));
+        tftt::plot::mesh(formatString("circle2data/mesh.{0}.dat", ITER));
     }
 
     return 0;

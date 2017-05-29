@@ -230,8 +230,8 @@ int main(int argc, char* argv[])
 
             std::cout << "Refined to geometry." << std::endl;
 
-            tftt::drawMesh("parp/cmesh.init.dat");
-            tftt::drawCurve("parp/chilb.init.dat");
+            tftt::plot::mesh("parp/cmesh.init.dat");
+            tftt::plot::hilbert("parp/chilb.init.dat");
 
             for (auto& cl : tftt::leaves) {
                 tftt::calcFaceCoefs(cl);
@@ -265,25 +265,25 @@ int main(int argc, char* argv[])
     }
 
     // Every node moves 50 cells left
-    if (world.rank() == 0) {
-        tftt::moveCells(world, 0, -50);
-    }
-    else if (world.rank() == world.size()-1) {
-        tftt::moveCells(world, 50, 0);
-    }
-    else {
-        tftt::moveCells(world, 50, -50);
-    }
+    // if (world.rank() == 0) {
+    //     tftt::moveCells(world, 0, -50);
+    // }
+    // else if (world.rank() == world.size()-1) {
+    //     tftt::moveCells(world, 50, 0);
+    // }
+    // else {
+    //     tftt::moveCells(world, 50, -50);
+    // }
 
-    tftt::drawMesh(formatString("parp/cmesh.r{0}.init.dat", world.rank()));
-    tftt::drawCurve(formatString("parp/chilb.r{0}.init.dat", world.rank()));
-    tftt::drawPartialMesh(formatString("parp/mesh.r{0}.init.dat", world.rank()));
-    tftt::drawPartialCurve(formatString("parp/hilb.r{0}.init.dat", world.rank()));
-    tftt::drawBoundaries(formatString("parp/bound.r{0}.init.dat", world.rank()));
+    tftt::plot::mesh(formatString("parp/cmesh.r{0}.init.dat", world.rank()));
+    tftt::plot::hilbert(formatString("parp/chilb.r{0}.init.dat", world.rank()));
+    tftt::plot::partialMesh(formatString("parp/mesh.r{0}.init.dat", world.rank()));
+    tftt::plot::partialHilbert(formatString("parp/hilb.r{0}.init.dat", world.rank()));
+    tftt::plot::boundariesMesh(formatString("parp/bound.r{0}.init.dat", world.rank()));
 
     for (int n = 0; n < world.size(); n++) {
-        tftt::drawGhosts(formatString("parp/ghosts.r{0}.b{1}.init.dat", world.rank(), n), n);
-        tftt::drawBorder(formatString("parp/border.r{0}.b{1}.init.dat", world.rank(), n), n);
+        tftt::plot::ghostMesh(formatString("parp/ghosts.r{0}.b{1}.init.dat", world.rank(), n), n);
+        tftt::plot::borderMesh(formatString("parp/border.r{0}.b{1}.init.dat", world.rank(), n), n);
     }
 
     std::cout << "[" << world.rank() << "] Loaded tree of "
@@ -332,21 +332,21 @@ int main(int argc, char* argv[])
         }
 
         if (ITER % plotEvery == 0) {
-            tftt::plotMatrix(formatString("parp/P.{0}.r{1}.dat", ITER, world.rank()), [](tftt::data_t& dt) {
-                return dt.P;
+            tftt::plot3d::scatter(formatString("parp/P.{0}.r{1}.dat", ITER, world.rank()), [](tftt::cell_t& cl) {
+                return cl->P;
             });
 
-            tftt::plotMatrix(formatString("parp/res.{0}.r{1}.dat", ITER, world.rank()), [](tftt::data_t& dt) {
-                return dt.res;
+            tftt::plot3d::scatter(formatString("parp/res.{0}.r{1}.dat", ITER, world.rank()), [](tftt::cell_t& cl) {
+                return cl->res;
             });
         }
     }
 
-    tftt::plotMatrix(formatString("parp/P.final.r{0}.dat", world.rank()), [](tftt::data_t& dt) {
-        return dt.P;
+    tftt::plot3d::scatter(formatString("parp/P.final.r{0}.dat", world.rank()), [](tftt::cell_t& cl) {
+        return cl->P;
     });
-    tftt::plotMatrix(formatString("parp/res.final.r{0}.dat", world.rank()), [](tftt::data_t& dt) {
-        return dt.res;
+    tftt::plot3d::scatter(formatString("parp/res.final.r{0}.dat", world.rank()), [](tftt::cell_t& cl) {
+        return cl->res;
     });
 
     return 0;

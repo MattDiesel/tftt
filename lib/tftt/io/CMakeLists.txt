@@ -1,6 +1,8 @@
 
 set(tfttio_SRCS
-    tfttio.cc
+    plot.cc
+    plot3d.cc
+    pnm.cc
     serialize.cc
     tikz.cc
 )

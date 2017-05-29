@@ -112,9 +112,9 @@ int main(int argc, char* argv[])
         }
     }
 
-    tftt::drawMesh("circledata/mesh.min.dat");
-    tftt::drawCurve("circledata/hilb.min.dat");
-    tftt::drawBoundaries("circledata/bound.min.dat");
+    tftt::plot::mesh("circledata/mesh.min.dat");
+    tftt::plot::hilbert("circledata/hilb.min.dat");
+    tftt::plot::boundariesMesh("circledata/bound.min.dat");
 
     // Refine to circle.
     for (int d = minDepth; d < maxDepth; d++) {
@@ -128,9 +128,9 @@ int main(int argc, char* argv[])
         tftt::adaptCommit();
     }
 
-    tftt::drawMesh("circledata/mesh.init.dat");
-    tftt::drawCurve("circledata/hilb.init.dat");
-    tftt::drawBoundaries("circledata/bound.init.dat");
+    tftt::plot::mesh("circledata/mesh.init.dat");
+    tftt::plot::hilbert("circledata/hilb.init.dat");
+    tftt::plot::boundariesMesh("circledata/bound.init.dat");
 
 
     double pos[2] = {0.37, 0.1};
@@ -166,14 +166,14 @@ int main(int argc, char* argv[])
         tftt::reset();
         tftt::loadParTree(formatString("circle.r{0}.tr", n));
 
-        tftt::drawPartialMesh(formatString("parcircle/mesh.r{0}.dat", n));
-        tftt::drawPartialCurve(formatString("parcircle/hilb.r{0}.dat", n));
-        tftt::drawMesh(formatString("parcircle/mesh.r{0}.full.dat", n));
-        tftt::drawCurve(formatString("parcircle/hilb.r{0}.full.dat", n));
+        tftt::plot::partialMesh(formatString("parcircle/mesh.r{0}.dat", n));
+        tftt::plot::partialHilbert(formatString("parcircle/hilb.r{0}.dat", n));
+        tftt::plot::mesh(formatString("parcircle/mesh.r{0}.full.dat", n));
+        tftt::plot::hilbert(formatString("parcircle/hilb.r{0}.full.dat", n));
 
         for (int b = 0; b < worldSize; b++) {
-            tftt::drawGhosts(formatString("parcircle/ghosts.r{0}.b{1}.init.dat", n, b), b);
-            tftt::drawBorder(formatString("parcircle/border.r{0}.b{1}.init.dat", n, b), b);
+            tftt::plot::ghostMesh(formatString("parcircle/ghosts.r{0}.b{1}.init.dat", n, b), b);
+            tftt::plot::borderMesh(formatString("parcircle/border.r{0}.b{1}.init.dat", n, b), b);
         }
 
 
@@ -245,9 +245,9 @@ int main(int argc, char* argv[])
         // }
         // std::cout << "\tCell Count (from curve): " << ccells << "\n";
 
-        tftt::drawMesh(formatString("circledata/mesh.{0}.dat", ITER));
-        tftt::drawCurve(formatString("circledata/hilb.{0}.dat", ITER));
-        tftt::drawBoundaries(formatString("circledata/bound.{0}.dat", ITER));
+        tftt::plot::mesh(formatString("circledata/mesh.{0}.dat", ITER));
+        tftt::plot::hilbert(formatString("circledata/hilb.{0}.dat", ITER));
+        tftt::plot::boundariesMesh(formatString("circledata/bound.{0}.dat", ITER));
     }
 
     return 0;

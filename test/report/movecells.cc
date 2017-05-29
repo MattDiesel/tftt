@@ -242,9 +242,9 @@ int main(int argc, char* argv[])
     }
 
     // Fig 2: Exchange
-    tftt::drawPartialCurve("report/movecells/hilb.overlapl.dat",
+    tftt::plot::partialHilbert("report/movecells/hilb.overlapl.dat",
                            lastSend, firstRank1.prev());
-    tftt::drawPartialCurve("report/movecells/hilb.overlapr.dat",
+    tftt::plot::partialHilbert("report/movecells/hilb.overlapr.dat",
                            lastSend.next(), firstRank1);
 
     {
