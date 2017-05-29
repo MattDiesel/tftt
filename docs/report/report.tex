@@ -1,22 +1,31 @@
 
-\documentclass{IIBproject}
+\documentclass[twoside]{IIBproject}
 \usepackage[utf8] {inputenc}
 
+% \usepackage{fancyhdr}
+% \fancyhf{}
+% \renewcommand{\headrulewidth}{0pt}
+% \fancyfoot[LE,RO]{\thepage}
+
+\usepackage[bottom]{footmisc}
 \usepackage{setspace}
 \onehalfspacing
+\raggedbottom
+
+\usepackage[hidelinks]{hyperref}
 
 \usepackage{graphicx,float,epstopdf,subcaption}
 \graphicspath{{method/}{method/gen}}
-
-\usepackage{multirow}
 
 \makeatletter
 \def\input@path{{method/}{method/gen}}
 \makeatother
 
-\usepackage{tikz,fp}
+\usepackage{booktabs,tabularx,multirow}
+
+\usepackage{tikz,fp,tikz-qtree}
 \usetikzlibrary{positioning,calc,external}
-\tikzexternalize
+% \tikzexternalize
 
 \definecolor{colorA} {rgb} {0.1686, 0.5137, 0.7294}
 \definecolor{colorB} {rgb} {0.9922, 0.6824, 0.3804}
@@ -68,10 +77,13 @@
 \maketitle
 
 \thispagestyle{empty}
+\renewcommand{\abstractname}{Technical Abstract}
 \begin{abstract}
 Abstract
 \end{abstract}
 
+\newpage
+\setcounter{tocdepth}{2}
 \tableofcontents
 \newpage
 \pagestyle{plain}
@@ -93,9 +105,16 @@ Abstract
         \subsubsection{Layer Links} % (fold)
             \label{sec:orthotree-layers}
 
-            A cells parent is stored as a reference $\mathcal{C}\acc\textproc{parent}$.
+            A cells parent is stored as a reference $\mathcal{C}\acc\textproc{parent}$. The children of a cell $\mathcal{C}$ are accessed as a list $\mathcal{C}\acc\vect{\mathcal{K}}=\{\mathcal{K}_0,\mathcal{K}_1,\cdots,\mathcal{K}_n\}$.
 
-            The children of a cell $\mathcal{C}$ are accessed as a list $\mathcal{C}\acc\vect{\mathcal{K}}=\{\mathcal{K}_0,\mathcal{K}_1,\cdots,\mathcal{K}_n\}$, indexed using one bit per dimension, with increasing dimension number corresponding to increasing bit significance as shown in Figure \ref{fig:childnum}.
+            \begin{figure}[H]
+                \centering
+                \input{layerlinks}
+                \caption{Three layers of the tree, showing a cell $\mathcal{C}$, its parent $\mathcal{C}\acc\textproc{parent}$, and its children $\mathcal{C}\acc\vect{\mathcal{K}}$.}
+                \label{fig:ftt-layerlinks}
+            \end{figure}
+
+            Children are indexed using one bit per dimension, with increasing dimension number corresponding to increasing bit significance as shown in Figure~\ref{fig:childnum}.
 
             \begin{figure} [H]
                 \centering
@@ -161,7 +180,13 @@ Abstract
                 \label{fig:childnum}
             \end{figure}
 
-            The tree is refined depending on the conditions of the problem being solved. Figure \ref{fig:layeredtree} shows a trivial case refining to a simple line geometry. At each level, cells are refined if and only if the line overlaps the cell at any point. 
+        % subsubsection orthotree-layers (end)
+
+
+        \subsubsection{Refinement} %(fold)
+            \label{sec:orthotree-refine}
+
+            The tree is refined depending on the conditions of the problem being solved. Figure~\ref{fig:layeredtree} shows a trivial case refining to a simple line geometry. At each level, cells are refined if and only if the line overlaps the cell at any point. 
 
             The cells without children form the finest level of the mesh. These are known as the leaves of the tree $\mathbb{L}$, and size of the tree is taken to be the number of leaves $\abs{\mathbb{L}}$. Parent cells aren't used in the numeric methods applied to the mesh, and since they do not impact the computational time of numeric operations are not included in the tree size. 
 
@@ -173,13 +198,13 @@ Abstract
 
             Cells are referred to in this document using a calligraphic typed letter, such as $\mathcal{C}$. Properties of the cell use dot member access notation, for example $\mathcal{C}\acc\textproc{data}$ is the data associated with the cell. 
 
-        % subsubsection orthotree-layers (end)
+        % subsubsection orthotree-refine (end)
 
 
         \subsubsection{Refinement Propagation} % (fold)
             \label{sec:orthotree-refprop}
 
-            The selection method used for Figure \ref{fig:layeredtree} is based on the assumption that the cells of interest are only those directly on the line. In practice, the refinement levels should be spread to limit the number of combinations of cell boundaries and smooth the output. One simple method is to propagate refinement levels such that there are no cells within a parameter $P$ cell widths in the axis directions that are more than one level apart. Examples of using refinement propagation at three values for $P$ are presented in Figure \ref{fig:refprop}.
+            The selection method used for Figure~\ref{fig:layeredtree} is based on the assumption that the cells of interest are only those directly on the line. In practice, the refinement levels should be spread to limit the number of combinations of cell boundaries and smooth the output. One simple method is to propagate refinement levels such that there are no cells within a parameter $P$ cell widths in the axis directions that are more than one level apart. Examples of using refinement propagation at three values for $P$ are presented in Figure~\ref{fig:refprop}.
 
             \expandafter\newcommand\csname countL(0) \endcsname{280}
             \expandafter\newcommand\csname countL(1) \endcsname{452}
@@ -225,12 +250,18 @@ Abstract
     % subsection ftt (end)
 
 
+    % \subsection{Poisson Equation Solver} % (fold)
+    %     \label{sec:poissonsolver}
+
+    % % subsection poissonsolver (end)
+
+
     \subsection{Poisson Neighbourhoods} % (fold)
         \label{sec:poissonneighbours}
 
-        To solve on the adaptive mesh, interpolation is required in cases where the level of adjacent cells do not match. It is possible to move the expensive interpolation operation outside of the tight solver loop by instead storing a list of cells required along with the co\"efficient they would have been scaled by using direct interpolation. This list of cells is known as the poisson neighbourhood for a cell $\mathcal{C}$ and is represented by the vector $\mathcal{C}\acc\vect{\mathcal{P}}$. The respective neighbour co\"efficients are represented by the vector $\mathcal{C}\acc\vect{\beta}$ and the central co\"efficient is a scalar $\mathcal{C}\acc\alpha$.
+        To solve on the adaptive mesh, interpolation is required in cases where the level of adjacent cells do not match. It is possible to move the expensive interpolation operation outside of the tight solver loop by instead storing a list of cells required along with the coefficient they would have been scaled by using direct interpolation. This list of cells is known as the poisson neighbourhood for a cell $\mathcal{C}$ and is represented by the vector $\mathcal{C}\acc\vect{\mathcal{P}}$. The respective neighbour co
 
-        Calculating the coefficients for the different cases is explored in detail by \cite{Yung2010} including for higher order solvers. The methods used here are independent of the order of the solver, and the determining the neighbourhood is abstracted to Function \ref{fun:CalcPoisCoefs}.
+        Calculating the coefficients for the different cases is explored in detail by \cite{Yung2010} including for higher order solvers. The methods used here are independent of the order of the solver, and the determining the neighbourhood is abstracted to Function~\ref{fun:CalcPoisCoefs}.
 
         \begin{equation}
             \label{fun:CalcPoisCoefs}
@@ -238,6 +269,37 @@ Abstract
         \end{equation}
 
     % subsection poissonneighbours (end)
+
+
+    \subsection{Distributed Computing} % (fold)
+        \label{sec:computing}
+
+        The complete set of processes is called the world $\mathbb{W}$. Processes are identified by their zero-based rank - an integer $p \in [0;W)$ where $W=\abs{\mathbb{W}}$ is the total number of processes. 
+
+        \subsubsection{MPI} % (fold)
+            \label{sec:mpi}
+
+            Message Passing Interface (MPI) is a library designed for interprocess communications in high-performance distributed computing [cite]. The MPI library handles the starting of multiple copies of the same code in parallel, and provides interfaces for both point-to-point communication between two processes as well as collective operations over a set of processes.
+
+            The point-to-point operations are $\algorithmicsend\ \vect{X} \dra p$ and $\algorithmicrecv\ \vect{X} \dla p$ to send/recieve data $\vect{X}$ to/from a foreign process $p$. In practice these cover a range of methods including synchonous and asynchronous transfer. In cases where the size of $\vect{X}$ is dynamic a skeleton of the structure is sent first before the data to allow the recipient to allocate the destination memory block. 
+
+            The collective operations are $\algorithmicscatter\ \vect{X} \dra$ and $\algorithmicgather\ \vect{X} \dla \eval{x}_{p}$ where $\eval{x}_p$ is some function $x$ when evaluated on process $p$. Data scattered to the world is received using the same $\algorithmicrecv$ function as a point-to-point operation. Likewise the point-to-point $\algorithmicsend$ function is used for a gather operation.
+
+            MPI abstracts the interface, and processes do not need to be running on the same machine, or even the same type of machine, as long as the interface is kept consistent. This make it highly scalable, as the same code used to run four processes on a single machine can then be used to run on a large cluster. 
+
+            In this project, the Boost.MPI bindings are used to access the MPI library. [cite]
+
+        % subsubsection mpi (end)
+
+
+        \subsubsection{Load Balancing} % (fold)
+            \label{sec:loadbalancing}
+
+            For many distributed algorithms, all processes must be limited to run at the same speed as the slowest process. For the numeric methods used in this project, every process has to finish an iteration before the whole world can progress onto the next. Therefore, the maximum speed of the system as a whole would be gained by a uniform distribution of iteration times. In computing terms, this result is "load balancing", with a uniform distribution of iteration runtimes being the optimal perfectly balanced load. 
+
+        % subsubsection loadbalancing (end)
+
+    % subsection computing (end)
 
 % section intro (end)
 
@@ -248,74 +310,164 @@ Abstract
     \subsection{Threaded FTT} % (fold)
         \label{sec:tftt}
 
-        To distribute the $N$ dimensional orthotree onto a set of $W$ processes, it makes sense to flatten the tree into a one dimensional set of leaves $\mathbb{L}$, which can then be sliced evenly. To achieve this requires a Space Filling Curve (SFC). 
+        To distribute the $N$-dimensional orthotree onto a set of $W$ processes, it makes sense to flatten the tree into a one dimensional set of leaves $\mathbb{L}$, which can then be sliced evenly. In computing terms, the one-dimensional path is the ``thread'' through the structure. 
 
-        Regardless of the SFC used, the implementation must provide a pair of members $\mathcal{C}\acc\textproc{prev}$ and $\mathcal{C}\acc\textproc{next}$ for each cell, forming a doubly-linked list of cells through the tree. In computing terms, this forms a thread through the structure, which is now a Threaded FTT (TFTT).
+        Two properties $\mathcal{C}\acc\textproc{prev}$ and $\mathcal{C}\acc\textproc{next}$ for each cell are added, to form a doubly linked list through the leaves of the tree. The tree itself stores a link to the first and last leaves in the tree. This is shown in Figure~\ref{fig:tftt-flattree} for a one-dimensional tree with the leaves ordered from left to right. 
 
-        For simplicity, an additional constraint is imposed that the curve must not leave and re-enter a cell. This rules out some classes of SFC such as the Peano curve. Whilst it would be possible to implement such SFCs on a single processor, keeping local will allow subsections of the tree to change without knowledge of the full curve. This constraint is allows for the trivial implementation of  an additional pair of properties; the first and last children of a cell $C$ in the local curve. These are accessed as $\mathcal{C}\acc\textproc{firstChild}$ and $\mathcal{C}\acc\textproc{lastChild}$ respectively.
-
-        Refinement or coarsening of cells must only change the local curve, analogous to insertion and deletion operations on the list as shown by Algorithms \ref{alg:sfc-coarsen} and \ref{alg:sfc-refine}.
-
-        \begin{algorithm}[H]
-            \caption{Modifying the curve when coarsening the cell $\mathcal{C}$}
-            \label{alg:sfc-coarsen}
-
-            \begin{algorithmic}
-                \State $\mathcal{C}\acc\textproc{firstChild}\acc\textproc{prev}\acc\textproc{next} \Rightarrow \mathcal{C}$
-                \State $\mathcal{C}\acc\textproc{lastChild}\acc\textproc{next}\acc\textproc{prev} \Rightarrow \mathcal{C}$
-            \end{algorithmic}
-        \end{algorithm}
-
-        \begin{algorithm}[H]
-            \caption{Modifying the curve when refining the cell $\mathcal{C}$}
-            \label{alg:sfc-refine}
-
-            \begin{algorithmic}
-                \Require {The internal curve of $C$.}
-                \Statex
-                \State $\mathcal{C}\acc\textproc{prev}\acc\textproc{next} \Rightarrow \mathcal{C}\acc\textproc{firstChild}$
-                \State $\mathcal{C}\acc\textproc{next}\acc\textproc{prev} \Rightarrow \mathcal{C}\acc\textproc{lastChild}$
-            \end{algorithmic}
-        \end{algorithm}
-
-        Since the tree is constructed top down, this approach implies that defining the curve order of children of a cell is sufficient to describe the curve of the tree. This approach differs from previous uses of SFCs on orthotrees in that it stores the thread through the tree rather than using the SFC definition to iterate over it as \cite{bader2013} and others have done.
-
-        Likewise the notation must differ slightly from the commonly used rewrite systems such as the Lindenmayer system. The curves are defined by a sequence $S$ of child indices using the ordering in Figure \ref{fig:childnum}. The simplest case is a Morton curve given in Equation \ref{equ:sfc-mort2d}, which equates to the standard child order.
-
-        \begin{equation}
-            \label{equ:sfc-mort2d}
-            S_{\mathrm{mort},2d} = \left( 0 \to 1 \to 2 \to 3 \right)
-        \end{equation}
-
-        An alternative space filling curve is the Hilbert Curve, proposed by David Hilbert in 1891 as a curve that guaranteed that sequential cells would always be neighbours. This removes any possibility of complete separation of the cells in a processor unit, and can be represented using the notation described above with the addition of an orientation property $\mathcal{C}\acc\textproc{orient}$, using the notation introduced by Bader \cite{bader2013} in Chapter 3.1. 
-
-        \begin{equation}
-            S_{\mathrm{hilb,2d}}\left(\mathcal{C}\acc\textproc{orient}\right) =
-            \begin{cases}
-                \left( 0 \to 2 \to 3 \to 1\right) & \qif \mathcal{C}\acc\textproc{orient}=H \\
-                \left( 3 \to 1 \to 0 \to 2\right) & \qif \mathcal{C}\acc\textproc{orient}=C \\
-                \left( 0 \to 1 \to 3 \to 2\right) & \qif \mathcal{C}\acc\textproc{orient}=A \\
-                \left( 3 \to 2 \to 0 \to 1\right) & \qif \mathcal{C}\acc\textproc{orient}=B
-            \end{cases}
-        \end{equation}
-
-        On refinement, the orientation of child cells $\mathcal{C}\acc\mathcal{K}_c\acc\textproc{orient}$ as shown in Table \ref{tab:hilb-Dc} is a function of the parent orientation $\mathcal{C}\acc\textproc{orient}$ using the production rules given by Bader \cite{bader2013}. They are rewritten into this projects child order convention, as opposed to his presentation in Hilbert child order. This makes the pattern in the inheritance less obvious, but is more suited to use during the refinement process.
-
-        \begin{table}[H]
+        \begin{figure}[H]
             \centering
-            \caption{Lookup table for child orientation $\mathcal{C}\acc\mathcal{K}_c\acc\textproc{orient}$, as a function of the parent orientation $\mathcal{C}\acc\textproc{orient}$}
-            \label{tab:hilb-Dc}
-            \begin{tabular}{ll|llll}
-                                 &   & \multicolumn{4}{c}{$\mathcal{C}\acc\textproc{orient}$} \\
-                                 &   & H    & C    & A    & B    \\ \hline
-            \multirow{4}{*}{$c$} & 0 & A    & C    & H    & B    \\
-                                 & 1 & B    & C    & A    & H    \\
-                                 & 2 & H    & A    & C    & B    \\
-                                 & 3 & H    & B    & A    & C   
-            \end{tabular}
-        \end{table}
+            \input{method/threadtree}
+            \caption{A one-dimensional tree structure with nodes $\bullet$ and leaves $\square$. The double links through the leaves of the tree are shown in orange.}
+            \label{fig:tftt-flattree}
+        \end{figure}
 
-        In both cases, the Hilbert curve satisfies the requirement that no knowledge of the rest of the tree is required for refinement and coarsening. The Hilbert curve has been defined by a number of independent sources in N dimensions, such as Butz in \cite{butz71}, and can be adapted to the above notation and method of implementation easily retaining similar properties. 
+        To achieve this in higher dimensions requires a Space Filling Curve (SFC). SFCs are curves filling a domain with a single continuous line \cite{bader2013}. 
+
+
+        \subsubsection{Refinement and Coarsening} % (fold)
+            \label{sec:tftt-refine}
+
+            For simplicity, an additional constraint is imposed that the curve must not leave and re-enter a cell. This rules out some classes of SFC such as the Peano curve. Whilst it would be possible to implement such SFCs on a single processor, keeping local will allow subsections of the tree to change without knowledge of the full curve. This constraint is allows for the trivial implementation of  an additional pair of properties; the first and last children of a cell $C$ in the local curve. These are accessed as $\mathcal{C}\acc\textproc{firstChild}$ and $\mathcal{C}\acc\textproc{lastChild}$ respectively.
+
+            Refinement or coarsening of cells must only change the local curve, analogous to insertion and deletion operations on the list as shown by Algorithms~\ref{alg:sfc-coarsen} and~\ref{alg:sfc-refine}.
+
+            \begin{algorithm}[H]
+                \caption{Modifying the curve when coarsening the cell $\mathcal{C}$}
+                \label{alg:sfc-coarsen}
+
+                \begin{algorithmic}
+                    \State $\mathcal{C}\acc\textproc{firstChild}\acc\textproc{prev}\acc\textproc{next} \Rightarrow \mathcal{C}$
+                    \State $\mathcal{C}\acc\textproc{lastChild}\acc\textproc{next}\acc\textproc{prev} \Rightarrow \mathcal{C}$
+                \end{algorithmic}
+            \end{algorithm}
+
+            \begin{algorithm}[H]
+                \caption{Modifying the curve when refining the cell $\mathcal{C}$}
+                \label{alg:sfc-refine}
+
+                \begin{algorithmic}
+                    \Require {The internal curve of $C$.}
+                    \Statex
+                    \State $\mathcal{C}\acc\textproc{prev}\acc\textproc{next} \Rightarrow \mathcal{C}\acc\textproc{firstChild}$
+                    \State $\mathcal{C}\acc\textproc{next}\acc\textproc{prev} \Rightarrow \mathcal{C}\acc\textproc{lastChild}$
+                \end{algorithmic}
+            \end{algorithm}
+
+        % subsubsection tftt-refine (end)
+
+        \subsubsection{Defining Space Filling Curves} % (fold)
+            \label{sec:tftt-sfc}
+
+            Since the tree is constructed top down, this approach of the previous section implies that defining the curve order of children of a cell is sufficient to describe the curve of the tree. This approach differs from previous uses of SFCs on orthotrees in that it stores the thread through the tree rather than using the SFC definition to iterate over it as \cite{bader2013} and others have done.
+
+            Likewise the notation must differ slightly from the commonly used rewrite systems such as the Lindenmayer system [cite]. The curves are defined by a sequence $S$ of child indices using the ordering in Figure~\ref{fig:childnum}.
+
+            The simplest case is a Morton curve given in Equation~\ref{equ:sfc-mort2d}, which equates to the standard child order. Graphically represented, Figure~\ref{fig:sfc-morton} shows the change in the curve with progressive levels of refinement. 
+
+            \begin{equation}
+                \label{equ:sfc-mort2d}
+                S_{\mathrm{mort},2d} = \left( 0 \to 1 \to 2 \to 3 \right)
+            \end{equation}
+
+            \begin{figure}[H]
+                \centering
+                \foreach \i in {0,1,2} {
+                    \begin{subfigure}[b]{.3\textwidth}
+                        \centering
+                        \begin{tikzpicture}
+                            \begin{scope}[colorD,line width=0.6pt]
+                                \input{gen/tr-layer\i}
+                            \end{scope}
+                            \begin{scope}[line width=0.6pt]
+                                \foreach \n in {0,...,\i} {
+                                    \ifnum \i=\n
+                                    \else
+                                        \input{gen/tr-layer\n}
+                                    \fi
+                                }
+                            \end{scope}
+                            \begin{scope}[colorA]
+                                \input{gen/tr-mort-l\i}
+                            \end{scope}
+                            \draw[line width=1.3pt] (0,0) rectangle (4,4); 
+                        \end{tikzpicture}
+                        \caption{Level \i}
+                        \label{fig:sfc-morton-l\i}
+                    \end{subfigure}%
+                }
+                \caption{Refinement of the Morton curve, with refinement steps shown in red.}
+                \label{fig:sfc-morton}
+            \end{figure}
+
+
+        % subsubsection tftt-sfc (end)
+
+        \subsubsection{The Hilbert Curve}
+            \label{sec:tftt-hilb}
+
+            The Hilbert Curve was proposed by David Hilbert in 1891 as a curve that guaranteed that sequential cells would always be neighbours. This removes any possibility of complete separation of the cells in a processor unit, and can be represented using the notation described above with the addition of an orientation property $\mathcal{C}\acc\textproc{orient}$, using the notation introduced by Bader \cite{bader2013} in Chapter 3.1.
+
+            \begin{equation}
+                S_{\mathrm{hilb,2d}}\left(\mathcal{C}\acc\textproc{orient}\right) =
+                \begin{cases}
+                    \left( 0 \to 2 \to 3 \to 1\right) & \qif \mathcal{C}\acc\textproc{orient}=H \\
+                    \left( 3 \to 1 \to 0 \to 2\right) & \qif \mathcal{C}\acc\textproc{orient}=C \\
+                    \left( 0 \to 1 \to 3 \to 2\right) & \qif \mathcal{C}\acc\textproc{orient}=A \\
+                    \left( 3 \to 2 \to 0 \to 1\right) & \qif \mathcal{C}\acc\textproc{orient}=B
+                \end{cases}
+            \end{equation}
+
+            On refinement, the orientation of child cells $\mathcal{C}\acc\mathcal{K}_c\acc\textproc{orient}$ as shown in Table~\ref{tab:hilb-Dc} is a function of the parent orientation $\mathcal{C}\acc\textproc{orient}$ using the production rules given by Bader \cite{bader2013} in a slightly adapted form. The change in orientation can be seen in Figure~\ref{fig:sfc-hilbert} as rotations of the original shape. 
+
+            \begin{table}[H]
+                \centering
+                \captionsetup{width=0.8\textwidth}
+                \caption{Lookup table for child orientation $\mathcal{C}\acc\mathcal{K}_c\acc\textproc{orient}$, as a function of the parent orientation $\mathcal{C}\acc\textproc{orient}$}
+                \label{tab:hilb-Dc}
+                \begin{tabularx}{5cm}{l>{\raggedright}X*{4}{c}}
+                    \toprule
+                    &   & \multicolumn{4}{c}{$\mathcal{C}\acc\textproc{orient}$} \\ \cmidrule{3-6}
+                    & $c$   & $H$    & $C$    & $A$    & $B$    \\ \midrule
+                    & $0$   & $A$    & $C$    & $H$    & $B$    \\
+                    & $1$   & $B$    & $C$    & $A$    & $H$    \\
+                    & $2$   & $H$    & $A$    & $C$    & $B$    \\
+                    & $3$   & $H$    & $B$    & $A$    & $C$    \\ \bottomrule
+                \end{tabularx}
+            \end{table}
+
+            For both the curve changes and new orientation selection, the Hilbert curve satisfies the requirement that no knowledge of the rest of the tree is required for refinement and coarsening. The Hilbert curve has been defined by a number of independent sources in N dimensions, such as Butz in \cite{butz71}, and can be adapted to the above notation and method of implementation easily retaining similar properties. 
+
+            \begin{figure}[H]
+                \centering
+                \foreach \i in {0,1,2} {
+                    \begin{subfigure}[b]{.3\textwidth}
+                        \centering
+                        \begin{tikzpicture}
+                            \begin{scope}[colorD,line width=0.6pt]
+                                \input{gen/tr-layer\i}
+                            \end{scope}
+                            \begin{scope}[line width=0.6pt]
+                                \foreach \n in {0,...,\i} {
+                                    \ifnum \i=\n
+                                    \else
+                                        \input{gen/tr-layer\n}
+                                    \fi
+                                }
+                            \end{scope}
+                            \begin{scope}[colorA]
+                                \input{gen/tr-hilb-l\i}
+                            \end{scope}
+                            \draw[line width=1.3pt] (0,0) rectangle (4,4); 
+                        \end{tikzpicture}
+                        \caption{Level \i}
+                        \label{fig:sfc-hilbert-l\i}
+                    \end{subfigure}%
+                }
+                \caption{Refinement of the Hilbert curve, with refinement steps shown in red. }
+                \label{fig:sfc-hilbert}
+            \end{figure}
+
+        % subsubsection tftt-hilb (end)
 
     % subsection tftt (end)
 
@@ -323,13 +475,15 @@ Abstract
     \subsection{Parallel TFTT} % (fold)
         \label{sec:parallel}
 
-        The first stage in adapting the TFTT structure for use in parallel is allowing for only subset of the full domain to exist. 
+        The first stage in adapting the TFTT structure for use in parallel with the MPI library is allowing for only subset of the full domain to exist. 
 
-        The constraint is imposed that the subset of the tree present on a process must for a contiguous section of the space filling curve.
+        The constraint is imposed that the subset of the tree present on a process must for a contiguous section of the space filling curve. Rank zero's first cell is the first cell of the global tree, and the last cell of  rank $W-1$ is the last cell of the global tree. 
 
-        Refinement propagation as described in Section \ref{sec:orthotree-refprop} is relaxed outside of the active area to a propagation length $P=1$. Using $p=0$ leads to issues maintaining the SFC outside the active region, which itself makes the later moving of cells along the curve between processes hard.
+        Compututational load on each process $p$ taken to be equivalent to the number of leaves it computes over $\eval{\abs{\mathbb{L}}}_p$. Hence the condition for a perfectly balanced load is for each process' cell count to equal the mean.
 
-        Pointers are stored with the tree root to the first and last cells in the active range. This allows simple iteration over the sub-domain. 
+        Refinement propagation as described in Section~\ref{sec:orthotree-refprop} is relaxed outside of the active area to a propagation length $P=1$. Using $P=0$, whilst possible in theory, leads to more complex maintainance of the SFC outside the active region, which itself makes the later moving of cells along the curve between processes hard. 
+
+        Pointers are stored with the tree root to the first and last cells in the active range. This allows simple iteration over the sub-domain. In the context of a process, the leaves set $\mathbb{L}$ refers only to leaves currently active on that rank.
 
     % subsection partftt (end)
 
@@ -362,7 +516,7 @@ Abstract
 
         Each process also stores the set of cells it owns, who are ghost cells of foreign processes. These are called the border cells, and for a process $x$ the set of border cells to another process $y$ is written as $\mathbb{B}_y$.
 
-        A good space filling curve, such as the Hilbert Curve, leads to process' cells being closely grouped and close to square, for example the 3 processes in Figure \ref{fig:borderline} are grouped reasonably well with few peninsulas.
+        A good space filling curve, such as the Hilbert Curve, leads to process' cells being closely grouped and close to square, for example the 3 processes in Figure~\ref{fig:borderline} are grouped reasonably well with few peninsulas.
 
         \begin{figure}[H]
             \input{method/gen/borderline.tex}
@@ -370,7 +524,7 @@ Abstract
             \label{fig:borderline}
         \end{figure}
 
-        For rank zero, there are ghost cells on both of the other processes as shown in Figure \ref{fig:borders-r0}.
+        For rank zero, there are ghost cells on both of the other processes as shown in Figure~\ref{fig:borders-r0}.
 
         \begin{figure}[H]
             \input{method/gen/ghosts-r0.tex}
@@ -380,7 +534,7 @@ Abstract
 
         A highly desirable property of the border and ghost sets that greatly simplifies the retrieval of ghost cell data is that for any two processes $x$ and $y$, $\mathbb{G}_y$ on $x$ is exactly the same as $\mathbb{B}_x$ on $y$. In order to guarantee that property the sets are kept sorted according the the global identifier.
 
-        Individual processes do not have enough information to generate their own ghost sets. As a result, the ghost sets for all processes is transferred with the initial cell distribution as outlined in Section \ref{sec:distribution}. However, knowledge of a processes own cell and ghost sets is sufficient to generate the border set using the method in Algorithm \ref{alg:borders-gen}.
+        Individual processes do not have enough information to generate their own ghost sets. As a result, the ghost sets for all processes is transferred with the initial cell distribution as outlined in Section~\ref{sec:distribution}. However, knowledge of a processes own cell and ghost sets is sufficient to generate the border set using the method in Algorithm~\ref{alg:borders-gen}.
 
         \begin{algorithm}[H]
             \caption{Building the border set on process $p$}
@@ -406,7 +560,7 @@ Abstract
     \subsection{Distribution} % (fold)
         \label{sec:distribution}
 
-        Initial distribution is performed as a single process. The tree is refined to its initial mesh, typically according the the known geometry of the problem. The number of cells to be allocated to each process is calculated by dividing the cell count for the initial tree by the number of processes. The procedure in Algorithm \ref{alg:distrib-assign} then iterates over the space filling curve, setting cells to the current value of a rank counter and incrementing the counter when the processes cell count is reached.
+        Initial distribution is performed as a single process. The tree is refined to its initial mesh, typically according the the known geometry of the problem. The number of cells to be allocated to each process is calculated by dividing the cell count for the initial tree by the number of processes as derived in Section~\ref{sec:parallel}. The procedure in Algorithm~\ref{alg:distrib-assign} then iterates over the space filling curve, setting cells to the current value of a rank counter and incrementing the counter when the processes cell count is reached.
 
         \begin{algorithm}[H]
             \caption{Building the border set on process $p$}
@@ -450,7 +604,7 @@ Abstract
             \end{algorithmic}
         \end{algorithm}
 
-        The tree is then serialised into a list for every process $\vect{N}_p=\{\lambda,\rho\}^n$ containing pairs of cell identifiers $\lambda$ and ranks $\rho$ referring to either an active cell or a ghost cell of the target process. These are sent to the processes, which unpack them according to the logic in Algorithm \ref{alg:distrib-unpack}.
+        The tree is then serialised into a list for every process $\vect{N}_p=\{\lambda,\rho\}^n$ containing pairs of cell identifiers $\lambda$ and ranks $\rho$ referring to either an active cell or a ghost cell of the target process. These are sent to the processes, which unpack them according to the logic in Algorithm~\ref{alg:distrib-unpack}.
 
         \begin{algorithm}[H]
             \caption{Building the subset of the tree on process $p$}
@@ -470,7 +624,7 @@ Abstract
             \end{algorithmic}
         \end{algorithm}
 
-        Finally, each process generates its own border set $\mathbb{B}$ using the procedure in Algorithm \ref{alg:borders-gen}.
+        Finally, each process generates its own border set $\mathbb{B}$ using the procedure in Algorithm~\ref{alg:borders-gen}.
 
     % subsection distribution (end)
 
@@ -480,9 +634,9 @@ Abstract
 
         With each iteration, the data for each processes ghost cells becomes out of date. Synchronisation is used at the end of every iteration to renew this data.
 
-        Since it is required once per iteration, ghost synchronisation is by far the most common parallel operation required. The set up described previously in Section \ref{sec:ghostsandborders} is designed to minimise this process. By making use of the equivalence of the ghost and border sets for two processes, the only information transfer required is the data from the border cells.
+        Since it is required once per iteration, ghost synchronisation is by far the most common parallel operation required. The set up described previously in Section~\ref{sec:ghostsandborders} is designed to minimise this process. By making use of the equivalence of the ghost and border sets for two processes, the only information transfer required is the data from the border cells.
 
-        Without compression, Algorithm \ref{alg:sync-sendrecv} is therefore the smallest transfer of information possible for this stage.
+        Without compression, Algorithm~\ref{alg:sync-sendrecv} is therefore the smallest transfer of information possible for this stage.
 
         \begin{algorithm}[H]
             \caption{Synchronisation}
@@ -507,7 +661,7 @@ Abstract
             \end{algorithmic}
         \end{algorithm}
 
-        Further small improvements are made by noting that the length of the vector $\abs{\vect{\Phi}} = \abs{\mathbb{B}_b}$ for each boundary, and so this memory block can be re\"used to save the cost of repeated allocations.
+        Further small improvements are made by noting that the length of the vector $\abs{\vect{\Phi}} = \abs{\mathbb{B}_b}$ for each boundary, and so this memory block can be reused to save the cost of repeated allocations.
 
     % subsection ghostsync (end)
 
@@ -515,11 +669,13 @@ Abstract
     \subsection{Rebalancing} % (fold)
         \label{sec:rebalancing}
 
+        As identified in Section~\ref{sec:loadbalancing}, a key factor in the performance of distributed methods is how evenly the computational load is spread between processes. If the mesh is changed then the loading is likely to become unbalanced, and rebalancing is required to rectify this. 
+
         Rebalancing is achieved by calculating the average number of cells per processor, and the movement of cells between processors required to achieve a perfect balance. Since a processes cells are contiguous along the space filling curve, cells can only be passed to the next or previous rank. The process at rank 0 starts with the first cell of the global curve and the process at the ultimate rank ends with the last. Regardless of the dimension of the problem, the space filling curve reduces it to one dimension. A further assumption is made that the number of cells being passed is small compared to the cell count for a process.
 
         In this way, the rebalancing of the tree, with the exception of the calculations for the pass counts, requires no knowledge of the full tree, only the list of cells being passed to/from the left/right processor.
 
-        As a graphical demonstration of the rebalancing, 20 cells will be transferred from rank 0 to rank 1, starting from the mesh shown in Figure \ref{fig:rebalance-init}.
+        As a graphical demonstration of the rebalancing, 20 cells will be transferred from rank 0 to rank 1, starting from the mesh shown in Figure~\ref{fig:rebalance-init}.
 
         \begin{figure}[H]
             \input{method/gen/init.tex}
@@ -527,7 +683,7 @@ Abstract
             \label{fig:rebalance-init}
         \end{figure}
 
-        Rebalancing is split into the following subroutines: Balance Calculations, updating cell ranks, notifying rank changes, transferring cells, inserting new cells and updating the ghost and border cell sets. These are shown as an activity diagram in Figure \ref{fig:rebalance-overview}, showing the concurrency of the processes.
+        Rebalancing is split into the following subroutines: Balance Calculations, updating cell ranks, notifying rank changes, transferring cells, inserting new cells and updating the ghost and border cell sets. These are shown as an activity diagram in Figure~\ref{fig:rebalance-overview}, showing the concurrency of the processes.
 
         \begin{figure}[H]
             \input{method/moveCells_ad}
@@ -539,9 +695,9 @@ Abstract
         \subsubsection{Balance Calculation} % (fold)
             \label{sec:rebalancing-calc}
 
-            The cell counts $\vect{c}$ from each node are gathered on rank zero. Balancing is determined necessary based on a parameter $c_{crit}$ if $\norm{\vect{c}}>c_{crit}$. Algorithm \ref{alg:rebalance-calculatepassing} is then sufficient to determine the number of cells $\Delta$ each process passes left and right to balance every process to the average cell count $\bar c$. A negative value of $\Delta$ gives a cell count being received.
+            The cell counts $\vect{c}$ from each node are gathered on rank zero. Balancing is determined necessary based on a parameter $c_{crit}$ if $\norm{\vect{c}}>c_{crit}$. Algorithm~\ref{alg:rebalance-calculatepassing} is then sufficient to determine the number of cells $\Delta$ each process passes left and right to balance every process to the average cell count $\bar c$. A negative value of $\Delta$ gives a cell count being received.
 
-            The loop in Algorithm \ref{alg:rebalance-calculatepassing} can be reformulated as a proof by induction that the result is the minimum $\Delta$ satisfying the conditions imposed and $\abs{\mathbb{L}}_p=\bar c$ for all $p$.
+            The loop in Algorithm~\ref{alg:rebalance-calculatepassing} can be reformulated as a proof by induction that the result is the minimum $\Delta$ satisfying the conditions imposed and $\abs{\mathbb{L}}_p=\bar c$ for all $p$.
 
             \begin{algorithm}[H]
                 \caption{Rebalancing Calculations}
@@ -567,9 +723,9 @@ Abstract
         \subsubsection{Update Cell Ranks} % (fold)
             \label{sec:rebalancing-updatecellranks}
 
-            Based on the movement amount $\Delta$ each process marks the cells to be moved with their new rank, storing the set of changes that would affect the ghost cells of other processes in order to notify them of the change in the next phase of rebalancing in Section \ref{sec:rebalancing-notifyrank}. The processes that need to be notified of changes is known by using the set of border cells $\mathbb{B}$. The process receiving the cells does not need to be notified of changes, as this data will be transmitted as part of the send sets in Section \ref{sec:rebalancing-gensendset}.
+            Based on the movement amount $\Delta$ each process marks the cells to be moved with their new rank, storing the set of changes that would affect the ghost cells of other processes in order to notify them of the change in the next phase of rebalancing in Section~\ref{sec:rebalancing-notifyrank}. The processes that need to be notified of changes is known by using the set of border cells $\mathbb{B}$. The process receiving the cells does not need to be notified of changes, as this data will be transmitted as part of the send sets in Section~\ref{sec:rebalancing-gensendset}.
 
-            In the example case, the cells that are currently on rank 0 but will have their ranks updated to equal 1 are shown in red in Figure \ref{fig:rebalance-ranks}.
+            In the example case, the cells that are currently on rank 0 but will have their ranks updated to equal 1 are shown in red in Figure~\ref{fig:rebalance-ranks}.
 
             \begin{figure}[H]
                 \input{method/gen/overlap.tex}
@@ -598,9 +754,9 @@ Abstract
                 \end{algorithmic}
             \end{algorithm}
 
-            The routine in Algorithm \ref{alg:rebalance-updateranks} is repeated for the cells to move right, using the same sets $\vect{N}_b$.
+            The routine in Algorithm~\ref{alg:rebalance-updateranks} is repeated for the cells to move right, using the same sets $\vect{N}_b$.
 
-            In the example case, the only process not involved in the transfer already is the one at rank 2. The cells currently on rank 0, but being transferred to rank 1, that border it form the set $\vect{N}_2$ shown in Figure \ref{fig:rebalance-notify}.
+            In the example case, the only process not involved in the transfer already is the one at rank 2. The cells currently on rank 0, but being transferred to rank 1, that border it form the set $\vect{N}_2$ shown in Figure~\ref{fig:rebalance-notify}.
 
             \begin{figure}[H]
                 \input{method/gen/ghostnotify.tex}
@@ -614,7 +770,7 @@ Abstract
         \subsubsection{Notifying Rank Changes} % (fold)
             \label{sec:rebalancing-notifyrank}
 
-            The rank change lists stored in the previous section are now sent. Each process then receives all the changes relevant to its ghosts according to Algorithm \ref{alg:rebalance-notifyranks}.
+            The rank change lists stored in the previous section are now sent. Each process then receives all the changes relevant to its ghosts according to Algorithm~\ref{alg:rebalance-notifyranks}.
 
             This rank change stage needs to occur before the cells are moved to the new process, as the receiving process is not guaranteed to have the relevant border data required.
 
@@ -645,7 +801,7 @@ Abstract
         \subsubsection{Generate Send Sets} % (fold)
             \label{sec:rebalancing-gensendset}
 
-            After notifying the foreign processes of rank changes, each process then generates the set of cell required to be sent. In addition to the cells being moved, cells in their poisson neighbourhoods not on the rank of the receiving process must also be included in the sets as seen in Figure \ref{fig:rebalance-transfer}.
+            After notifying the foreign processes of rank changes, each process then generates the set of cell required to be sent. In addition to the cells being moved, cells in their poisson neighbourhoods not on the rank of the receiving process must also be included in the sets as seen in Figure~\ref{fig:rebalance-transfer}.
 
             \begin{figure}[H]
                 \input{method/gen/Tr.tex}
@@ -726,7 +882,7 @@ Abstract
         \subsubsection{Regenerate Ghosts} % (fold)
             \label{sec:rebalancing-regenghosts}
 
-            The subset of the tree in each process now shows the completed transfer as in Figure \ref{fig:rebalance-final} for the example case. The ghost and border sets are now outdated however, so must be amended.
+            The subset of the tree in each process now shows the completed transfer as in Figure~\ref{fig:rebalance-final} for the example case. The ghost and border sets are now outdated however, so must be amended.
 
             \begin{figure}[H]
                 \input{method/gen/result.tex}
@@ -737,7 +893,7 @@ Abstract
 
             Although enough information exists to work out the changes required to be made to the border and ghost sets, it is much simpler in practice to reconstruct them completely. Since rebalancing is performed irregularly, the performance cost is negligible.
 
-            The method for reconstruction is equivalent to Algorithm \ref{alg:distrib-ghosts}, but since all cells in $\mathbb{L}$ have rank $p$ the result is the ghost set for the current context. Border cells are regenerated exactly as in Algorithm \ref{alg:borders-gen}.
+            The method for reconstruction is equivalent to Algorithm~\ref{alg:distrib-ghosts}, but since all cells in $\mathbb{L}$ have rank $p$ the result is the ghost set for the current context. Border cells are regenerated exactly as in Algorithm~\ref{alg:borders-gen}.
 
         % subsubsection rebalancing-regenghosts (end)
 
@@ -746,13 +902,34 @@ Abstract
 % section method (end)
 
 
+\section{Proposed Methods} % (fold)
+    \label{sec:future-work}
+
+    Routines for the next stage of the project have been considered and are summarised below. 
+
+    \subsection{Refinement Propagation in Parallel} % (fold)
+        \label{sec:parprop}
+
+        When adapting the local mesh on a process, refinement propagation will often reach the boundary to a foreign process. In order to correctly maintain the desired propagation level, interprocess communication is required. 
+
+        The basis for the method is the addition of "propagation vectors" to border cells, encoding the tree depth and remaining propagation length in each of the orthonormal directions. These are then transmitted, taking advantage of ghost-border equivalence to minimise data transfer, using the method already used for ghost synchronisation in Section~\ref{sec:ghostsync}.
+
+
+
+
+
+    % subsection{parprop} (end)
+
+% section future-work (end)
+
+
 \section{Results} % (fold)
     \label{sec:results}
 
     \subsection{Boundary size for Hilbert Curve}
         \label{sec:results-boundarysize}
 
-        It is possible to test the size of the boundary for different practical scenarios when using The Hilbert Curve to distribute. This is done for a complex and finely detailed geometry (the Mandelbrot example) as well as a more simple geometry with smooth edges.
+        It is possible to test the size of the boundary for different practical scenarios when using The Hilbert Curve to distribute. This is done for both the Mandelbrot case of.
 
         Boundary sizes need min/max/mean relative to cell count for many configurations.
 
@@ -828,6 +1005,19 @@ Abstract
         \end{listing}
 
     % subsection appendix-headers (end)
+
+
+    % \subsection{Poisson Neighbour Interpolation Cases}
+    %     \label{sec:appendix-poissoninterp}
+
+    % % subsection appendix-poissoninterp
+
+    \subsection{Risk Assessment Retrospective} % (fold)
+        \label{sec:appendix-ra}
+
+        I got rsi in a wrist, mental health gone out the window. Other than that it's all ok.
+
+    % subsection ra (end)
 
 % section appendix (end)
 
