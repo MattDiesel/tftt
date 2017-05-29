@@ -38,9 +38,13 @@ void meshLayer(std::ostream& ofs, int layer)
     double w = gtree.size[0] / (2 << layer);
     double h = gtree.size[1] / (2 << layer);
 
-    ofs << "\\begin{scope}[minimum width=" << w
-        << "cm-\\the\\pgflinewidth,minimum height=" << h
-        << "cm-\\the\\pgflinewidth,inner sep=0,draw,shape=rectangle,anchor=center]\n";
+    // ofs << "\\begin{scope}[every node/.append style={minimum width=" << w
+    //     << "cm-\\the\\pgflinewidth,minimum height=" << h
+    //     << "cm-\\the\\pgflinewidth,inner sep=0,draw,shape=rectangle,anchor=center}]\n";
+
+    ofs << "\\begin{scope}[every node/.append style={minimum width=" << w
+        << "cm,minimum height=" << h
+        << "cm,inner sep=0,draw,shape=rectangle,anchor=center}]\n";
 
     meshLayer(ofs, root, layer);
 
@@ -79,6 +83,8 @@ void curve(std::string fname, T set)
 
         ofs << "\\draw (" << prev.centre(0) << "," << prev.centre(1)
             << ") -- (" << cl.centre(0) << "," << cl.centre(1) << ");\n";
+
+        prev = cl;
     }
 
     ofs.close();
