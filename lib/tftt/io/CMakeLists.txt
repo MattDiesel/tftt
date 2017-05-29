@@ -2,6 +2,7 @@
 set(tfttio_SRCS
     tfttio.cc
     serialize.cc
+    tikz.cc
 )
 
 add_library(tfttio STATIC
