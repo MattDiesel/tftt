@@ -1,0 +1,90 @@
+
+
+\begin{tikzpicture}
+
+    \begin{scope}[
+        yshift=4.4cm,every node/.append style={
+            yslant=0.5,xslant=-1},yslant=0.5,xslant=-1
+          ]
+        \node[draw=none] (parent) at (2,0) {};
+    \end{scope}
+
+    \begin{scope}[
+        yshift=2.2cm,every node/.append style={
+            yslant=0.5,xslant=-1},yslant=0.5,xslant=-1
+          ]
+        \node[draw=none] (cl) at (2,1) {};
+    \end{scope}
+    \begin{scope}[
+        yshift=0cm,every node/.append style={
+            yslant=0.5,xslant=-1},yslant=0.5,xslant=-1
+          ]
+        \node[draw=none] (ch) at (2,1) {};
+    \end{scope}
+
+    \begin{scope}[
+        yshift=0cm,every node/.append style={
+            yslant=0.5,xslant=-1},yslant=0.5,xslant=-1
+          ]
+        \fill[white,fill opacity=0.7] (0,0) rectangle (4,4);
+        \draw[step=0.5cm,black!50] (0,0) grid(4,4);
+
+        \draw[step=0.5cm,colorD,line width=1pt] (1,1) grid +(1,1);
+        \draw[colorD,line width=1.5pt] (1,2) -- (1,1) -- (2,1);
+
+        \draw[black,line width=1.5pt] (0,4) -- (0,0) -- (4,0);
+        \draw[black,line width=0.75pt] (0,4) -- (4,4) -- (4,0);
+    \end{scope}
+
+
+    \draw[->,line width=2pt,colorD,bend left=50] (cl) to node[
+            fill=white!60,
+            right,anchor=west,
+            xshift=1mm,
+            inner sep=2mm,
+            rounded corners=2mm] {$\mathcal{C}\acc\vect{\mathcal{K}}$} (ch);
+
+    \begin{scope}[
+        yshift=2.2cm,every node/.append style={
+            yslant=0.5,xslant=-1},yslant=0.5,xslant=-1
+          ]
+
+        \fill[white,fill opacity=0.7] (0,0) rectangle (4,4);
+        \draw[step=1cm,black!50] (0,0) grid (4,4);
+
+        \draw[colorA,line width=1.5pt] (1,1) rectangle +(1,1);
+
+        \draw[black,line width=1.5pt] (0,4) -- (0,0) -- (4,0);
+        \draw[black,line width=0.75pt] (0,4) -- (4,4) -- (4,0);
+    \end{scope}
+
+    \draw[->,line width=2pt,colorC,bend right=50] (cl) to node[
+            fill=white!60,
+            right,anchor=west,
+            xshift=1mm,
+            inner sep=2mm,
+            rounded corners=2mm] {$\mathcal{C}\acc\textproc{parent}$} (parent);
+
+    \begin{scope}[
+        yshift=4.4cm,every node/.append style={
+            yslant=0.5,xslant=-1},yslant=0.5,xslant=-1
+          ]
+        \fill[white,fill opacity=0.7] (0,0) rectangle (4,4);
+        \draw[step=2cm,black!50] (0,0) grid(4,4);
+
+        % \draw[colorA,dashed] (1,1) rectangle (2cm-2pt,2cm-2pt);
+
+        \draw[black,line width=1.5pt] (0,4) -- (0,0) -- (4,0);
+        \draw[black,line width=0.75pt] (0,4) -- (4,4) -- (4,0);
+
+        \draw[colorC,line width=2pt] (2pt,2pt) rectangle (2,2);
+    \end{scope}
+
+    \begin{scope}[every node/.append style={
+        anchor=east,text width=2.2cm,align=right
+    }]
+        \node[yshift=2cm] at (-5cm,0) {$\mathcal{C}\acc\textproc{level}+1$};
+        \node[yshift=4.2cm] at (-5cm,0) {$\mathcal{C}\acc\textproc{level}$};
+        \node[yshift=6.4cm] at (-5cm,0) {$\mathcal{C}\acc\textproc{level}-1$};
+    \end{scope}
+\end{tikzpicture}
