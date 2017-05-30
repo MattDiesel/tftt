@@ -83,6 +83,7 @@ typedef CellRef cell_t;
 
 typedef bool (*fnCheckCell)(cell_t& cl);
 typedef double (*fnCell)(cell_t& cl);
+typedef double (*fnConstCell)(cell_t const& cl);
 
 
 } // namespace tftt
