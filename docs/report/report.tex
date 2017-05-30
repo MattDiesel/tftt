@@ -15,17 +15,17 @@
 \usepackage[hidelinks]{hyperref}
 
 \usepackage{graphicx,float,epstopdf,subcaption}
-\graphicspath{{method/}{method/gen}}
+\graphicspath{{method/}{method/gen}{results/}{results/gen}}
 
 \makeatletter
-\def\input@path{{method/}{method/gen}}
+\def\input@path{{method/}{method/gen}{results/}{results/gen}}
 \makeatother
 
 \usepackage{booktabs,tabularx,multirow}
 
 \usepackage{tikz,fp,tikz-qtree}
 \usetikzlibrary{positioning,calc,external}
-% \tikzexternalize
+\tikzexternalize
 
 \definecolor{colorA} {rgb} {0.1686, 0.5137, 0.7294}
 \definecolor{colorB} {rgb} {0.9922, 0.6824, 0.3804}
@@ -912,13 +912,17 @@ Abstract
 
         When adapting the local mesh on a process, refinement propagation will often reach the boundary to a foreign process. In order to correctly maintain the desired propagation level, interprocess communication is required. 
 
-        The basis for the method is the addition of "propagation vectors" to border cells, encoding the tree depth and remaining propagation length in each of the orthonormal directions. These are then transmitted, taking advantage of ghost-border equivalence to minimise data transfer, using the method already used for ghost synchronisation in Section~\ref{sec:ghostsync}.
+        The basis for the method is the addition of "propagation vectors" to border cells, encoding the tree depth and remaining propagation length in each of the orthonormal directions. During refinement propagation, reaching a process boundary will instead
+
+        These are then transmitted, taking advantage of ghost-border equivalence to minimise data transfer, using the method already used for ghost synchronisation in Section~\ref{sec:ghostsync}.
 
 
+        \subsubsection{Process Re-entry} % (fold)
+            \label{sec:parprop-reentry}
 
+        % subsubsection parprop-reentry (end)
 
-
-    % subsection{parprop} (end)
+    % subsection parprop (end)
 
 % section future-work (end)
 
@@ -929,13 +933,36 @@ Abstract
     \subsection{Boundary size for Hilbert Curve}
         \label{sec:results-boundarysize}
 
-        It is possible to test the size of the boundary for different practical scenarios when using The Hilbert Curve to distribute. This is done for both the Mandelbrot case of.
+        The total size of the boundary layers was tested empirically. A more complex test geometry was created, using the Mandelbrot fractal set. For a range of tree configurations, the mesh was constructed and distributed, recording the size of the ghost set. This was repeated for different positions and scales of the set and averages used.
 
-        Boundary sizes need min/max/mean relative to cell count for many configurations.
+        By averaging over many tree configurations, it is assumed a relationship can be found for the ghost cell count $G$ as a function of the total cell count $C$ and the world size $W$.
 
-        Comparison points of other space filling curves.
+        The ghost cell count increases proportionally with the cell count to the power of $0.4562$, as shown in Figure~\ref{fig:anal-scaling}. The upper limit for the exponent would be the relationship for a uniform mesh. In the simplest case to analyse, where $W$ is a power of two, this is $0.5$. 
 
-        Description of optimal method.
+        \tikzset{external/export next=false}
+        \begin{figure}[H]
+            \centering
+            \input{results/gen/mbrot-scale}
+            \caption{Ghost cell count against cell count for a range of world sizes. }
+            \label{fig:anal-scaling}
+        \end{figure}
+
+        Though close, the vertical spacing between lines of world size in Figure~\ref{fig:anal-scaling} are not quite linear in $W$, most visibly the gap from $W=2$ to $W=4$ is noticeably larger. This is explored in more detail in Figure~\ref{fig:anal-borderworldsize}. Significant variations are seen in the test data, in some cases increases the number of processes has the effect of decreasing the total number of ghost cells, though this behaviour is unpredictable and so cannot be taken advantage of. The ghost cell fraction increases in proportion to the world size to the power of $1.0755$, slightly above the linear relationship expected by looking at the simple uniform mesh cases. 
+
+        \tikzset{external/export next=false}
+        \begin{figure}[H]
+            \centering
+            \input{results/gen/borderworldsize}
+            \caption{Ghost cell fraction against world size for the tree configurations refined to a maximum depth 12. The ghost cell fraction is used to normalise the differences in total cell counts between the test cases.}
+            \label{fig:anal-borderworldsize}
+        \end{figure}
+
+        In summary, it was found that the typical ghost cell count was approximately given by Equation~\ref{equ:ghostcount}. Different meshes produced considerable variations, but on average the Hilbert curve produces results close to what would be expected 
+
+        \begin{equation}
+            G \approx C^{0.4562} \times W^{1.0755}
+            \label{equ:ghostcount}
+        \end{equation}
 
     % subsection results-boundarysize (end)
 
