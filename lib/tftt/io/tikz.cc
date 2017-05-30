@@ -97,5 +97,11 @@ void hilbert(std::string fname)
 }
 
 
+void morton(std::string fname)
+{
+    curve(fname, tftt::leaves);
+}
+
+
 } // namespace tikz
 } // namespace tftt

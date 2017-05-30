@@ -22,6 +22,8 @@ void mesh(std::string fname, int maxDepth);
 
 void hilbert(std::string fname);
 
+void morton(std::string fname);
+
 
 } // namespace tikz
 } // namespace tftt
