@@ -32,7 +32,7 @@ double evalLine(double x)
 void drawLayer(std::ostream& os, tftt::cell_t cl, int layer)
 {
     if (cl.level() == layer) {
-        tftt::drawCell(os, cl);
+        tftt::plot::cellRect(os, cl);
     }
     else if (cl.hasChildren()) {
         for (auto ch : *cl.children()) {
@@ -157,8 +157,4 @@ int main(int argc, char* argv[])
         }
 
     }
-
-    tftt::distribute(worldSize);
-
-    tikzCurves(formatString("{0}/hilb-t3-r{1}.tex", outDir, "{0}"));
 }
