@@ -8,12 +8,10 @@
 % \fancyfoot[LE,RO]{\thepage}
 
 \usepackage[bottom]{footmisc}
-\usepackage{setspace}
+\usepackage{setspace,titlesec}
 \onehalfspacing
-\raggedbottom
-
-\usepackage{titlesec}
 \newcommand{\sectionbreak}{\clearpage}
+\raggedbottom
 
 \usepackage[hidelinks]{hyperref}
 \def\CC{{C\nolinebreak[4]\hspace{-.05em}\raisebox{.4ex}{\tiny\bf ++}}}
@@ -84,6 +82,8 @@
 \renewcommand{\abstractname}{Technical Abstract}
 \begin{abstract}
 IMPORT TECHNICAL ABSTRACT
+\newpage
+IMPORT TECHNICAL ABSTRACT
 \end{abstract}
 
 \newpage
@@ -116,6 +116,9 @@ IMPORT TECHNICAL ABSTRACT
         Orthotopes are defined by \cite{coxeter73} as the N-dimensional generalisation of a cube. The term is used here to generalise between squares in the two-dimensional case and cubes in the three-dimensional case.
 
         An orthotree is a tree structure, where each cell is orthotopic and its children are evenly sized similar orthotopes. For this project, the two-dimensional case (known as a quadtree) was implemented and examined in detail. Almost all the methods are kept general however, to allow adaptation to the three-dimensional octree. 
+
+        Cells are referred to in this document using a calligraphic typed letter, such as $\mathcal{C}$. Properties of the cell use dot member access notation, for example $\mathcal{C}\acc\textproc{data}$ is the data associated with the cell. This is implemented using an abstraction class \texttt{CellRef}, with the corresponding method names given in Appendix~\ref{sec:appendix-headers} Listing~\ref{src:cellref}.
+
 
         \subsubsection{Layer Links} % (fold)
             \label{sec:orthotree-layers}
@@ -205,13 +208,11 @@ IMPORT TECHNICAL ABSTRACT
 
             The cells without children form the finest level of the mesh. These are known as the leaves of the tree $\mathbb{L}$, and size of the tree is taken to be the number of leaves $\abs{\mathbb{L}}$. Parent cells aren't used in the numeric methods applied to the mesh, and since they do not impact the computational time of numeric operations are not included in the tree size. 
 
-            \begin{figure} [H]
+            \begin{figure} [htb]
                 \input{method/layeredtree}
                 \caption{4 levels of a quadtree refined to a line shown in blue. If a cell is not a leaf, its children are shown in orange.}
                 \label{fig:layeredtree}
             \end{figure}
-
-            Cells are referred to in this document using a calligraphic typed letter, such as $\mathcal{C}$. Properties of the cell use dot member access notation, for example $\mathcal{C}\acc\textproc{data}$ is the data associated with the cell. 
 
         % subsubsection orthotree-refine (end)
 
@@ -263,9 +264,9 @@ IMPORT TECHNICAL ABSTRACT
             \label{fig:ftt-neighbours}
         \end{figure}
 
-        In \cite{Khokhlov98}, an optimisation is presented to reduce the memory overhead introduced storing neighbour pointers by noting that for (in the quadtree case) the children of a cell, half the neighbours are also children of that cell. By storing groups of children together in an ortho (referred to as a quad in two-dimensional and octo in three-dimensional) the memory requirement for storing neighbour links is almost halved.
+        In \cite{Khokhlov98}, an optimisation is presented to reduce the memory overhead introduced storing neighbour pointers by noting that for (in the quadtree case) the children of a cell, half the neighbours are also children of that cell. By storing groups of children together in an ortho (referred to as a quad in two-dimensional and octo in three-dimensional) the memory requirement for storing neighbour links is almost halved. This is implemented with the addition of the \texttt{TreeGroup} structure outline in Appendix~\ref{sec:appendix-headers} Listing~\ref{src:treegroup}. 
 
-        Optimisation details, such as storing cells in their groups, is abstracted over by performing most operations through a cell reference class. This provides a thin layer that for each property retrieves from either the group or cell raw structure. 
+        Optimisation details, such as storing cells in their groups, is abstracted over by performing most operations through the cell reference class. 
 
         For this implementation, the cell structures store their own index. Since the layout of the group structure is known, this is sufficient to calculate the offset to the start of the group. Other implementations, such as that used by \cite{Yung2010} rely on alignment of the groups in order to perform the same calculation. That approach has some merit, but forces the memory manager to align the groups to large intervals for negligible saving\footnote{The memory saving for this implementation happens to be zero. The structure was already being padded to an 8 byte boundary, and the index added nothing to the allocated size. }.
 
@@ -281,9 +282,9 @@ IMPORT TECHNICAL ABSTRACT
     \subsection{Poisson Neighbourhoods} % (fold)
         \label{sec:poissonneighbours}
 
-        To solve on the adaptive mesh, interpolation is required in cases where the level of adjacent cells do not match. It is possible to move the expensive interpolation operation outside of the tight solver loop by instead storing a list of cells required along with the coefficient they would have been scaled by using direct interpolation. This list of cells is known as the poisson neighbourhood for a cell $\mathcal{C}$ and is represented by the vector $\mathcal{C}\acc\vect{\mathcal{P}}$. The respective neighbour coefficients are stored in the vector $\mathcal{C}\acc\vect{\beta}$. Each cell also requires a central coefficient $\mathcal{C}\acc\alpha$.
+        To solve a finite difference equation on the adaptive mesh, interpolation is required in cases where the level of adjacent cells do not match. It is possible to move the expensive interpolation operation outside of the tight solver loop by instead storing a list of cells required along with the coefficient they would have been scaled by using direct interpolation. This list of cells is known as the poisson neighbourhood for a cell $\mathcal{C}$ and is represented by the vector $\mathcal{C}\acc\vect{\mathcal{P}}$. The respective neighbour coefficients are stored in the vector $\mathcal{C}\acc\vect{\beta}$. Each cell also requires a central coefficient $\mathcal{C}\acc\alpha$.
 
-        The methods used later do not rely on the specific details of the poisson neighbourhood, only the cells in $\mathcal{C}\acc\vect{\mathcal{P}}$. The determining the neighbourhood is abstracted to Function~\ref{fun:CalcPoisCoefs}. 
+        The methods used later do not rely on the specific details of the poisson neighbourhood, only the cells in $\mathcal{C}\acc\vect{\mathcal{P}}$. The determining the neighbourhood is abstracted to Function~\ref{fun:CalcPoisCoefs}. In this way, the implementation remains independent of the order of the finite difference solver. The use of forward or backward differences is also supported.
 
         \begin{equation}
             \label{fun:CalcPoisCoefs}
@@ -344,7 +345,7 @@ IMPORT TECHNICAL ABSTRACT
         \subsubsection{Load Balancing} % (fold)
             \label{sec:loadbalancing}
 
-            For many distributed algorithms, all processes must be limited to run at the same speed as the slowest process. For the numeric methods used in this project, every process has to finish an iteration before the whole world can progress onto the next. Therefore, the maximum speed of the system as a whole would be gained by a uniform distribution of iteration times. In computing terms, this result is "load balancing", with a uniform distribution of iteration runtimes being the optimal perfectly balanced load. 
+            For many distributed algorithms, all processes must be limited to run at the same speed as the slowest process. For the numeric methods used in this project, every process has to finish an iteration before the whole world can progress onto the next. Therefore, the maximum speed of the system as a whole would be gained by a uniform distribution of iteration times. In computing terms, this result is "load balancing", with a uniform distribution of iteration run-times being the optimal perfectly balanced load. 
 
         % subsubsection loadbalancing (end)
 
@@ -528,9 +529,9 @@ IMPORT TECHNICAL ABSTRACT
 
         The constraint is imposed that the subset of the tree present on a process must for a contiguous section of the space filling curve. Rank zero's first cell is the first cell of the global tree, and the last cell of  rank $W-1$ is the last cell of the global tree. 
 
-        Compututational load on each process $p$ taken to be equivalent to the number of leaves it computes over $\eval{\abs{\mathbb{L}}}_p$. Hence the condition for a perfectly balanced load is for each process' cell count to equal the mean.
+        Computational load on each process $p$ taken to be equivalent to the number of leaves it computes over $\eval{\abs{\mathbb{L}}}_p$. Hence the condition for a perfectly balanced load is for each process' cell count to equal the mean.
 
-        Refinement propagation as described in Section~\ref{sec:orthotree-refprop} is relaxed outside of the active area to a propagation length $P=1$. Using $P=0$, whilst possible in theory, leads to more complex maintainance of the SFC outside the active region, which itself makes the later moving of cells along the curve between processes hard. 
+        Refinement propagation as described in Section~\ref{sec:orthotree-refprop} is relaxed outside of the active area to a propagation length $P=1$. Using $P=0$, whilst possible in theory, leads to more complex maintenance of the SFC outside the active region, which itself makes the later moving of cells along the curve between processes hard. 
 
         Pointers are stored with the tree root to the first and last cells in the active range. This allows simple iteration over the sub-domain. In the context of a process, the leaves set $\mathbb{L}$ refers only to leaves currently active on that rank.
 
@@ -1023,6 +1024,41 @@ IMPORT TECHNICAL ABSTRACT
 
 \section{Results} % (fold)
     \label{sec:results}
+
+    \subsection{Solving Poisson's Equation in Parallel} % (fold)
+        \label{sec:results-poissons}
+
+        As a test case, Equation~\ref{equ:poisson} was solved with circle being the geometry shown in Figure~\ref{fig:pois-geometry}. 
+
+        \begin{equation}
+            \laplacian{\Phi}=\begin{cases}
+                -1 & \qq{if} \mathcal{C}\acc\textproc{center} \in \text{circle} \\
+                0 & \qq{otherwise}
+            \end{cases}
+            \label{equ:poisson}
+        \end{equation}
+
+        \begin{figure}[H]
+            \centering
+            \begin{tikzpicture}
+                \draw[thick,black] (0,0) rectangle (4,4);
+                \node[thick,fill=colorA,inner sep=0, minimum size=0.8cm,circle] at (1.2,1.2) {};
+            \end{tikzpicture}
+            \caption{Hello}
+            \label{fig:pois-geometry}
+        \end{figure}
+
+        The result with a dirichlet condition at the boundaries is shown in Figure~\ref{fig:pois-result}
+
+        \begin{figure}[H]
+            \centering
+            \input{gen/pois-splot}
+            \caption{Surface plot of the final value of $\Phi$ across the domain.}
+            \label{fig:pois-result}
+        \end{figure}
+
+    % subsection results-poissons (end)
+
 
     \subsection{Boundary size for Hilbert Curve}
         \label{sec:results-boundarysize}
