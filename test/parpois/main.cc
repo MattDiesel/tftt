@@ -123,6 +123,8 @@ int main(int argc, char* argv[])
     int syncEvery = 1;
     double stopAt = 0.0000001;
 
+    std::string treeDir = "/mnt/ramd";
+
     double initialValue = 0.0;
 
     double omega = 1.3;
@@ -149,6 +151,7 @@ int main(int argc, char* argv[])
         try {
             getpars(argc, argv);
 
+            sfetch("treeDir", treeDir);
             tfetch("plotEvery", plotEvery);
             tfetch("printEvery", printEvery);
             tfetch("residEvery", residEvery);
@@ -187,6 +190,7 @@ int main(int argc, char* argv[])
     if (world.rank() == 0) {
 
         std::cout << "Using Parameters: \n"
+                  << "\ttreeDir = " << treeDir << "\n"
                   << "\tcontin = " << contin << "\n"
                   << "\twrite = " << writeFiles << "\n"
                   << "\tminDepth = " << minDepth << "\n"
@@ -223,7 +227,10 @@ int main(int argc, char* argv[])
             }
 
             // Refine to circle.
+            std::cout << "Refine to geometry maxDepth=" << maxDepth << std::endl;
             for (int d = minDepth; d < maxDepth; d++) {
+                std::cout << d; std::cout.flush();
+
                 tftt::adaptBegin();
 
                 for (auto& cl : tftt::leaves) {
@@ -231,22 +238,28 @@ int main(int argc, char* argv[])
                         tftt::adaptAdd(cl);
                 }
 
+                std::cout << "."; std::cout.flush();
+
                 tftt::adaptCommit();
             }
+            std::cout << std::endl;
 
-            std::cout << "Refined to geometry." << std::endl;
 
             if (writeFiles) {
                 tftt::plot::mesh("parp/cmesh.init.dat");
                 tftt::plot::hilbert("parp/chilb.init.dat");
             }
 
+            std::cout << "Calculate Face Coefs." << std::endl;
             for (auto& cl : tftt::leaves) {
                 tftt::calcFaceCoefs(cl);
             }
 
+            std::cout << "Distribute." << std::endl;
             tftt::distribute(world.size());
-            tftt::saveParTree("/mnt/ramd/r{0}.ltr", world.size());
+
+            std::cout << "Save." << std::endl;
+            tftt::saveParTree(formatString("{0}/r{1}.ltr", treeDir, "{0}"), world.size());
 
             tftt::reset();
         }
@@ -254,8 +267,11 @@ int main(int argc, char* argv[])
 
     world.barrier();
 
-    tftt::loadParTree(formatString("/mnt/ramd/r{0}.ltr", world.rank()));
+    tftt::loadParTree(formatString("{0}/r{1}.ltr", treeDir, world.rank()));
     // tftt::loadParTree(formatString("parp/r{0}.ltr", 0));
+
+    std::cout << "[" << world.rank() << "] Loaded tree of "
+              << tftt::gtree.cactive << " cells (" << tftt::gtree.ccells << " total)." << std::endl;
 
     // Initial Conditions for cells
     for (auto& cl : tftt::activecurve) {
@@ -297,8 +313,7 @@ int main(int argc, char* argv[])
         }
     }
 
-    std::cout << "[" << world.rank() << "] Loaded tree of "
-              << tftt::gtree.cactive << " cells (" << tftt::gtree.ccells << " total).\n";
+    std::cout << "[" << world.rank() << "] Ready." << std::endl;
 
     // world.barrier();
     tftt::syncGhosts(world);

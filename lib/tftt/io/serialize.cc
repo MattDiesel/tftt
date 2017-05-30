@@ -4,6 +4,8 @@
 #include <vector>
 #include <set>
 
+#include <iostream>
+
 #include "util/formatstring.h"
 
 #include "../config.h"
@@ -136,6 +138,8 @@ void saveParTree(std::string fnameFmt, int world)
 
             // Step onto next file
             ofs.close();
+
+            std::cout << "Written for rank " << node << std::endl; 
 
             node++;
             trh.worldRank++;
