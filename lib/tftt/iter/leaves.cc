@@ -21,7 +21,7 @@ void tagLeaves::leaf_iterator::next()
 
     if (cr.index()+1 >= 2*DIM) {
         if (cr.group() == gtree.root) {
-            cr = CellRef();
+            cr = cell_t();
             return;
         }
         cr = cr.parent();
@@ -38,7 +38,7 @@ void tagLeaves::leaf_iterator::next()
 }
 
 
-tagLeaves::leaf_iterator::leaf_iterator(CellRef c) : cellref_iterator(c)
+tagLeaves::leaf_iterator::leaf_iterator(cell_t c) : cellref_iterator(c)
 {
     if (!cr.isValid()) {
         return;
@@ -67,13 +67,13 @@ tagLeaves::leaf_iterator tagLeaves::leaf_iterator::operator++(int junk)
 
 tagLeaves::leaf_iterator tagLeaves::begin()
 {
-    return tagLeaves::leaf_iterator(CellRef(gtree.root, 0));
+    return tagLeaves::leaf_iterator(cell_t(gtree.root, 0));
 }
 
 
 tagLeaves::leaf_iterator tagLeaves::end()
 {
-    return tagLeaves::leaf_iterator(CellRef());
+    return tagLeaves::leaf_iterator(cell_t());
 }
 
 

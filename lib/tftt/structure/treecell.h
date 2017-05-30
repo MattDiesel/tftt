@@ -6,7 +6,6 @@
 #include <array>
 
 #include "../config.h"
-#include "../cellref.h"
 
 
 namespace tftt {
@@ -37,9 +36,12 @@ struct TreeCell {
     int8_t poisNgbC;
 
     ADAPTFLAGS adaptFlags;
+
+    #ifdef TFTT_PARALLEL_REFPROP
     uint8_t adaptVector[2*DIM];
     uint8_t adaptHoldVector[2*DIM];
-
+    #endif
+    
     data_t data;
     TreeGroup* children;
 
@@ -51,7 +53,7 @@ struct TreeCell {
     std::array<TreeVertex*, 1<<DIM> vertices;
     #endif
 
-    CellRef poisNgb[8];
+    cell_t poisNgb[8];
     double poisCoef[8];
     double cenCoef;
 

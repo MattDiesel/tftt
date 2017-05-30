@@ -7,7 +7,6 @@
 
 #include "../config.h"
 #include "../treeid.h"
-#include "../cellref.h"
 #include "treecell.h"
 
 
@@ -19,6 +18,7 @@ namespace tftt {
 //!
 //! TreeGroups should never be directly edited by the user.
 struct TreeGroup {
+    class cell_iterator;
 
     bool isBoundary() const {
         return id.isBoundary();
@@ -33,7 +33,7 @@ struct TreeGroup {
     // Base Tree
     TreeGroup();
     TreeGroup(int b);
-    TreeGroup(CellRef parent);
+    TreeGroup(cell_t parent);
     ~TreeGroup();
 
     //! The identifier of the group, equal to the identifier of the first cell.
@@ -49,10 +49,10 @@ struct TreeGroup {
     // FTT
 
     //! Pointers to the neighbouring groups
-    std::array<CellRef,DIM*2> neighbours;
+    std::array<cell_t,DIM*2> neighbours;
 
     //! Pointer to the parent group.
-    CellRef parent;
+    cell_t parent;
 
     // For Thread
 
@@ -60,49 +60,27 @@ struct TreeGroup {
     int orientation;
 
     //! The next group in the space filling curve.
-    CellRef next;
+    cell_t next;
 
     //! The previous group in the space filling curve
-    CellRef prev;
+    cell_t prev;
+
+    cell_iterator begin();
+    cell_iterator end();
 
 
     class cell_iterator {
     public:
-        CellRef cr;
+        cell_t cr;
 
-        cell_iterator(TreeGroup* gr, int ind)
-            : cr(gr, ind) {
-        }
-
-        cell_iterator operator++() {
-            cell_iterator i = *this;
-            cr.stepChild();
-            return i;
-        }
-        cell_iterator operator++(int junk) {
-            cr.stepChild();
-            return *this;
-        }
-        CellRef& operator*() {
-            return cr;
-        }
-        CellRef* operator->() {
-            return &cr;
-        }
-        bool operator==(const cell_iterator& rhs) {
-            return cr == rhs.cr;
-        }
-        bool operator!=(const cell_iterator& rhs) {
-            return !(cr == rhs.cr);
-        }
+        cell_iterator(TreeGroup* gr, int ind);
+        cell_iterator operator++();
+        cell_iterator operator++(int junk);
+        cell_t& operator*();
+        cell_t* operator->();
+        bool operator==(const cell_iterator& rhs);
+        bool operator!=(const cell_iterator& rhs);
     };
-
-    cell_iterator begin() {
-        return cell_iterator(this, 0);
-    }
-    cell_iterator end() {
-        return cell_iterator(this, 1<<DIM);
-    }
 };
 
 

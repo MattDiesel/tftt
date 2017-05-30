@@ -14,11 +14,11 @@ namespace tftt {
 struct TreeFace {
     facedata_t data;
 
-    CellRef c1;
-    CellRef c2;
+    cell_t c1;
+    cell_t c2;
     int dimension;
 
-    TreeFace(CellRef ca, CellRef cb, int dim);
+    TreeFace(cell_t ca, cell_t cb, int dim);
 };
 
 

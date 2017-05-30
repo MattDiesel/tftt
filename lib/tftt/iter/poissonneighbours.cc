@@ -9,7 +9,7 @@
 namespace tftt {
 
 
-tagPoissonNeighbours::tagPoissonNeighbours(CellRef c)
+tagPoissonNeighbours::tagPoissonNeighbours(cell_t c)
 {
     cr = c;
 }
@@ -24,7 +24,7 @@ void tagPoissonNeighbours::poisneighb_iterator::next()
 }
 
 
-tagPoissonNeighbours::poisneighb_iterator::poisneighb_iterator(CellRef c, int n)
+tagPoissonNeighbours::poisneighb_iterator::poisneighb_iterator(cell_t c, int n)
 {
     cl = c;
     nb = n;
@@ -49,13 +49,13 @@ tagPoissonNeighbours::poisneighb_iterator tagPoissonNeighbours::poisneighb_itera
 }
 
 
-CellRef& tagPoissonNeighbours::poisneighb_iterator::operator*()
+cell_t& tagPoissonNeighbours::poisneighb_iterator::operator*()
 {
     return cr;
 }
 
 
-CellRef* tagPoissonNeighbours::poisneighb_iterator::operator->()
+cell_t* tagPoissonNeighbours::poisneighb_iterator::operator->()
 {
     return &cr;
 }

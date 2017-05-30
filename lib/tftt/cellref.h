@@ -30,10 +30,13 @@ enum CellRefFlags {
 //! A reference to a cell in the tree.
 //! \details This is the public interface to most of the methods in the tree to
 //! be used by the program.
-struct CellRef {
+template<>
+struct CellRef<TreeCell> {
 private:
     //! The raw pointer to the treecell.
     TreeCell* _cell;
+
+    static TreeCell rootCell;
 
 public:
     //! the group of siblings this cell belongs to
@@ -259,8 +262,7 @@ public:
 } // namespace tftt
 
 
-//! Prints a convenient human readable description of the cell.
-std::ostream& operator<<(std::ostream& os, const tftt::CellRef& cr);
+#include "cellref.cc"
 
 
 #endif

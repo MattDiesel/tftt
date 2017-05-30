@@ -16,7 +16,7 @@ void nextLeaf(cell_t& cr)
 {
     if (cr.index()+1 >= 2*DIM) {
         if (cr.group() == gtree.root) {
-            cr = CellRef();
+            cr = cell_t();
             return;
         }
         cr = cr.parent();
@@ -44,11 +44,11 @@ void tagLeafOrthos::ortho_iterator::next()
     if (cr.isValid())
         ortho = cr.parent();
     else
-        ortho = CellRef();
+        ortho = cell_t();
 }
 
 
-tagLeafOrthos::ortho_iterator::ortho_iterator(CellRef c) : cr(c)
+tagLeafOrthos::ortho_iterator::ortho_iterator(cell_t c) : cr(c)
 {
     if (!cr.isValid()) {
         return;
@@ -75,13 +75,13 @@ tagLeafOrthos::ortho_iterator tagLeafOrthos::ortho_iterator::operator++(int junk
 }
 
 
-CellRef& tagLeafOrthos::ortho_iterator::operator*()
+cell_t& tagLeafOrthos::ortho_iterator::operator*()
 {
     return ortho;
 }
 
 
-CellRef* tagLeafOrthos::ortho_iterator::operator->()
+cell_t* tagLeafOrthos::ortho_iterator::operator->()
 {
     return &ortho;
 }
@@ -101,13 +101,13 @@ bool tagLeafOrthos::ortho_iterator::operator!=(const tagLeafOrthos::ortho_iterat
 
 tagLeafOrthos::ortho_iterator tagLeafOrthos::begin()
 {
-    return tagLeafOrthos::ortho_iterator(CellRef(gtree.root, 0));
+    return tagLeafOrthos::ortho_iterator(cell_t(gtree.root, 0));
 }
 
 
 tagLeafOrthos::ortho_iterator tagLeafOrthos::end()
 {
-    return tagLeafOrthos::ortho_iterator(CellRef());
+    return tagLeafOrthos::ortho_iterator(cell_t());
 }
 
 

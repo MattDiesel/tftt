@@ -12,12 +12,12 @@ namespace tftt {
 
 class cellref_iterator {
 protected:
-    CellRef cr;
+    cell_t cr;
 public:
-    cellref_iterator(CellRef c);
+    cellref_iterator(cell_t c);
 
-    CellRef& operator*();
-    CellRef* operator->();
+    cell_t& operator*();
+    cell_t* operator->();
     bool operator==(const cellref_iterator& rhs);
     bool operator!=(const cellref_iterator& rhs);
 };

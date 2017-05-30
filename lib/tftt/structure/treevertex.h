@@ -16,7 +16,7 @@ namespace tftt {
 
 struct TreeVertex {
     vertexdata_t data;
-    std::array<CellRef,1<<DIM> cells;
+    std::array<cell_t,1<<DIM> cells;
 };
 
 

@@ -8,19 +8,19 @@
 namespace tftt {
 
 
-cellref_iterator::cellref_iterator(CellRef c)
+cellref_iterator::cellref_iterator(cell_t c)
     : cr(c)
 {
 }
 
 
-CellRef& cellref_iterator::operator*()
+cell_t& cellref_iterator::operator*()
 {
     return cr;
 }
 
 
-CellRef* cellref_iterator::operator->()
+cell_t* cellref_iterator::operator->()
 {
     return &cr;
 }

@@ -1,6 +1,7 @@
 
 #include "../config.h"
 #include "tree.h"
+#include "treegroup.h"
 
 
 namespace tftt {

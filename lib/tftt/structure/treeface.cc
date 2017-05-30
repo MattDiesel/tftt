@@ -9,7 +9,7 @@
 namespace tftt {
 
 
-TreeFace::TreeFace(CellRef ca, CellRef cb, int dim)
+TreeFace::TreeFace(cell_t ca, cell_t cb, int dim)
     : c1(ca), c2(cb), dimension(dim)
 {
 }

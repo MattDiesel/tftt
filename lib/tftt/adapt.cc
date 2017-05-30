@@ -2,10 +2,10 @@
 #include <set>
 
 #include "config.h"
+#include "cellref.h"
 #include "structure/treegroup.h"
 #include "structure/treecell.h"
 #include "structure/tree.h"
-#include "cellref.h"
 #include "iter/all.h"
 #include "fttcore.h"
 
@@ -15,12 +15,12 @@
 namespace tftt {
 
 
-void twoToOne_Add(std::set<CellRef, CellRef::less>& ls, CellRef cl, CellRef from)
+void twoToOne_Add(std::set<cell_t, cell_t::less>& ls, cell_t cl, cell_t from)
 {
     if (!options.two2oneFlag) return; // No 2-2-1
 
     int lvl = cl.level();
-    CellRef nb;
+    cell_t nb;
 
     if (lvl == 0) return;
 
@@ -100,12 +100,12 @@ void twoToOne_Add(std::set<CellRef, CellRef::less>& ls, CellRef cl, CellRef from
     }
 }
 
-void twoToOne(CellRef cl)
+void twoToOne(cell_t cl)
 {
     if (!options.two2oneFlag) return; // No 2-2-1
 
-    std::set<CellRef, CellRef::less> refList;
-    twoToOne_Add(refList, cl, CellRef());
+    std::set<cell_t, cell_t::less> refList;
+    twoToOne_Add(refList, cl, cell_t());
 
     for (auto& cr : refList) {
         if (!cr.hasChildren())
@@ -114,16 +114,16 @@ void twoToOne(CellRef cl)
 }
 
 
-std::set<CellRef, CellRef::less> adaptList;
+std::set<cell_t, cell_t::less> adaptList;
 
 void adaptBegin()
 {
     adaptList.clear();
 }
-void adaptAdd(CellRef cr)
+void adaptAdd(cell_t cr)
 {
     adaptList.insert(cr);
-    twoToOne_Add(adaptList, cr, CellRef());
+    twoToOne_Add(adaptList, cr, cell_t());
 }
 bool adaptCommit()
 {
@@ -134,7 +134,7 @@ bool adaptCommit()
     return adaptList.empty();
 }
 
-void adaptAddCoarsen(CellRef cr)
+void adaptAddCoarsen(cell_t cr)
 {
     adaptList.insert(cr);
 }
@@ -171,7 +171,7 @@ void adaptSwBegin()
 }
 
 
-void adaptSwSetFlags(CellRef cl, ADAPTFLAGS af)
+void adaptSwSetFlags(cell_t cl, ADAPTFLAGS af)
 {
     TreeCell* tc = cl.treecell();;
 
@@ -210,7 +210,7 @@ void adaptSwSetFlags(CellRef cl, ADAPTFLAGS af)
     tc->adaptFlags = af;
 }
 
-ADAPTFLAGS adaptSwGetFlags(CellRef cl)
+ADAPTFLAGS adaptSwGetFlags(cell_t cl)
 {
     TreeCell* tc = cl.treecell();;
     return tc->adaptFlags;
@@ -230,7 +230,7 @@ void adaptSwCommit()
         }
         else if (tc->adaptFlags == AF_Coarsen) {
             // Coarsen the parent
-            CellRef pr = cl->parent();
+            cell_t pr = cl->parent();
             coarsen(pr);
             cl = tagLeaves::leaf_iterator(pr);
         }
@@ -242,7 +242,7 @@ void adaptSwCommit()
 }
 
 
-void adaptSwSetCoarsen(CellRef cl)
+void adaptSwSetCoarsen(cell_t cl)
 {
     if (cl.hasChildren()) {
         for (int ch = 0; ch < 1<<DIM; ch++) {
@@ -262,7 +262,7 @@ void adaptSwSetCoarsen(CellRef cl)
 }
 
 
-void adaptSwPropogateLevel(CellRef cl, int dir, int lvl)
+void adaptSwPropogateLevel(cell_t cl, int dir, int lvl)
 {
     for (int d = lvl; d > 1; d--) {
         for (int p = 0; p < options.two2oneFlag; p++) {
@@ -289,7 +289,7 @@ void adaptSwPropogateLevel(CellRef cl, int dir, int lvl)
 }
 
 
-void adaptSwSetRefine(CellRef cl)
+void adaptSwSetRefine(cell_t cl)
 {
     if (cl.hasChildren()) {
         throw std::logic_error("Cell already refined.");
@@ -302,7 +302,7 @@ void adaptSwSetRefine(CellRef cl)
 }
 
 
-void adaptSwSetHoldRefined(CellRef cl)
+void adaptSwSetHoldRefined(cell_t cl)
 {
     adaptSwSetFlags(cl.parent(), AF_HoldRefined);
     for (int d = 0; d < 4; d++) {

@@ -24,7 +24,7 @@ void tagCurve::curve_iterator::prev()
 }
 
 
-tagCurve::curve_iterator::curve_iterator(CellRef c) : cellref_iterator(c)
+tagCurve::curve_iterator::curve_iterator(cell_t c) : cellref_iterator(c)
 {
 }
 
@@ -67,7 +67,7 @@ tagCurve::curve_iterator tagCurve::begin()
 
 tagCurve::curve_iterator tagCurve::end()
 {
-    return tagCurve::curve_iterator(CellRef());
+    return tagCurve::curve_iterator(cell_t());
 }
 
 
@@ -79,7 +79,7 @@ tagCurve::curve_iterator tagCurve::rbegin()
 
 tagCurve::curve_iterator tagCurve::rend()
 {
-    return tagCurve::curve_iterator(CellRef());
+    return tagCurve::curve_iterator(cell_t());
 }
 
 

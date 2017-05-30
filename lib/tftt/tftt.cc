@@ -7,15 +7,32 @@
 
 #include "util/formatstring.h"
 
+#include "config.h"
+#include "cellref.h"
 #include "tftt.h"
 #include "structure/tree.h"
 #include "structure/treegroup.h"
-#include "cellref.h"
 #include "gray.h"
 #include "hilbert.h"
+#include "treeid.h"
 
 
 namespace tftt {
+
+
+std::ostream& operator<<(std::ostream& os, const tftt::cell_t& cr)
+{
+    if (!cr.isValid())
+        os << "{null}";
+    else if (cr.isBoundary())
+        os << "{boundary(" << cr.boundary() << ") " << cr.id().boundary() << "}";
+    else {
+        // os << "{" << cr.id() << "}";
+        os << "{" << cr.centre(0) << "," << cr.centre(1) << "}";
+    }
+
+    return os;
+}
 
 
 bool checkAround(cell_t cl, int dist, fnCheckCell check)

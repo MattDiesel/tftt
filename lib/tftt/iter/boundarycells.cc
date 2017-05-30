@@ -29,7 +29,7 @@ void tagBoundaryLeaves::bleaf_iterator::next()
 
     if (cr.index()+_inc[b] > _end[b]) {
         if (cr.parent().group() == gtree.boundGroups) {
-            cr = CellRef();
+            cr = cell_t();
             return;
         }
         cr = cr.parent();
@@ -37,7 +37,7 @@ void tagBoundaryLeaves::bleaf_iterator::next()
         return;
     }
     else {
-        cr = CellRef(cr.group(), cr.index()+_inc[b]);
+        cr = cell_t(cr.group(), cr.index()+_inc[b]);
     }
 
     while (this->cr.hasChildren()) {
@@ -46,7 +46,7 @@ void tagBoundaryLeaves::bleaf_iterator::next()
 }
 
 
-tagBoundaryLeaves::bleaf_iterator::bleaf_iterator(CellRef c, int bnd)
+tagBoundaryLeaves::bleaf_iterator::bleaf_iterator(cell_t c, int bnd)
     : cellref_iterator(c), b(bnd)
 {
     if (!cr.isValid()) {
@@ -75,13 +75,13 @@ tagBoundaryLeaves::bleaf_iterator tagBoundaryLeaves::bleaf_iterator::operator++(
 
 tagBoundaryLeaves::bleaf_iterator tagBoundaryLeaves::begin()
 {
-    return tagBoundaryLeaves::bleaf_iterator(CellRef(gtree.boundGroups, b), b);
+    return tagBoundaryLeaves::bleaf_iterator(cell_t(gtree.boundGroups, b), b);
 }
 
 
 tagBoundaryLeaves::bleaf_iterator tagBoundaryLeaves::end()
 {
-    return tagBoundaryLeaves::bleaf_iterator(CellRef(), b);
+    return tagBoundaryLeaves::bleaf_iterator(cell_t(), b);
 }
 
 

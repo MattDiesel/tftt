@@ -5,9 +5,9 @@
 
 #include <set>
 #include <vector>
+#include <cstddef>
 
 #include "../config.h"
-#include "../cellref.h"
 #include "treegroup.h"
 
 

@@ -41,22 +41,22 @@ void init(double w, double h)
 
 
     for (int b = 0; b < 2*DIM; b++) {
-        cl = CellRef(gtree.boundGroups, b);
+        cl = cell_t(gtree.boundGroups, b);
         cl.treecell()->children = group::create(cl);
         cl.treecell()->children->setBoundary(b);
     }
 
     for (int b = 0; b < 2*DIM; b++) {
-        cl = CellRef(gtree.boundGroups, b);
+        cl = cell_t(gtree.boundGroups, b);
         newGrp = cl.treecell()->children;
 
         for (int b2 = 0; b2 < 2*DIM; b2++) {
             if (b2 == (b ^ 1))
-                newGrp->neighbours[b2] = CellRef(-1);
+                newGrp->neighbours[b2] = cell_t(-1);
             else
-                newGrp->neighbours[b2] = CellRef();
+                newGrp->neighbours[b2] = cell_t();
         }
-        gtree.root->neighbours[b] = CellRef(gtree.boundGroups, b);
+        gtree.root->neighbours[b] = cell_t(gtree.boundGroups, b);
 
         for (int d = 0; d < DIM; d++) {
             newGrp->origin[d] = 0.0;
@@ -70,8 +70,8 @@ void init(double w, double h)
         }
     }
 
-    gtree.first = gtree.firstActive = CellRef(gtree.root, hilbChild(0, 0));
-    gtree.last = gtree.lastActive = CellRef(gtree.root, hilbChild(0, (1<<DIM)-1));
+    gtree.first = gtree.firstActive = cell_t(gtree.root, hilbChild(0, 0));
+    gtree.last = gtree.lastActive = cell_t(gtree.root, hilbChild(0, (1<<DIM)-1));
 
 
     gtree.destroying = false;
@@ -88,7 +88,7 @@ void reset()
 }
 
 
-void refine(CellRef cl)
+void refine(cell_t cl)
 {
     #ifdef TFTT_DEBUG
     if (cl.isBoundary())
@@ -109,7 +109,7 @@ void refine(CellRef cl)
 }
 
 
-void coarsen(CellRef cl)
+void coarsen(cell_t cl)
 {
     #ifdef TFTT_DEBUG
     for (int ch = 0; ch < (1<<DIM); ch++) {
@@ -160,20 +160,20 @@ cell_t atPos(double pos[DIM])
                     loop = true;
                     break;
                 }
-                return CellRef(gr, n);
+                return cell_t(gr, n);
             }
             n++;
         }
     }
     while (loop);
 
-    return CellRef();
+    return cell_t();
 }
 
 
 cell_t atVertex(int v)
 {
-    CellRef c(gtree.root, v);
+    cell_t c(gtree.root, v);
 
     while (c.hasChildren()) {
         c = c.child(v);
@@ -190,19 +190,19 @@ cell_t find(ident_t idt)
     int n = 0;
     while (gr) {
         if (gr->id == idt.group()) {
-            return CellRef(gr, (int)idt.orthant());
+            return cell_t(gr, (int)idt.orthant());
         }
 
         gr = gr->cells[idt.orthant(n++)].children;
     }
 
-    return CellRef();
+    return cell_t();
 }
 
 
 cell_t insert(ident_t idt)
 {
-    cell_t ret = CellRef(-1);
+    cell_t ret = cell_t(-1);
 
     while (ret.id().id != idt.id) {
         if (idt.level() <= ret.level())

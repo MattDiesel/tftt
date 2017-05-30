@@ -222,7 +222,7 @@ void prettyMesh(std::ostream& os, cell_t cl)
 
 void prettyMesh(std::ostream& os)
 {
-    prettyMesh(os, CellRef(-1));
+    prettyMesh(os, cell_t(-1));
 }
 
 #endif

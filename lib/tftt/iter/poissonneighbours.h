@@ -11,24 +11,24 @@ namespace tftt {
 
 
 struct tagPoissonNeighbours {
-    CellRef cr;
+    cell_t cr;
 
-    tagPoissonNeighbours(CellRef c);
+    tagPoissonNeighbours(cell_t c);
 
     class poisneighb_iterator {
-        CellRef cl;
+        cell_t cl;
         int nb;
-        CellRef cr;
+        cell_t cr;
 
         void next();
 
     public:
-        poisneighb_iterator(CellRef c, int n);
+        poisneighb_iterator(cell_t c, int n);
 
         poisneighb_iterator operator++();
         poisneighb_iterator operator++(int junk);
-        CellRef& operator*();
-        CellRef* operator->();
+        cell_t& operator*();
+        cell_t* operator->();
         bool operator==(const poisneighb_iterator& rhs);
         bool operator!=(const poisneighb_iterator& rhs);
     };

@@ -11,24 +11,24 @@ namespace tftt {
 
 
 struct tagNeighbours {
-    CellRef cr;
+    cell_t cr;
 
-    tagNeighbours(CellRef c);
+    tagNeighbours(cell_t c);
 
     class neighb_iterator {
-        CellRef cl;
+        cell_t cl;
         int nb;
-        CellRef cr;
+        cell_t cr;
 
         void next();
 
     public:
-        neighb_iterator(CellRef c, int n);
+        neighb_iterator(cell_t c, int n);
 
         neighb_iterator operator++();
         neighb_iterator operator++(int junk);
-        CellRef& operator*();
-        CellRef* operator->();
+        cell_t& operator*();
+        cell_t* operator->();
         bool operator==(const neighb_iterator& rhs);
         bool operator!=(const neighb_iterator& rhs);
     };

@@ -15,7 +15,7 @@ struct tagLeaves {
     class leaf_iterator : public cellref_iterator {
         void next();
     public:
-        leaf_iterator(CellRef c);
+        leaf_iterator(cell_t c);
 
         leaf_iterator operator++();
         leaf_iterator operator++(int junk);

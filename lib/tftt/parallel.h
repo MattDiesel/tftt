@@ -6,7 +6,6 @@
 #include <boost/mpi/communicator.hpp>
 
 #include "config.h"
-#include "cellref.h"
 
 
 namespace tftt {
@@ -46,10 +45,14 @@ void syncGhosts(boost::mpi::communicator world);
 void moveCells(boost::mpi::communicator world, int left, int right);
 
 
+#ifdef TFTT_PARALLEL_REFPROP
+
 void adaptParSwBegin();
-void adaptParSwPropogateVector(CellRef cl, uint8_t ref[2*DIM], uint8_t hold[2*DIM]);
-void adaptParSwPropogateLevel(CellRef cl, int dir, int lvl, int offset=0);
-void adaptParSwSetRefine(CellRef cl);
+void adaptParSwPropogateVector(cell_t cl, uint8_t ref[2*DIM], uint8_t hold[2*DIM]);
+void adaptParSwPropogateLevel(cell_t cl, int dir, int lvl, int offset=0);
+void adaptParSwSetRefine(cell_t cl);
+
+#endif
 
 
 } // namespace tftt

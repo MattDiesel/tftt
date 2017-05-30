@@ -14,11 +14,11 @@ namespace tftt {
 void init(double w, double h);
 void reset();
 
-void refine(CellRef cl);
-void coarsen(CellRef cl);
+void refine(cell_t cl);
+void coarsen(cell_t cl);
 
-CellRef atPos(double pos[DIM]);
-CellRef atVertex(int v);
+cell_t atPos(double pos[DIM]);
+cell_t atVertex(int v);
 
 cell_t find(ident_t id);
 cell_t insert(ident_t id);

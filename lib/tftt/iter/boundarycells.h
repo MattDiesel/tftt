@@ -19,7 +19,7 @@ struct tagBoundaryLeaves {
 
         void next();
     public:
-        bleaf_iterator(CellRef c, int bnd);
+        bleaf_iterator(cell_t c, int bnd);
 
         bleaf_iterator operator++();
         bleaf_iterator operator++(int junk);

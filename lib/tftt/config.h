@@ -67,8 +67,21 @@ extern struct TFTTOPTIONS {
     int two2oneFlag; // 0 - None, 1 - strict, 2 - incl. corners, 3 - 3-2-1
 } options;
 
-struct CellRef;
-typedef CellRef cell_t;
+template<typename T>
+struct CellRef {
+    T* _cell;
+
+    struct parless {
+        bool operator()(const CellRef& a, const CellRef& b);
+    };
+    struct less {
+        bool operator()(const CellRef& a, const CellRef& b);
+    };
+};
+
+
+struct TreeCell;
+typedef CellRef<TreeCell> cell_t;
 
 #ifdef TFTT_VERTICES
     struct VertexRef;

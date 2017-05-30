@@ -12,17 +12,17 @@ namespace tftt {
 
 struct tagLeafOrthos {
     class ortho_iterator {
-        CellRef cr;
-        CellRef ortho;
+        cell_t cr;
+        cell_t ortho;
 
         void next();
     public:
-        ortho_iterator(CellRef c);
+        ortho_iterator(cell_t c);
 
         ortho_iterator operator++();
         ortho_iterator operator++(int junk);
-        CellRef& operator*();
-        CellRef* operator->();
+        cell_t& operator*();
+        cell_t* operator->();
         bool operator==(const ortho_iterator& rhs);
         bool operator!=(const ortho_iterator& rhs);
     };

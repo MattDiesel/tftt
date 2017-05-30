@@ -5,9 +5,9 @@
 #include <boost/mpi/request.hpp>
 
 #include "config.h"
+#include "cellref.h"
 #include "structure/tree.h"
 #include "iter/all.h"
-#include "cellref.h"
 #include "adapt.h"
 #include "fttcore.h"
 #include "tfttops.h"
@@ -117,6 +117,8 @@ void syncGhosts(mpi::communicator world)
 }
 
 
+#ifdef TFTT_PARALLEL_REFPROP
+
 
 void adaptParSwBegin()
 {
@@ -140,7 +142,7 @@ void adaptParSwBegin()
     }
 }
 
-void setAdaptVector(CellRef cl, int dir, int amount)
+void setAdaptVector(cell_t cl, int dir, int amount)
 {
     TreeCell* tc = cl.treecell();
 
@@ -149,7 +151,7 @@ void setAdaptVector(CellRef cl, int dir, int amount)
     }
 }
 
-void setAdaptHoldVector(CellRef cl, int dir, int amount)
+void setAdaptHoldVector(cell_t cl, int dir, int amount)
 {
     TreeCell* tc = cl.treecell();
 
@@ -158,7 +160,7 @@ void setAdaptHoldVector(CellRef cl, int dir, int amount)
     }
 }
 
-void adaptParSwPropogateLevel(CellRef cl, int dir, int lvl, int offset)
+void adaptParSwPropogateLevel(cell_t cl, int dir, int lvl, int offset)
 {
     int p = 0;
 
@@ -203,7 +205,7 @@ void adaptParSwPropogateLevel(CellRef cl, int dir, int lvl, int offset)
     }
 }
 
-void adaptParSwPropogateVector(CellRef cl, uint8_t ref[2*DIM], uint8_t hold[2*DIM])
+void adaptParSwPropogateVector(cell_t cl, uint8_t ref[2*DIM], uint8_t hold[2*DIM])
 {
     for (int d = 0; d < 2*DIM; d++) {
         if (ref[d]) {
@@ -217,7 +219,7 @@ void adaptParSwPropogateVector(CellRef cl, uint8_t ref[2*DIM], uint8_t hold[2*DI
     }
 }
 
-void adaptParSwSetRefine(CellRef cl)
+void adaptParSwSetRefine(cell_t cl)
 {
     if (cl.hasChildren()) {
         throw std::logic_error("Cell already refined.");
@@ -228,6 +230,9 @@ void adaptParSwSetRefine(CellRef cl)
         adaptParSwPropogateLevel(cl, d, cl.level());
     }
 }
+
+
+#endif
 
 
 void addNeighb(std::set<cell_t>& ghosts, cell_t cl, node_t node)

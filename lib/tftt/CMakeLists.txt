@@ -2,9 +2,6 @@
 set(libtftt_SRCS
     tftt.cc
     treeid.cc
-    cellref.cc
-    gray.cc
-    hilbert.cc 
     faceref.cc 
     vertexref.cc 
     tfttops.cc 
@@ -12,6 +9,7 @@ set(libtftt_SRCS
     adapt.cc 
     fttcore.cc 
     config.cc 
+    cellref_static.cc
 )
 
 add_subdirectory(iter)

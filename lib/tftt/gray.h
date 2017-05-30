@@ -8,10 +8,13 @@ namespace tftt {
 namespace utils {
 
 
-int toGray(int n);
+inline int toGray(int n);
 
 
 }} // namespace tftt::utils
+
+
+#include "gray.cc"
 
 
 #endif

@@ -9,7 +9,7 @@
 namespace tftt {
 
 
-tagNeighbours::tagNeighbours(CellRef c)
+tagNeighbours::tagNeighbours(cell_t c)
 {
     cr = c;
 }
@@ -22,7 +22,7 @@ void tagNeighbours::neighb_iterator::next()
 }
 
 
-tagNeighbours::neighb_iterator::neighb_iterator(CellRef c, int n)
+tagNeighbours::neighb_iterator::neighb_iterator(cell_t c, int n)
 {
     cl = c;
     nb = n;
@@ -45,13 +45,13 @@ tagNeighbours::neighb_iterator tagNeighbours::neighb_iterator::operator++(int ju
 }
 
 
-CellRef& tagNeighbours::neighb_iterator::operator*()
+cell_t& tagNeighbours::neighb_iterator::operator*()
 {
     return cr;
 }
 
 
-CellRef* tagNeighbours::neighb_iterator::operator->()
+cell_t* tagNeighbours::neighb_iterator::operator->()
 {
     return &cr;
 }

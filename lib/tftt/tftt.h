@@ -76,6 +76,9 @@ namespace tftt {
 
 // Miscellaneous functions that are mostly deprecated
 
+//! Prints a convenient human readable description of the cell.
+std::ostream& operator<<(std::ostream& os, const tftt::cell_t& cr);
+
 //! Checks all the nearby cells satisfy the predicate
 bool checkAround(cell_t cl, int dist, fnCheckCell check);
 

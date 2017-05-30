@@ -16,7 +16,7 @@ struct tagCurve {
         void next();
         void prev();
     public:
-        curve_iterator(CellRef c);
+        curve_iterator(cell_t c);
 
         curve_iterator operator++();
         curve_iterator operator++(int junk);

@@ -4,7 +4,6 @@
 
 
 #include "config.h"
-#include "cellref.h"
 
 
 namespace tftt {
