@@ -12,7 +12,11 @@
 \onehalfspacing
 \raggedbottom
 
+\usepackage{titlesec}
+\newcommand{\sectionbreak}{\clearpage}
+
 \usepackage[hidelinks]{hyperref}
+\def\CC{{C\nolinebreak[4]\hspace{-.05em}\raisebox{.4ex}{\tiny\bf ++}}}
 
 \usepackage{graphicx,float,epstopdf,subcaption}
 \graphicspath{{method/}{method/gen}{results/}{results/gen}}
@@ -21,7 +25,7 @@
 \def\input@path{{method/}{method/gen}{results/}{results/gen}}
 \makeatother
 
-\usepackage{booktabs,tabularx,multirow}
+\usepackage{booktabs,threeparttable,tabularx,multirow}
 
 \usepackage{tikz,fp,tikz-qtree}
 \usetikzlibrary{positioning,calc,external}
@@ -79,7 +83,7 @@
 \thispagestyle{empty}
 \renewcommand{\abstractname}{Technical Abstract}
 \begin{abstract}
-Abstract
+IMPORT TECHNICAL ABSTRACT
 \end{abstract}
 
 \newpage
@@ -92,11 +96,11 @@ Abstract
 \section{Introduction} % (fold)
     \label{sec:intro}
 
-    Numerical simulations are a vital tool in the understanding and modelling of fluid systems. The ability to analyse processes without the financial and temporal costs of producing physical tests not only drives down research and development costs but also makes it possible to automate the optmisation of systems. Fluid simulations continue to be limited by computational resources however, making many problems inhibitingly slow to be of any practical use. As a result, improving the methods used in Computational Fluid Dynamics remains a key area of research.
+    Numerical simulations are a vital tool in the understanding and modelling of fluid systems. The ability to analyse processes without the financial and temporal costs of producing physical tests not only drives down research and development costs but also makes it possible to automate the optimisation of systems. Fluid simulations continue to be limited by computational resources however, making many problems inhibiting slow to be of any practical use. As a result, improving the methods used in Computational Fluid Dynamics remains a key area of research.
 
     Adaptive Mesh Refinement (AMR) methods improves the efficiency of numeric methods by recognising that not all areas of a simulation require finely grained meshes. This allows for greater spatial resolution and significant reductions in the memory and processing requirements of meshes. AMR methods have been applied to structured meshes, where every cell has a uniform geometry, as well as unstructured meshes that while more complex can be tailored to a specific problem's geometry. 
 
-    High Performance Computing (HPC) in the last decade has been dominated by cluster based computing, taking over from specialised Massively Parallel Processing machines. Clusters make use of distributed computing methods with off the shelf components, making them a cost effective and robust solution for HPC. The scaleabilty of software designed to run on clusters is another benefit, giving rise to a marketplace for hiring cluster computation time. Compared to other methods of HPC, the interprocess communication on clusters is much slower than system memory. As a result, new methods must be developed to adapt algorithms and data structures for distributed computing.
+    High Performance Computing (HPC) in the last decade has been dominated by cluster based computing, taking over from specialised Massively Parallel Processing machines. Clusters make use of distributed computing methods with off the shelf components, making them a cost effective and robust solution for HPC. The scalability of software designed to run on clusters is another benefit, giving rise to a marketplace for hiring cluster computation time. Compared to other methods of HPC, the interprocess communication on clusters is much slower than system memory. As a result, new methods must be developed to adapt algorithms and data structures for distributed computing.
 
     This project demonstrates that a particular method of structured AMR can be implemented in a suitable manner for use on clusters. The combination of AMR and distributed computing features the benefits of both methods. 
 
@@ -109,9 +113,9 @@ Abstract
     \subsection{Orthotree Fundamentals} % (fold)
         \label{sec:orthotree}
 
-        Orthotopes are defined by \cite{coxeter73} as the N-dimensional generalisation of a cube. The term is used here to generalise between squares in the 2d case and cubes in the 3d case.
+        Orthotopes are defined by \cite{coxeter73} as the N-dimensional generalisation of a cube. The term is used here to generalise between squares in the two-dimensional case and cubes in the three-dimensional case.
 
-        An orthotree is a tree structure, where each cell is orthotopic and its children are evenly sized similar orthotopes. For this project, the 2d case (known as a quadtree) was implemented and examined in detail. Almost all the methods are kept general however, to allow adaptation to the 3d octree. 
+        An orthotree is a tree structure, where each cell is orthotopic and its children are evenly sized similar orthotopes. For this project, the two-dimensional case (known as a quadtree) was implemented and examined in detail. Almost all the methods are kept general however, to allow adaptation to the three-dimensional octree. 
 
         \subsubsection{Layer Links} % (fold)
             \label{sec:orthotree-layers}
@@ -250,9 +254,16 @@ Abstract
     \subsection{Fully Threaded Trees} % (fold)
         \label{sec:ftt}
 
-        The use of orthotree structures in Adaptive Mesh Routines (AMR) was proposed by Khokhlov in \cite{Khokhlov98}. To tailor them towards solving the differential equation in fluid problems, his implementation included storing the set of neighbours $\mathcal{C}\acc\vect{\mathcal{N}}$ for each cell $\mathcal{C}$ to allow $\bigO{1}$ lookup compared to a possible $\bigO{\log n}$ lookup using tree traversal. Khoklov termed the tree with the neighbour pointers a Fully Threaded Tree (FTT) structure.
+        The use of orthotree structures in Adaptive Mesh Routines (AMR) was proposed by Khokhlov in \cite{Khokhlov98}. To tailor them towards solving the differential equation in fluid problems, his implementation included storing the set of neighbours $\mathcal{C}\acc\vect{\mathcal{N}}$ for each cell $\mathcal{C}$ as shown for a one-dimensional tree in Figure[ref]. This allows $\bigO{1}$ lookup compared to a possible $\bigO{\log n}$ lookup using tree traversal. Khokhlov termed the tree with the neighbour pointers a Fully Threaded Tree (FTT) structure.
 
-        In \cite{Khokhlov98}, an optimisation is presented to reduce the memory overhead introduced storing neighbour pointers by noting that for (in the quadtree case) the children of a cell, half the neighbours are also children of that cell. By storing groups of children together in an ortho (referred to as a quad in 2d and octo in 3d) the memory requirement for storing neighbour links is almost halved.
+        \begin{figure}[H]
+            \centering
+            \input{method/ftttree}
+            \caption{A flattened tree showing neighbour links between cells in orange}
+            \label{fig:ftt-neighbours}
+        \end{figure}
+
+        In \cite{Khokhlov98}, an optimisation is presented to reduce the memory overhead introduced storing neighbour pointers by noting that for (in the quadtree case) the children of a cell, half the neighbours are also children of that cell. By storing groups of children together in an ortho (referred to as a quad in two-dimensional and octo in three-dimensional) the memory requirement for storing neighbour links is almost halved.
 
         Optimisation details, such as storing cells in their groups, is abstracted over by performing most operations through a cell reference class. This provides a thin layer that for each property retrieves from either the group or cell raw structure. 
 
@@ -270,16 +281,43 @@ Abstract
     \subsection{Poisson Neighbourhoods} % (fold)
         \label{sec:poissonneighbours}
 
-        To solve on the adaptive mesh, interpolation is required in cases where the level of adjacent cells do not match. It is possible to move the expensive interpolation operation outside of the tight solver loop by instead storing a list of cells required along with the coefficient they would have been scaled by using direct interpolation. This list of cells is known as the poisson neighbourhood for a cell $\mathcal{C}$ and is represented by the vector $\mathcal{C}\acc\vect{\mathcal{P}}$. The respective neighbour co
+        To solve on the adaptive mesh, interpolation is required in cases where the level of adjacent cells do not match. It is possible to move the expensive interpolation operation outside of the tight solver loop by instead storing a list of cells required along with the coefficient they would have been scaled by using direct interpolation. This list of cells is known as the poisson neighbourhood for a cell $\mathcal{C}$ and is represented by the vector $\mathcal{C}\acc\vect{\mathcal{P}}$. The respective neighbour coefficients are stored in the vector $\mathcal{C}\acc\vect{\beta}$. Each cell also requires a central coefficient $\mathcal{C}\acc\alpha$.
 
-        Calculating the coefficients for the different cases is explored in detail by \cite{Yung2010} including for higher order solvers. The methods used here are independent of the order of the solver, and the determining the neighbourhood is abstracted to Function~\ref{fun:CalcPoisCoefs}.
+        The methods used later do not rely on the specific details of the poisson neighbourhood, only the cells in $\mathcal{C}\acc\vect{\mathcal{P}}$. The determining the neighbourhood is abstracted to Function~\ref{fun:CalcPoisCoefs}. 
 
         \begin{equation}
             \label{fun:CalcPoisCoefs}
             \textproc{CalcPoisCoefs}(\mathcal{C}) \mapsto \{ \vect{\mathcal{P}}, \vect{\beta}, \alpha \}
         \end{equation}
 
+        Calculating the coefficients for the different cases is explored in detail by Yung in \cite{Yung2010}. 
+
     % subsection poissonneighbours (end)
+
+
+    \subsection{Relaxation} % (fold)
+        \label{sec:relaxation}
+
+        Poisson's equation $\laplacian{\Phi}=f(\mathcal{C})$ can be solved by relaxation for a function $f$ that is constant during the relaxation. Every cell in the tree is "relaxed" once per iteration, converging on the final solution. 
+
+        Successive Over-Relaxation (SOR) is a more robust numeric technique that smooths changes to cell data according to a relaxation factor $\Omega \in (0,2]$, to dampen oscillations in values between successive iterations. This accelerates convergence of high frequency components. A value of $\Omega=1$ gives no over-relaxation. 
+
+        A new value for the data of the cell $\phi$ is calculated from the poisson neighbourhood using Equation~\ref{equ:relax-cell}. 
+
+        \begin{equation}
+            \phi = \frac{ \left( \sum\limits_n \mathcal{C}\acc\beta_n \times \mathcal{C}\acc\mathcal{P}_n\acc\textproc {data} \right)-f(\mathcal{C})} { \mathcal{C}\acc\alpha }
+            \label{equ:relax-cell}
+        \end{equation}
+
+        The new value is then applied to the cell, using the relaxation factor. 
+
+        \begin{equation}
+            \mathcal{C}\acc\textproc{data} = \Omega\phi + (1-\Omega)\times\mathcal{C}\acc\textproc{data}
+        \end{equation}
+
+        The new value can be used immediately by the relaxation of neighbouring cells.
+
+    % subsection relaxation (end)
 
 
     \subsection{Distributed Computing} % (fold)
@@ -647,7 +685,7 @@ Abstract
 
         Since it is required once per iteration, ghost synchronisation is by far the most common parallel operation required. The set up described previously in Section~\ref{sec:ghostsandborders} is designed to minimise this process. By making use of the equivalence of the ghost and border sets for two processes, the only information transfer required is the data from the border cells.
 
-        Without compression, Algorithm~\ref{alg:sync-sendrecv} is therefore the smallest transfer of information possible for this stage.
+        Without compression, Algorithm~\ref{alg:sync-sendrecv} is therefore the smallest transfer of information possible for this stage. Without knowledge of the contents of the data, the worst case must be assumed that $\mathcal{C}\acc\textproc{data}$ is uniformly distributed and so no compression is possible. 
 
         \begin{algorithm}[H]
             \caption{Synchronisation}
@@ -913,7 +951,7 @@ Abstract
 % section method (end)
 
 
-\section{Proposed Methods} % (fold)
+\section{Proposals for Future Work} % (fold)
     \label{sec:future-work}
 
     Routines for the next stage of the project have been considered and are summarised below. 
@@ -923,17 +961,62 @@ Abstract
 
         When adapting the local mesh on a process, refinement propagation will often reach the boundary to a foreign process. In order to correctly maintain the desired propagation level, interprocess communication is required. 
 
-        The basis for the method is the addition of "propagation vectors" to border cells, encoding the tree depth and remaining propagation length in each of the orthonormal directions. During refinement propagation, reaching a process boundary will instead
+        The basis for the method is the addition of "propagation vectors" to border cells, encoding the tree depth and remaining propagation length in each of the orthonormal directions. During refinement propagation, reaching a process boundary in the direction of a foreign process will instead store the vector and stop the propagation. If the border cell is refined as part of the propagation, the border cell set must be reconstructed. 
 
-        These are then transmitted, taking advantage of ghost-border equivalence to minimise data transfer, using the method already used for ghost synchronisation in Section~\ref{sec:ghostsync}.
+        These are then transmitted, taking advantage of ghost-border equivalence to minimise data transfer, using the method already used for ghost synchronisation in Section~\ref{sec:ghostsync}. The vectors are then applied the receiving process, by continuing the propagation. 
+
+        If the vector level is greater than the current depth of the ghost cell receiving it, this means that ghost is being refined. The cell must be refined on the receiving process, and the ghost cell set reconstructed. Since the corresponding border set has had the same change applied to it, ghost-border equivalence is maintained. 
 
 
         \subsubsection{Process Re-entry} % (fold)
             \label{sec:parprop-reentry}
 
+            One common occurrence when distributing according to the Hilbert curve is the presence of "peninsulas" along the process boundaries. An example can be seen in Figure~\ref{fig:borderline} from Section~\ref{sec:ghostsandborders}, where a region of cells on rank one are bordered on three sides by cells on rank zero. 
+
+            Refinement propagation as proposed above would work on these peninsulas, but would result in the passing through the of propagation vectors from rank zero back to itself. Since this requires a second stage of propagation, it is desirable this should be avoided.
+
+            In order to alleviate this issue, processes propagating onto border cells can no longer stop at that point. Instead they continue as long as they remain within the ghost cells of the process. It is not possible outside the region of the ghost cells to know the level of cells at that point, so propagation is not possible. 
+
+            Since the propagation process from a vector is initiated started from a ghost cell whose foreign rank is known, it is sufficient for receiving processes to end propagation if they return to a border with the process the vector originates from. 
+
+            Although greatly complicating the method, the reduction in the interprocess messages required makes re-entry avoidance 
+
         % subsubsection parprop-reentry (end)
 
     % subsection parprop (end)
+
+
+    \subsection{Initial Construction in Parallel} % (fold)
+        \label{sec:parinit}
+
+        Typically the initial construction of the mesh refines to a globally known geometry. As such, it is feasible that the mesh could be constructed in parallel. For highly refined meshes, this is desirable as the initial construction can be slow, and the amount of data to be subsequently distributed to the processes large. 
+
+        \subsubsection{Staggered Construction}
+            \label{sec:parainit-staggered}
+
+            A simple approach would be to refine the mesh to a number of levels below the desired maximum depth before distributing. After distributing each process then refines the remaining stages itself, before the whole system is rebalanced. 
+
+            If there are too many additional refinement levels, difficulties may be encountered in rebalancing where the assumption was made that changes are small. This can be rectified by including multiple rebalancing stages.
+
+            This method relies on the implementation of the parallel refinement methods given in Section~\ref{sec:parprop}, but is otherwise possible with the current functionality of the library. 
+
+        % subsubsection parinit-staggered (end)
+
+
+        \subsubsection{Bottom-Up Construction}
+            \label{sec:parainit-bottomup}
+
+            A method proposed by Sundar et al in \cite{sundar2008} is to first identify the locations within the domain where the most refined cells are known to appear. This subset of the final leaves of the tree is then distributed and the mesh constructed on each process to include a number of these. 
+
+            This would be possible to implement with the SFC additions to the structure, as cells can be ordered along the Hilbert curve based on their location and depth, without the need to construct the mesh or the full SFC.
+
+            To take the trivial top level quadtree case, it's known that any cell located in upper-left quadrant of the domain must appear in the Hilbert curve after any cell in the bottom-left quadrant. Similar results are possible for any depth. 
+
+            Refinement propagation in parallel, as proposed in Section~\ref{sec:parprop} would still need to be used to ensure the final mesh obeys the constraints imposed. 
+ 
+        % subsubsection parinit-bottomup (end)
+
+    % subsection parinit (end)
 
 % section future-work (end)
 
@@ -978,14 +1061,45 @@ Abstract
     % subsection results-boundarysize (end)
 
 
-    \subsection{Performance against Thread Count} % (fold)
-        \label{sec:results-performance}
+    \subsection{Structure Overhead} % (fold)
+        \label{sec:results-memoryuse}
 
-    % subsection results-performance (end)
+        Memory overheads for the structure are split across three structures. Each \mintinline{cpp}{TreeCell} structure stores data for an individual cell. Where possible, cell data is shared between siblings of an ortho in the \mintinline{cpp}{TreeGroup} structure. Finally, global properties of the tree are stored in the \mintinline{cpp}{Tree} structure. The outline of these structures can be found in Appendix~\ref{sec:appendix-headers}.
+
+        Table~\ref{tab:results-memusage} contains a rough breakdown of where the memory overhead is introduced. In some cases these are functions of the dimension of the tree, in which case the quadtree values are used. Fundamental type sizes are not fixed by the \CC~standard, instead the common values on modern architectures are used. Totals take into account padding required for structure alignment, and so might not be the sum of previous columns.
+
+        \begin{table}[H]
+            \centering
+            \caption{Memory overhead within a quadtree structure, measured in bytes.}
+            \label{tab:results-memusage}
+            \begin{threeparttable}
+                \begin{tabular}{@{}l>{\hskip 1cm}ccccc>{\hskip 1cm}c@{}}
+                \toprule
+                \textbf{Structure}  & Orthotree & FTT & TFTT & Poisson & Parallel & \textbf{Totals} \\ \midrule
+                \texttt{TreeCell}   & 9         & 0   & 0    & 137     & 1        & 152    \\ % 152
+                \texttt{TreeGroup}  & 24        & 32  & 17   & 0       & 8        & 88     \\ % 88
+                \texttt{Tree}       & 32        & 0   & 16   & 0       & $16G$\tnote{1}        & 48     \\ \addlinespace[4mm] \cmidrule{7-7} % \rule{0pt}{8mm}  % 
+                \textbf{Sum / cell} & 15        & 8   & 4.25 & 137     & 3        & \textbf{174}    \\ \bottomrule
+                \end{tabular}
+                \begin{tablenotes}
+                    \item[1] Depends on the number of ghost cells $G$. This is small compared to the cell count, so doesn't impact totals (See Section~\ref{sec:results-boundarysize}).
+                \end{tablenotes}
+            \end{threeparttable}
+        \end{table}
+
+        The vast majority of the overhead memory usage therefore comes from the storing of the poisson neighbourhood. The storage requirement added by the parallelization of the structure is just $7.25$ bytes per cell. 
+
+    % subsection results-memoryuse (end)
 
 
-    \subsection{Cluster Operation Above Single Node Memory Limit}
-        \label{sec:results-memory}
+    % \subsection{Performance against Thread Count} % (fold)
+    %     \label{sec:results-performance}
+
+    % % subsection results-performance (end)
+
+
+    % \subsection{Cluster Operation Above Single Node Memory Limit}
+    %     \label{sec:results-memory}
 
     % subsection results-memory (end)
 
@@ -994,6 +1108,18 @@ Abstract
 
 \section{Conclusion} % (fold)
     \label{sec:conclusions}
+
+    It has been successfully demonstrated that an adaptive mesh method can be used to solve numeric problems in parallel, in a manner suitable for use on clusters. The developed library is robust, and a clean interface is provided that simplifies development using the structure. 
+
+    The library is efficient, both in memory and computational time. 
+
+    For operations performed on every iteration of the solver, the interprocess communication sends the minimum possible data. Other operations are performed less often, but the information transferred is limited to only the relevant cells for any pair of processes communicating. 
+
+    The use of the Hilbert curve for distribution is computationally simple, and results in process boundary sizes close to theoretical lower bounds. Other properties of the curve, such as remaining bounded within a cell for all its children, make the Hilbert curve an excellent choice for use in the TFTT structure. 
+
+    The structure is only tested on simple scenarios. For comparison to other methods, it would be necessary to implement a fluids solver using the library.
+
+    Further work is required on refining the mesh in parallel, both during initial construction and to adapt to changing problem conditions. A method is presented for the latter, but has not been implemented. 
 
 % section conclusion (end)
 
