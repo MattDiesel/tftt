@@ -107,6 +107,9 @@ int main(int argc, char* argv[])
     int printEvery = 1;
     int residEvery = 1;
 
+    int writeFiles = 1;
+    double stopAt = 0.0000001;
+
     double initialValue = 0.0;
 
     double omega = 1.3;
@@ -141,6 +144,7 @@ int main(int argc, char* argv[])
             tfetch("initialValue", initialValue);
             tfetch("iterations", iterations);
             tfetch("contin", contin);
+            tfetch("write", writeFiles);
             tfetch("circle.start[0]", startPos[0]);
             tfetch("circle.start[1]", startPos[1]);
             tfetch("circle.end[0]", endPos[0]);
@@ -169,6 +173,7 @@ int main(int argc, char* argv[])
               << "\tminDepth = " << minDepth << "\n"
               << "\tmaxDepth = " << maxDepth << "\n"
               << "\titerations = " << iterations << "\n"
+              << "\twrite = " << writeFiles << "\n"
               << "\tcircle.start[0] = " << startPos[0] << "\n"
               << "\tcircle.start[1] = " << startPos[1] << "\n"
               << "\tcircle.end[0] = " << endPos[0] << "\n"
@@ -217,9 +222,11 @@ int main(int argc, char* argv[])
         }
     }
 
-    tftt::plot::mesh("pois/mesh.init.dat");
-    tftt::plot::hilbert("pois/hilb.init.dat");
-    tftt::plot::boundariesMesh("pois/bound.init.dat");
+    if (writeFiles) {
+        tftt::plot::mesh("pois/mesh.init.dat");
+        tftt::plot::hilbert("pois/hilb.init.dat");
+        tftt::plot::boundariesMesh("pois/bound.init.dat");
+    }
 
 
     // tftt::drawMatrix("pois/cc.init.pgm", 512, 512, [](tftt::data_t& dt, int max) {
@@ -258,13 +265,18 @@ int main(int argc, char* argv[])
     std::ofstream ofGraph("pois/res.graph.dat");
 
     tftt::cell_t mx;
+    double resid;
     for (ITER = 0; ITER < iterations; ITER++) {
-        std::cerr << "Iteration " << ITER << "\n";
-        mx = tftt::max(dtPc);
-        std::cerr << "Max P = " << mx->P << " @ " << mx << "\n";
+        if (ITER % printEvery == 0) {
+            std::cerr << "Iteration " << ITER << "\n";
+        }
+        // mx = tftt::max(dtPc);
+        // if (ITER % printEvery == 0)
+        //     std::cerr << "Max P = " << mx->P << " @ " << mx << "\n";
 
-        mx = tftt::max(dtPcn);
-        std::cerr << "Min P = " << mx->P << " @ " << mx << "\n";
+        // mx = tftt::max(dtPcn);
+        // if (ITER % printEvery == 0)
+        //     std::cerr << "Min P = " << mx->P << " @ " << mx << "\n";
 
         tftt::relax(omega, dtP, fn);
 
@@ -276,11 +288,15 @@ int main(int argc, char* argv[])
             }
         }
 
-        ofGraph << tftt::resid(dtP, fn) << "\n";
+        if (ITER % residEvery == 0) {
+            resid = tftt::resid(dtP, fn);
+            if (writeFiles)
+                ofGraph << tftt::resid(dtP, fn) << "\n";
 
-        std::cout << std::endl;
+            if (resid < stopAt) break;
+        }
 
-        if (ITER % plotEvery == 0) {
+        if (writeFiles && (ITER % plotEvery == 0)) {
             tftt::plot3d::scatter(formatString("pois/P.{0}.dat", ITER), [](tftt::cell_t& cl) {
                 return cl->P;
             });
@@ -291,12 +307,14 @@ int main(int argc, char* argv[])
         }
     }
 
-    tftt::plot3d::scatter("pois/P.final.dat", [](tftt::cell_t& cl) {
-        return cl->P;
-    });
-    tftt::plot3d::scatter("pois/res.final.dat", [](tftt::cell_t& cl) {
-        return cl->res;
-    });
+    if (writeFiles) {
+        tftt::plot3d::scatter("pois/P.final.dat", [](tftt::cell_t& cl) {
+            return cl->P;
+        });
+        tftt::plot3d::scatter("pois/res.final.dat", [](tftt::cell_t& cl) {
+            return cl->res;
+        });
+    }
 
     return 0;
 }

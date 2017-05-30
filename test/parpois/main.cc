@@ -120,6 +120,8 @@ int main(int argc, char* argv[])
     int plotEvery = 1;
     int printEvery = 1;
     int residEvery = 1;
+    int syncEvery = 1;
+    double stopAt = 0.0000001;
 
     double initialValue = 0.0;
 
@@ -135,6 +137,7 @@ int main(int argc, char* argv[])
     tftt::options.two2oneFlag = 2;
 
     int contin = 0;
+    int writeFiles = 1;
 
     for (int b = 0; b < 2*DIM; b++) {
         tftt::gtree.isNeuman[b] = false;
@@ -155,6 +158,8 @@ int main(int argc, char* argv[])
             tfetch("initialValue", initialValue);
             tfetch("iterations", iterations);
             tfetch("contin", contin);
+            tfetch("write", writeFiles);
+            tfetch("syncEvery", syncEvery);
             tfetch("circle.start[0]", startPos[0]);
             tfetch("circle.start[1]", startPos[1]);
             tfetch("circle.end[0]", endPos[0]);
@@ -183,6 +188,7 @@ int main(int argc, char* argv[])
 
         std::cout << "Using Parameters: \n"
                   << "\tcontin = " << contin << "\n"
+                  << "\twrite = " << writeFiles << "\n"
                   << "\tminDepth = " << minDepth << "\n"
                   << "\tmaxDepth = " << maxDepth << "\n"
                   << "\titerations = " << iterations << "\n"
@@ -230,15 +236,17 @@ int main(int argc, char* argv[])
 
             std::cout << "Refined to geometry." << std::endl;
 
-            tftt::plot::mesh("parp/cmesh.init.dat");
-            tftt::plot::hilbert("parp/chilb.init.dat");
+            if (writeFiles) {
+                tftt::plot::mesh("parp/cmesh.init.dat");
+                tftt::plot::hilbert("parp/chilb.init.dat");
+            }
 
             for (auto& cl : tftt::leaves) {
                 tftt::calcFaceCoefs(cl);
             }
 
             tftt::distribute(world.size());
-            tftt::saveParTree("parp/r{0}.ltr", world.size());
+            tftt::saveParTree("/mnt/ramd/r{0}.ltr", world.size());
 
             tftt::reset();
         }
@@ -246,7 +254,7 @@ int main(int argc, char* argv[])
 
     world.barrier();
 
-    tftt::loadParTree(formatString("parp/r{0}.ltr", world.rank()));
+    tftt::loadParTree(formatString("/mnt/ramd/r{0}.ltr", world.rank()));
     // tftt::loadParTree(formatString("parp/r{0}.ltr", 0));
 
     // Initial Conditions for cells
@@ -275,15 +283,18 @@ int main(int argc, char* argv[])
     //     tftt::moveCells(world, 50, -50);
     // }
 
-    tftt::plot::mesh(formatString("parp/cmesh.r{0}.init.dat", world.rank()));
-    tftt::plot::hilbert(formatString("parp/chilb.r{0}.init.dat", world.rank()));
-    tftt::plot::partialMesh(formatString("parp/mesh.r{0}.init.dat", world.rank()));
-    tftt::plot::partialHilbert(formatString("parp/hilb.r{0}.init.dat", world.rank()));
-    tftt::plot::boundariesMesh(formatString("parp/bound.r{0}.init.dat", world.rank()));
+    if (writeFiles) {
+        tftt::plot::mesh(formatString("parp/cmesh.r{0}.init.dat", world.rank()));
+        tftt::plot::hilbert(formatString("parp/chilb.r{0}.init.dat", world.rank()));
+        tftt::plot::partialMesh(formatString("parp/mesh.r{0}.init.dat", world.rank()));
+        tftt::plot::partialHilbert(formatString("parp/hilb.r{0}.init.dat", world.rank()));
+        tftt::plot::boundariesMesh(formatString("parp/bound.r{0}.init.dat", world.rank()));
 
-    for (int n = 0; n < world.size(); n++) {
-        tftt::plot::ghostMesh(formatString("parp/ghosts.r{0}.b{1}.init.dat", world.rank(), n), n);
-        tftt::plot::borderMesh(formatString("parp/border.r{0}.b{1}.init.dat", world.rank(), n), n);
+
+        for (int n = 0; n < world.size(); n++) {
+            tftt::plot::ghostMesh(formatString("parp/ghosts.r{0}.b{1}.init.dat", world.rank(), n), n);
+            tftt::plot::borderMesh(formatString("parp/border.r{0}.b{1}.init.dat", world.rank(), n), n);
+        }
     }
 
     std::cout << "[" << world.rank() << "] Loaded tree of "
@@ -296,7 +307,7 @@ int main(int argc, char* argv[])
 
     double resid;
     double maxResid;
-    for (ITER = 0; ITER < iterations; ITER++) {
+    for (ITER = 0; ; ITER++) {
 
         // mx = tftt::max(dtPc);
         // std::cerr << "Max P = " << mx->P << " @ " << mx << "\n";
@@ -314,24 +325,34 @@ int main(int argc, char* argv[])
             }
         }
 
-        tftt::syncGhosts(world);
+        if (ITER % syncEvery == 0)
+            tftt::syncGhosts(world);
 
         if (ITER % residEvery == 0) {
             resid = tftt::resid(dtP, fn);
 
+            bool end = false;
             if (world.rank() == 0) {
                 mpi::reduce(world, resid, maxResid, mpi::maximum<double>(), 0);
+
+                if (maxResid < stopAt) {
+                    end = true;
+                }
             }
             else {
                 mpi::reduce(world, resid, mpi::maximum<double>(), 0);
             }
+
+            mpi::broadcast(world, end, 0);
+
+            if (end) break;
         }
 
         if (ITER % printEvery == 0 && world.rank() == 0) {
             std::cerr << "Iteration " << ITER << ", Resid: " << maxResid << '\n';
         }
 
-        if (ITER % plotEvery == 0) {
+        if (writeFiles && (ITER % plotEvery == 0)) {
             tftt::plot3d::scatter(formatString("parp/P.{0}.r{1}.dat", ITER, world.rank()), [](tftt::cell_t& cl) {
                 return cl->P;
             });
@@ -342,12 +363,14 @@ int main(int argc, char* argv[])
         }
     }
 
-    tftt::plot3d::scatter(formatString("parp/P.final.r{0}.dat", world.rank()), [](tftt::cell_t& cl) {
-        return cl->P;
-    });
-    tftt::plot3d::scatter(formatString("parp/res.final.r{0}.dat", world.rank()), [](tftt::cell_t& cl) {
-        return cl->res;
-    });
+    if (writeFiles) {
+        tftt::plot3d::scatter(formatString("parp/P.final.r{0}.dat", world.rank()), [](tftt::cell_t& cl) {
+            return cl->P;
+        });
+        tftt::plot3d::scatter(formatString("parp/res.final.r{0}.dat", world.rank()), [](tftt::cell_t& cl) {
+            return cl->res;
+        });
+    }
 
     return 0;
 }
