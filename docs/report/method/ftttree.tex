@@ -1,0 +1,71 @@
+
+\begin{tikzpicture}[]
+    \tikzset{
+        br/.style={
+            circle,
+            draw=black,
+            fill=black,
+            minimum size=1.5mm,
+            inner sep=0,
+            align=center
+        },
+        lf/.style={
+            rectangle,
+            draw=black,
+            fill=white,
+            minimum size=3mm,
+            inner sep=0,
+            align=center
+        },
+        level 1/.style={sibling distance=1.6cm},
+        level 2/.style={sibling distance=0.8cm},
+        level 3/.style={sibling distance=0.4cm}
+    }
+
+    \begin{scope}[thin,black!20]
+        \foreach \i in {0,...,2} {
+            \draw[dashed] (-5.5cm,-2*\i cm) -- (6cm,-2*\i cm) node [anchor=west,black] {Level \i};
+        }
+    \end{scope}
+
+    \begin{scope}[
+        level distance=2cm,
+        edge from parent path={(\tikzparentnode) -- +(0,-1cm) -| (\tikzchildnode)}
+    ]
+        \Tree [. \node[br](b1){}; 
+            [. \node[lf](l1){};  ]
+            [. \node[br](b2){}; 
+                [. \node[lf](l2){}; ]
+                [. \node[lf](l3){}; ]
+                [. \node[lf](l4){}; ]
+                [. \node[lf](l5){}; ]
+            ]
+            [. \node[lf](l6){}; ]
+            [. \node[lf](l7){}; ]
+        ]
+    \end{scope}
+
+    \begin{scope}[line width=1pt, colorB, bend right=20]
+        \draw[->, shorten <=0.5mm, shorten >=0.5mm] (l1) to (b2);
+        \draw[->, shorten <=0.5mm, shorten >=0.5mm] (b2) to (l6);
+        \draw[->, shorten <=0.5mm, shorten >=0.5mm] (l6) to (l7);
+
+        \draw[->, shorten <=0.5mm, shorten >=0.5mm] (l2) to (l3);
+        \draw[->, shorten <=0.5mm, shorten >=0.5mm] (l3) to (l4);
+        \draw[->, shorten <=0.5mm, shorten >=0.5mm] (l4) to (l5);
+
+        \draw[->, shorten <=0.5mm, shorten >=0.5mm] (l5) to (l6);
+    \end{scope}
+
+    \begin{scope}[line width=1.4pt, colorB, bend left=20]
+        \draw[<-, shorten <=0.5mm, shorten >=0.5mm] (l1) to (b2);
+        \draw[<-, shorten <=0.5mm, shorten >=0.5mm] (b2) to (l6);
+        \draw[<-, shorten <=0.5mm, shorten >=0.5mm] (l6) to (l7);
+
+        \draw[->, shorten <=0.5mm, shorten >=0.5mm] (l2) to (l1);
+
+        \draw[<-, shorten <=0.5mm, shorten >=0.5mm] (l2) to (l3);
+        \draw[<-, shorten <=0.5mm, shorten >=0.5mm] (l3) to (l4);
+        \draw[<-, shorten <=0.5mm, shorten >=0.5mm] (l4) to (l5);
+    \end{scope}
+\end{tikzpicture}
