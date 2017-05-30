@@ -92,8 +92,19 @@ Abstract
 \section{Introduction} % (fold)
     \label{sec:intro}
 
-    TODO
+    Numerical simulations are a vital tool in the understanding and modelling of fluid systems. The ability to analyse processes without the financial and temporal costs of producing physical tests not only drives down research and development costs but also makes it possible to automate the optmisation of systems. Fluid simulations continue to be limited by computational resources however, making many problems inhibitingly slow to be of any practical use. As a result, improving the methods used in Computational Fluid Dynamics remains a key area of research.
 
+    Adaptive Mesh Refinement (AMR) methods improves the efficiency of numeric methods by recognising that not all areas of a simulation require finely grained meshes. This allows for greater spatial resolution and significant reductions in the memory and processing requirements of meshes. AMR methods have been applied to structured meshes, where every cell has a uniform geometry, as well as unstructured meshes that while more complex can be tailored to a specific problem's geometry. 
+
+    High Performance Computing (HPC) in the last decade has been dominated by cluster based computing, taking over from specialised Massively Parallel Processing machines. Clusters make use of distributed computing methods with off the shelf components, making them a cost effective and robust solution for HPC. The scaleabilty of software designed to run on clusters is another benefit, giving rise to a marketplace for hiring cluster computation time. Compared to other methods of HPC, the interprocess communication on clusters is much slower than system memory. As a result, new methods must be developed to adapt algorithms and data structures for distributed computing.
+
+    This project demonstrates that a particular method of structured AMR can be implemented in a suitable manner for use on clusters. The combination of AMR and distributed computing features the benefits of both methods. 
+
+    A library was developed from scratch, using methods developed previously by others outlined in Section~\ref{sec:existingmethods}. The functionality is extended in Section~\ref{sec:method} with new methods suitable for parallel computing, which are analysed in Section~\ref{sec:results}. A number of proposals are made for future additions to the library in Section~\ref{sec:future-work}. 
+
+
+\section{Implementation of Prior Work}
+    \label{sec:existingmethods}
 
     \subsection{Orthotree Fundamentals} % (fold)
         \label{sec:orthotree}
@@ -947,7 +958,7 @@ Abstract
             \label{fig:anal-scaling}
         \end{figure}
 
-        Though close, the vertical spacing between lines of world size in Figure~\ref{fig:anal-scaling} are not quite linear in $W$, most visibly the gap from $W=2$ to $W=4$ is noticeably larger. This is explored in more detail in Figure~\ref{fig:anal-borderworldsize}. Significant variations are seen in the test data, in some cases increases the number of processes has the effect of decreasing the total number of ghost cells, though this behaviour is unpredictable and so cannot be taken advantage of. The ghost cell fraction increases in proportion to the world size to the power of $1.0755$, slightly above the linear relationship expected by looking at the simple uniform mesh cases. 
+        Though close, the vertical spacing between lines of world size in Figure~\ref{fig:anal-scaling} are not quite linear in $W$, most visibly the gap from $W=2$ to $W=4$ is noticeably larger. This is explored in more detail in Figure~\ref{fig:anal-borderworldsize}. Significant variations are seen in the test data, in some cases increases the number of processes has the effect of decreasing the total number of ghost cells, though this behaviour is unpredictable and so cannot be taken advantage of. The ghost cell fraction increases as a function of the world size $8.5(W^{0.52}-1.24)$, compared to the uniform mesh case with $W$ being a square number $4(\sqrt{W} - 1)$. 
 
         \tikzset{external/export next=false}
         \begin{figure}[H]
@@ -957,10 +968,10 @@ Abstract
             \label{fig:anal-borderworldsize}
         \end{figure}
 
-        In summary, it was found that the typical ghost cell count was approximately given by Equation~\ref{equ:ghostcount}. Different meshes produced considerable variations, but on average the Hilbert curve produces results close to what would be expected 
+        In summary, it was found that the typical ghost cell count was approximately given by Equation~\ref{equ:ghostcount}. Different meshes produced considerable variations, but on average the Hilbert curve produces results that are not significantly worse than the theoretical limits taken from uniform mesh distributions. Given the complexity of the meshes involved, these results confirm the suitability of the Hilbert curve for use in distributing orthotrees to processes.
 
         \begin{equation}
-            G \approx C^{0.4562} \times W^{1.0755}
+            G \approx C^{0.4562} \times 8.5(W^{0.52}-1.24)
             \label{equ:ghostcount}
         \end{equation}
 
