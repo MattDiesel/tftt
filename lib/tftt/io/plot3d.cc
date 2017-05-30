@@ -7,6 +7,7 @@
 #include "../cellref.h"
 #include "../fttcore.h"
 #include "../iter/activecurve.h"
+#include "../structure/tree.h"
 
 #include "plot3d.h"
 
@@ -37,8 +38,8 @@ void sample(std::string fname, int resX, int resY, fnCell dt)
 
 void sample(std::ostream& os, int resX, int resY, fnCell dt)
 {
-    double dX = 1.0 / resX;
-    double dY = 1.0 / resY;
+    double dX = gtree.size[0] / resX;
+    double dY = gtree.size[1] / resY;
 
     cell_t cl;
     double p[2];
