@@ -342,14 +342,16 @@ data_t const& CellRef::data() const
 }
 
 
-double CellRef::avrChildren(fnData dt) const
+double CellRef::avrChildren(fnConstCell dt) const
 {
     double ret = 0.0;
+    if (!hasChildren()) return dt(*this);
+
     for (int ch = 0; ch < 1<<DIM; ch++) {
         if (child(ch).hasChildren())
             ret += child(ch).avrChildren(dt);
         else
-            ret += dt(child(ch).data());
+            ret += dt(child(ch));
     }
     return ret / (1<<DIM);
 }
