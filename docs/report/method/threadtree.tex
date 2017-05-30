@@ -5,7 +5,7 @@
             circle,
             draw=black,
             fill=black,
-            minimum size=1mm,
+            minimum size=1.5mm,
             inner sep=0,
             align=center
         },
@@ -28,7 +28,7 @@
 
     \begin{scope}[
         level distance=1.5cm,
-        edge from parent path={(\tikzparentnode) -- (\tikzchildnode)}
+        edge from parent path={(\tikzparentnode) -- +(0,-0.75) -| (\tikzchildnode)}
     ]
         \Tree [. \node[br]{}; 
             [. \node[br]{}; 
