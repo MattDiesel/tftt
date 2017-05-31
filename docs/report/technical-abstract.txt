@@ -1,0 +1,14 @@
+A robust and efficient implementation of an orthotree structure is provided and tailored towards solving numeric fluid simulation problems on computing clusters. The tree works on a single computing node, but is designed to exist as a subset of the full domain and common functions execute without any single node accessing the full structure. 
+
+Fully threaded neighbour links are used to minimise tree traversal times, using sibling cell grouping to mitigate the additional memory cost. An additional solver dependency neighbourhood set for each cell is added to remove the cost of interpolation due to differing cell sizes. The dependency neighbourhood allows the implementation of a solver-independent method for determining process boundary layers that successfully minimises the data transmission requirement in synchronising the values between processes. This is achieved by maintaining equivalent sets on both sides of each boundary. 
+
+A thread is added to the tree, storing the Hilbert Space Filling Curve path through the leaves of the tree. The path is used to flatten the N-dimensional tree into a one-dimensional list, which is then used to distribute the structure evenly across processes. An analysis of the Hilbert distribution method demonstrates that it performs within a reasonable margin of theoretical maximums, without knowing the complete structure.
+
+Rebalancing of the structure is achieved by passing cells between processes along the Hilbert path, with additional logic to maintain the border set equivalence property. 
+
+The methods are proven to work on, and be adequate to solve for, a simple case of Poisson's equation in parallel. This is sufficient to show the structure would be a useful tool in the development of fluid simulations. 
+
+Further concepts are discussed on how the remaining core tree operations could be achieved in parallel, such as maintaining refinement propagation levels and initial construction of the mesh.
+
+There remains some work to be done before the structure can be utilised in parallel with all the functionality currently available to single processes. However, the code base presented gives a clean and reliable base upon which future methods can build. 
+
