@@ -1,0 +1,98 @@
+
+\documentclass[twoside]{IIBproject}
+\usepackage[utf8] {inputenc}
+
+% \usepackage{fancyhdr}
+% \fancyhf{}
+% \renewcommand{\headrulewidth}{0pt}
+% \fancyfoot[LE,RO]{\thepage}
+
+\usepackage[bottom]{footmisc}
+\usepackage{setspace,titlesec}
+\onehalfspacing
+\newcommand{\sectionbreak}{\clearpage}
+
+\widowpenalties 1 10000
+\raggedbottom
+
+\usepackage{url}
+\usepackage[hidelinks,breaklinks=true]{hyperref}
+
+\def\CC{{C\nolinebreak[4]\hspace{-.05em}\raisebox{.4ex}{\tiny\bf ++}}}
+
+\usepackage{graphicx,float,epstopdf,subcaption}
+\graphicspath{{method/}{method/gen}{results/}{results/gen}}
+
+\makeatletter
+\def\input@path{{method/}{method/gen}{results/}{results/gen}}
+\makeatother
+
+\usepackage{booktabs,threeparttable,tabularx,multirow}
+
+\usepackage{tikz,fp,tikz-qtree}
+\usetikzlibrary{positioning,calc,external}
+% \tikzexternalize
+
+\definecolor{colorA} {rgb} {0.1686, 0.5137, 0.7294}
+\definecolor{colorB} {rgb} {0.9922, 0.6824, 0.3804}
+\definecolor{colorC} {rgb} {0.4706, 0.6745, 0.4392}
+\definecolor{colorD} {rgb} {0.8431, 0.0980, 0.1137}
+
+\usepackage{amsmath,amsfonts,bm,physics}
+\newcommand{\vect} [1] {\bm{#1}}
+\newcommand{\mat} [1]{\mathbf{#1}}
+\newcommand{\dra}{\dashrightarrow}
+\newcommand{\dla}{\dashleftarrow}
+\newcommand{\acc}{{\mkern 0.5mu\cdot\mkern 0.5mu}}
+\newcommand{\bigO} [1]{\mathcal{O}(#1)}
+\numberwithin{figure}{section}
+
+\usepackage[section]{algorithm}
+\usepackage{algpseudocode}
+\algnewcommand\algorithmicsend{\textbf{send}}
+\algnewcommand\Send{\State\algorithmicsend\ }
+\algnewcommand\algorithmicrecv{\textbf{recv}}
+\algnewcommand\Recv{\State\algorithmicrecv\ }
+\algnewcommand\algorithmicgather{\textbf{gather}}
+\algnewcommand\Gather{\State\algorithmicgather\ }
+\algnewcommand\algorithmicscatter{\textbf{scatter}}
+\algnewcommand\Scatter{\State\algorithmicscatter\ }
+\algnewcommand\algorithmicforeach{\textbf{for \ each}}
+\algblockdefx[ForEach]{ForEach}{EndFor}
+[1][]{\algorithmicforeach\ #1}
+{\textbf{end\ for }}
+
+\usepackage[cache=true,outputdir=tmp]{minted}
+\usepackage{sourcecodepro}
+\usemintedstyle{vs}
+
+\usepackage[backend=biber,style=ieee,sorting=none]{biblatex}
+
+\appto{\biburlsetup}{\renewcommand*{\UrlFont}{\raggedright\scriptsize\ttfamily}}
+\DeclareFieldFormat*{formaturl}{\newline #1}
+\DeclareFieldFormat*{hyperlink}{$[\text{Online}]$~~{\UrlFont \url{#1}} \nopunct}
+\renewbibmacro*{url}{%
+\iffieldundef{url}{}{%
+\printtext[formaturl]{%
+    \printfield[hyperlink]{url}}}}
+
+\addbibresource{refs.bib}
+
+\usepackage[toc,page]{appendix}
+
+
+\begin{document}
+
+\date{31st May 2017}
+\author{Matt Diesel (md639)}
+\supervisor{Dr. Jie Li}
+\title{Parallel Adaptation of Orthotree Meshes}
+
+\pagestyle{empty}
+
+\renewcommand{\abstractname}{Technical Abstract}
+\begin{abstract}
+\input{technical-abstract.txt}
+\end{abstract}
+
+\end{document}

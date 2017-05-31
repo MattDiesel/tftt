@@ -11,9 +11,13 @@
 \usepackage{setspace,titlesec}
 \onehalfspacing
 \newcommand{\sectionbreak}{\clearpage}
+
+\widowpenalties 1 10000
 \raggedbottom
 
-\usepackage[hidelinks]{hyperref}
+\usepackage{url}
+\usepackage[hidelinks,breaklinks=true]{hyperref}
+
 \def\CC{{C\nolinebreak[4]\hspace{-.05em}\raisebox{.4ex}{\tiny\bf ++}}}
 
 \usepackage{graphicx,float,epstopdf,subcaption}
@@ -27,7 +31,7 @@
 
 \usepackage{tikz,fp,tikz-qtree}
 \usetikzlibrary{positioning,calc,external}
-\tikzexternalize
+% \tikzexternalize
 
 \definecolor{colorA} {rgb} {0.1686, 0.5137, 0.7294}
 \definecolor{colorB} {rgb} {0.9922, 0.6824, 0.3804}
@@ -60,9 +64,19 @@
 
 \usepackage[cache=true,outputdir=tmp]{minted}
 \usepackage{sourcecodepro}
+\usemintedstyle{vs}
 
-\usepackage[backend=biber,bibstyle=alphabetic,citestyle=alphabetic]{biblatex}
-\bibliography{refs}
+\usepackage[backend=biber,style=ieee,sorting=none]{biblatex}
+
+\appto{\biburlsetup}{\renewcommand*{\UrlFont}{\raggedright\scriptsize\ttfamily}}
+\DeclareFieldFormat*{formaturl}{\newline #1}
+\DeclareFieldFormat*{hyperlink}{$[\text{Online}]$~~{\UrlFont \url{#1}} \nopunct}
+\renewbibmacro*{url}{%
+\iffieldundef{url}{}{%
+\printtext[formaturl]{%
+    \printfield[hyperlink]{url}}}}
+
+\addbibresource{refs.bib}
 
 \usepackage[toc,page]{appendix}
 
@@ -81,9 +95,7 @@
 \thispagestyle{empty}
 \renewcommand{\abstractname}{Technical Abstract}
 \begin{abstract}
-IMPORT TECHNICAL ABSTRACT
-\newpage
-IMPORT TECHNICAL ABSTRACT
+\input{technical-abstract.txt}
 \end{abstract}
 
 \newpage
@@ -100,11 +112,11 @@ IMPORT TECHNICAL ABSTRACT
 
     Adaptive Mesh Refinement (AMR) methods improves the efficiency of numeric methods by recognising that not all areas of a simulation require finely grained meshes. This allows for greater spatial resolution and significant reductions in the memory and processing requirements of meshes. AMR methods have been applied to structured meshes, where every cell has a uniform geometry, as well as unstructured meshes that while more complex can be tailored to a specific problem's geometry. 
 
-    High Performance Computing (HPC) in the last decade has been dominated by cluster based computing, taking over from specialised Massively Parallel Processing machines. Clusters make use of distributed computing methods with off the shelf components, making them a cost effective and robust solution for HPC. The scalability of software designed to run on clusters is another benefit, giving rise to a marketplace for hiring cluster computation time. Compared to other methods of HPC, the interprocess communication on clusters is much slower than system memory. As a result, new methods must be developed to adapt algorithms and data structures for distributed computing.
+    High Performance Computing (HPC) in the last decade has been dominated by cluster based computing, taking over from specialised Massively Parallel Processing machines \cite{top500}. Clusters make use of distributed computing methods with off the shelf components, making them a cost effective and robust solution for HPC. The scalability of software designed to run on clusters is another benefit, giving rise to a marketplace for hiring cluster computation time. Compared to other methods of HPC, the interprocess communication on clusters is much slower than system memory. As a result, new methods must be developed to adapt algorithms and data structures for distributed computing.
 
     This project demonstrates that a particular method of structured AMR can be implemented in a suitable manner for use on clusters. The combination of AMR and distributed computing features the benefits of both methods. 
 
-    A library was developed from scratch, using methods developed previously by others outlined in Section~\ref{sec:existingmethods}. The functionality is extended in Section~\ref{sec:method} with new methods suitable for parallel computing, which are analysed in Section~\ref{sec:results}. A number of proposals are made for future additions to the library in Section~\ref{sec:future-work}. 
+    A \CC~ library was developed from scratch and is available online at \cite{me17}. Initially based on methods developed previously by others outlined in Section~\ref{sec:existingmethods}, the functionality is extended in Section~\ref{sec:method} with new methods suitable for distributed computing. The additions to the structure are then analysed in Section~\ref{sec:results}. A number of proposals are made for future additions to the library in Section~\ref{sec:future-work}. 
 
 
 \section{Implementation of Prior Work}
@@ -113,19 +125,19 @@ IMPORT TECHNICAL ABSTRACT
     \subsection{Orthotree Fundamentals} % (fold)
         \label{sec:orthotree}
 
-        Orthotopes are defined by \cite{coxeter73} as the N-dimensional generalisation of a cube. The term is used here to generalise between squares in the two-dimensional case and cubes in the three-dimensional case.
+        Orthotopes are defined by \cite{coxeter73} as the N-dimensional extrapolation of a rectangle. The term is used here to generalise between rectangles in the two-dimensional case and cuboids in the three-dimensional case.
 
-        An orthotree is a tree structure, where each cell is orthotopic and its children are evenly sized similar orthotopes. For this project, the two-dimensional case (known as a quadtree) was implemented and examined in detail. Almost all the methods are kept general however, to allow adaptation to the three-dimensional octree. 
+        An orthotree is a tree structure where each cell is orthotopic and its children are evenly sized similar orthotopes. For this project, the two-dimensional case (known as a quadtree) was implemented and examined in detail. All the methods are kept general however, to allow adaptation to the three-dimensional octree. 
 
-        Cells are referred to in this document using a calligraphic typed letter, such as $\mathcal{C}$. Properties of the cell use dot member access notation, for example $\mathcal{C}\acc\textproc{data}$ is the data associated with the cell. This is implemented using an abstraction class \texttt{CellRef}, with the corresponding method names given in Appendix~\ref{sec:appendix-headers} Listing~\ref{src:cellref}.
+        Cells are referred to in this document using a calligraphic typed letter, such as $\mathcal{C}$. Properties of the cell use dot member access notation, for example $\mathcal{C}\acc\textproc{data}$ is the data associated with the cell $\mathcal{C}$. This is implemented using an abstraction class \texttt{CellRef}, with the corresponding method names given in Appendix~\ref{sec:appendix-headers} Listing~\ref{src:cellref}.
 
 
         \subsubsection{Layer Links} % (fold)
             \label{sec:orthotree-layers}
 
-            A cells parent is stored as a reference $\mathcal{C}\acc\textproc{parent}$. The children of a cell $\mathcal{C}$ are accessed as a list $\mathcal{C}\acc\vect{\mathcal{K}}=\{\mathcal{K}_0,\mathcal{K}_1,\cdots,\mathcal{K}_n\}$.
+            A cells parent is stored as a reference $\mathcal{C}\acc\textproc{parent}$. The children of a cell $\mathcal{C}$ are accessed as a list $\mathcal{C}\acc\vect{\mathcal{K}}=\{\mathcal{K}_0,\mathcal{K}_1,\cdots,\mathcal{K}_n\}$, with the child count $n=2^\mathrm{DIM}$.
 
-            \begin{figure}[H]
+            \begin{figure}[!htbp]
                 \centering
                 \input{layerlinks}
                 \caption{Three layers of the tree, showing a cell $\mathcal{C}$, its parent $\mathcal{C}\acc\textproc{parent}$, and its children $\mathcal{C}\acc\vect{\mathcal{K}}$.}
@@ -134,7 +146,7 @@ IMPORT TECHNICAL ABSTRACT
 
             Children are indexed using one bit per dimension, with increasing dimension number corresponding to increasing bit significance as shown in Figure~\ref{fig:childnum}.
 
-            \begin{figure} [H]
+            \begin{figure} [!htbp]
                 \centering
                 \begin{subfigure}[b]{.3\textwidth}
                     \centering
@@ -194,7 +206,7 @@ IMPORT TECHNICAL ABSTRACT
                     \caption{Octree}
                     \label{fig:childnum-3d}
                 \end{subfigure}%
-                \caption{Child numbering for the two common orthotree cases.}
+                \caption{Child numbering for the two common orthotree cases. It can be seen that a step in a direction $d$ equates to a change in child index of $2^d$}
                 \label{fig:childnum}
             \end{figure}
 
@@ -227,7 +239,7 @@ IMPORT TECHNICAL ABSTRACT
             \expandafter\newcommand\csname countL(2) \endcsname{604}
             \newcommand{\getCount} [1]{\csname countL(#1) \endcsname}
 
-            \begin{figure} [H]
+            \begin{figure} [!htbp]
                 \centering
                 \foreach \i in {0,1,2} {
                     \begin{subfigure}{.3\textwidth}
@@ -237,13 +249,15 @@ IMPORT TECHNICAL ABSTRACT
                                 {0.3 + 6.189086*\x - 6.682936*\x*\x + 2.481516*\x*\x*\x - 0.2852701*\x*\x*\x*\x});
                             \input{method/gen/mesh-t\i}
                         \end{tikzpicture}
-                        \caption{\\ $P=\i$ \\ $\ \ \abs{\mathbb{L}}=\getCount{\i}$}
+                        \caption{\\ $P=\i$ \qquad $\ \ \abs{\mathbb{L}}=\getCount{\i}$}
                         \label{fig:refprop-t\i}
                     \end{subfigure}%
                 }
                 \caption{Meshes for various refinement propagation levels $P$ to the example line geometry. In all cases the maximum refinement level is $5$, giving an equivalent uniform mesh cell count of $1024$ cells.}
                 \label{fig:refprop}
             \end{figure}
+
+            More complex schemes are possible, such as including the corners as suggested in \cite{pop03}, or using a circular kernel to spread the refinement level in a method similar to the smoothing used in image processing. Whilst these would produce better results if a single point were to be refined, it is assumed the geometry itself is smooth and so the simpler orthogonal direction propagation method is sufficient. 
 
             The case $P=1$ is referred to in other literature as Two-to-One Balancing, as a cell has no neighbours more than twice its size. This is the minimum propagation level the numeric methods written for this project will work on. Since the term balancing is used to refer to parallel load balancing in this report, this term will be avoided, and "refinement propagation" used in preference as a more general term.
 
@@ -255,20 +269,20 @@ IMPORT TECHNICAL ABSTRACT
     \subsection{Fully Threaded Trees} % (fold)
         \label{sec:ftt}
 
-        The use of orthotree structures in Adaptive Mesh Routines (AMR) was proposed by Khokhlov in \cite{Khokhlov98}. To tailor them towards solving the differential equation in fluid problems, his implementation included storing the set of neighbours $\mathcal{C}\acc\vect{\mathcal{N}}$ for each cell $\mathcal{C}$ as shown for a one-dimensional tree in Figure[ref]. This allows $\bigO{1}$ lookup compared to a possible $\bigO{\log n}$ lookup using tree traversal. Khokhlov termed the tree with the neighbour pointers a Fully Threaded Tree (FTT) structure.
+        The use of orthotree structures in Adaptive Mesh Routines (AMR) was proposed by Khokhlov in \cite{Khokhlov98}. To tailor them towards solving the differential equations in fluid problems, his implementation included storing the set of neighbours $\mathcal{C}\acc\vect{\mathcal{N}}$ for each cell $\mathcal{C}$ as shown for a one-dimensional tree in Figure~\ref{fig:ftt-neighbours}. This allows $\bigO{1}$ lookup compared to a possible $\bigO{\log n}$ lookup using tree traversal. Khokhlov termed the tree with the neighbour pointers a Fully Threaded Tree (FTT) structure.
 
-        \begin{figure}[H]
+        \begin{figure}[!htbp]
             \centering
             \input{method/ftttree}
             \caption{A flattened tree showing neighbour links between cells in orange}
             \label{fig:ftt-neighbours}
         \end{figure}
 
-        In \cite{Khokhlov98}, an optimisation is presented to reduce the memory overhead introduced storing neighbour pointers by noting that for (in the quadtree case) the children of a cell, half the neighbours are also children of that cell. By storing groups of children together in an ortho (referred to as a quad in two-dimensional and octo in three-dimensional) the memory requirement for storing neighbour links is almost halved. This is implemented with the addition of the \texttt{TreeGroup} structure outline in Appendix~\ref{sec:appendix-headers} Listing~\ref{src:treegroup}. 
+        In \cite{Khokhlov98}, an optimisation is presented to reduce the memory overhead introduced storing neighbour pointers by noting that for the children of a cell, half the neighbours are also children of the same cell. By storing groups of children together in an ortho\footnote{Referred to as a quad in two-dimensions and octo in three-dimensions.} the memory requirement for storing neighbour links is almost halved. This is implemented with the addition of the \texttt{TreeGroup} structure outlined in Appendix~\ref{sec:appendix-headers} Listing~\ref{src:treegroup}. 
 
-        Optimisation details, such as storing cells in their groups, is abstracted over by performing most operations through the cell reference class. 
+        Optimisation details, such as storing cells in their groups, is abstracted over by performing most operations through the cell reference class. Regardless of whether a neighbour is a sibling of the cell or not, they form part of the set of neighbours $\mathcal{C}\acc\vect{\mathcal{N}}$. 
 
-        For this implementation, the cell structures store their own index. Since the layout of the group structure is known, this is sufficient to calculate the offset to the start of the group. Other implementations, such as that used by \cite{Yung2010} rely on alignment of the groups in order to perform the same calculation. That approach has some merit, but forces the memory manager to align the groups to large intervals for negligible saving\footnote{The memory saving for this implementation happens to be zero. The structure was already being padded to an 8 byte boundary, and the index added nothing to the allocated size. }.
+        For this implementation, the cell structures store their own index. Since the layout of the group structure is known, this is sufficient to calculate the offset to the start of the group. Other implementations, such as that used by \cite{Yung2010}, rely on alignment of the groups in order to perform the same calculation. That approach has some merit, but forces the memory manager to align the groups to large intervals for negligible saving\footnote{The memory saving for this implementation happens to be zero. The structure was already being padded to an 8 byte boundary, and the index added nothing to the allocated size. }, and relies on behaviour that is not guaranteed by the \CC~standard.
 
     % subsection ftt (end)
 
@@ -284,14 +298,14 @@ IMPORT TECHNICAL ABSTRACT
 
         To solve a finite difference equation on the adaptive mesh, interpolation is required in cases where the level of adjacent cells do not match. It is possible to move the expensive interpolation operation outside of the tight solver loop by instead storing a list of cells required along with the coefficient they would have been scaled by using direct interpolation. This list of cells is known as the poisson neighbourhood for a cell $\mathcal{C}$ and is represented by the vector $\mathcal{C}\acc\vect{\mathcal{P}}$. The respective neighbour coefficients are stored in the vector $\mathcal{C}\acc\vect{\beta}$. Each cell also requires a central coefficient $\mathcal{C}\acc\alpha$.
 
-        The methods used later do not rely on the specific details of the poisson neighbourhood, only the cells in $\mathcal{C}\acc\vect{\mathcal{P}}$. The determining the neighbourhood is abstracted to Function~\ref{fun:CalcPoisCoefs}. In this way, the implementation remains independent of the order of the finite difference solver. The use of forward or backward differences is also supported.
+        More generally, the set $\mathcal{C}\acc\vect{\mathcal{P}}$ are the cells whose data the cell $\mathcal{C}$ depends on. This dependency neighbourhood is an important property that is made use of in later algorithms. The determining the of neighbourhood is abstracted to Function~\ref{fun:CalcPoisCoefs} and the implementation of mesh structure methods remains independent of the order of the finite difference solver, or the use of forward and backward instead of central differences.
 
         \begin{equation}
             \label{fun:CalcPoisCoefs}
             \textproc{CalcPoisCoefs}(\mathcal{C}) \mapsto \{ \vect{\mathcal{P}}, \vect{\beta}, \alpha \}
         \end{equation}
 
-        Calculating the coefficients for the different cases is explored in detail by Yung in \cite{Yung2010}. 
+        Calculating the coefficients for the different cases is explored in detail by Yung in \cite{Yung2010} and Popinet in \cite{pop03}.  
 
     % subsection poissonneighbours (end)
 
@@ -303,10 +317,10 @@ IMPORT TECHNICAL ABSTRACT
 
         Successive Over-Relaxation (SOR) is a more robust numeric technique that smooths changes to cell data according to a relaxation factor $\Omega \in (0,2]$, to dampen oscillations in values between successive iterations. This accelerates convergence of high frequency components. A value of $\Omega=1$ gives no over-relaxation. 
 
-        A new value for the data of the cell $\phi$ is calculated from the poisson neighbourhood using Equation~\ref{equ:relax-cell}. 
+        A new value for the data of the cell $\phi$ is calculated from the poisson neighbourhood using Equation~\ref{equ:relax-cell}. The derivation is given by Yung in \cite{Yung2010}.
 
         \begin{equation}
-            \phi = \frac{ \left( \sum\limits_n \mathcal{C}\acc\beta_n \times \mathcal{C}\acc\mathcal{P}_n\acc\textproc {data} \right)-f(\mathcal{C})} { \mathcal{C}\acc\alpha }
+            \phi = \frac{ \left( \sum\limits_n \mathcal{C}\acc\beta_n \times \mathcal{C}\acc\mathcal{P}_n\acc\textproc{data} \right)-f(\mathcal{C})} { \mathcal{C}\acc\alpha }
             \label{equ:relax-cell}
         \end{equation}
 
@@ -316,9 +330,26 @@ IMPORT TECHNICAL ABSTRACT
             \mathcal{C}\acc\textproc{data} = \Omega\phi + (1-\Omega)\times\mathcal{C}\acc\textproc{data}
         \end{equation}
 
-        The new value can be used immediately by the relaxation of neighbouring cells.
+        Cell data does not need to be applied to the entire tree at the same time. Once a value has been updated, it can be used in the relaxation of the neighbouring cells for the remainder of the iteration. 
 
     % subsection relaxation (end)
+
+
+    \subsection{Residual Calculation} % (fold)
+        \label{sec:residual}
+
+        The work out whether the solver has converged, the relaxation method from before is checked by comparing the left and right hand sides of the poisson equation. The error between the two is called the residual $\eta$ and is given in Equation~\ref{equ:residual}.
+
+        \begin{equation}
+            \eta = \left( \sum\limits_n \mathcal{C}\acc\beta_n \times \mathcal{C}\acc\mathcal{P}_n\acc\textproc{data} \right)
+             - \mathcal{C}\acc\alpha \times \mathcal{C}\acc\textproc{data}
+             -f(\mathcal{C}) 
+             \label{equ:residual}
+        \end{equation}
+
+        Convergence is obtained if all residuals are below a set point $\eta_c$. 
+
+    % subsection residual (end)
 
 
     \subsection{Distributed Computing} % (fold)
@@ -329,15 +360,15 @@ IMPORT TECHNICAL ABSTRACT
         \subsubsection{MPI} % (fold)
             \label{sec:mpi}
 
-            Message Passing Interface (MPI) is a library designed for interprocess communications in high-performance distributed computing [cite]. The MPI library handles the starting of multiple copies of the same code in parallel, and provides interfaces for both point-to-point communication between two processes as well as collective operations over a set of processes.
+            Message Passing Interface (MPI) is a library specification for interprocess communications in high-performance distributed computing \cite{mpi94}. The MPI library handles the starting of multiple copies of the same code in parallel, and provides interfaces for both point-to-point communication between two processes as well as collective operations over a set of processes. There exist several general implementations of the MPI standard for personal computing, whilst large cluster supercomputers often provide specialised implementations.
 
-            The point-to-point operations are $\algorithmicsend\ \vect{X} \dra p$ and $\algorithmicrecv\ \vect{X} \dla p$ to send/recieve data $\vect{X}$ to/from a foreign process $p$. In practice these cover a range of methods including synchonous and asynchronous transfer. In cases where the size of $\vect{X}$ is dynamic a skeleton of the structure is sent first before the data to allow the recipient to allocate the destination memory block. 
+            The point-to-point operations are $\algorithmicsend\ \vect{X} \dra p$ and $\algorithmicrecv\ \vect{X} \dla p$ to send/receive data $\vect{X}$ to/from a foreign process $p$. In practice these cover a range of methods including synchronous and asynchronous transfer. In cases where the size of $\vect{X}$ is dynamic a skeleton of the structure is sent first before the data to allow the recipient to allocate the destination memory block. 
 
             The collective operations are $\algorithmicscatter\ \vect{X} \dra$ and $\algorithmicgather\ \vect{X} \dla \eval{x}_{p}$ where $\eval{x}_p$ is some function $x$ when evaluated on process $p$. Data scattered to the world is received using the same $\algorithmicrecv$ function as a point-to-point operation. Likewise the point-to-point $\algorithmicsend$ function is used for a gather operation.
 
             MPI abstracts the interface, and processes do not need to be running on the same machine, or even the same type of machine, as long as the interface is kept consistent. This make it highly scalable, as the same code used to run four processes on a single machine can then be used to run on a large cluster. 
 
-            In this project, the Boost.MPI bindings are used to access the MPI library. [cite]
+            In this project, the Boost.MPI bindings from \cite{boost16} are used to access the MPI library. 
 
         % subsubsection mpi (end)
 
@@ -364,7 +395,7 @@ IMPORT TECHNICAL ABSTRACT
 
         Two properties $\mathcal{C}\acc\textproc{prev}$ and $\mathcal{C}\acc\textproc{next}$ for each cell are added, to form a doubly linked list through the leaves of the tree. The tree itself stores a link to the first and last leaves in the tree. This is shown in Figure~\ref{fig:tftt-flattree} for a one-dimensional tree with the leaves ordered from left to right. 
 
-        \begin{figure}[H]
+        \begin{figure}[!htbp]
             \centering
             \input{method/threadtree}
             \caption{A one-dimensional tree structure with nodes $\bullet$ and leaves $\square$. The double links through the leaves of the tree are shown in orange.}
@@ -381,7 +412,7 @@ IMPORT TECHNICAL ABSTRACT
 
             Refinement or coarsening of cells must only change the local curve, analogous to insertion and deletion operations on the list as shown by Algorithms~\ref{alg:sfc-coarsen} and~\ref{alg:sfc-refine}.
 
-            \begin{algorithm}[H]
+            \begin{algorithm}[!htbp]
                 \caption{Modifying the curve when coarsening the cell $\mathcal{C}$}
                 \label{alg:sfc-coarsen}
 
@@ -391,7 +422,7 @@ IMPORT TECHNICAL ABSTRACT
                 \end{algorithmic}
             \end{algorithm}
 
-            \begin{algorithm}[H]
+            \begin{algorithm}[!htbp]
                 \caption{Modifying the curve when refining the cell $\mathcal{C}$}
                 \label{alg:sfc-refine}
 
@@ -419,7 +450,7 @@ IMPORT TECHNICAL ABSTRACT
                 S_{\mathrm{mort},2d} = \left( 0 \to 1 \to 2 \to 3 \right)
             \end{equation}
 
-            \begin{figure}[H]
+            \begin{figure}[!htbp]
                 \centering
                 \foreach \i in {0,1,2} {
                     \begin{subfigure}[b]{.3\textwidth}
@@ -469,7 +500,7 @@ IMPORT TECHNICAL ABSTRACT
 
             On refinement, the orientation of child cells $\mathcal{C}\acc\mathcal{K}_c\acc\textproc{orient}$ as shown in Table~\ref{tab:hilb-Dc} is a function of the parent orientation $\mathcal{C}\acc\textproc{orient}$ using the production rules given by Bader \cite{bader2013} in a slightly adapted form. The change in orientation can be seen in Figure~\ref{fig:sfc-hilbert} as rotations of the original shape. 
 
-            \begin{table}[H]
+            \begin{table}[!htbp]
                 \centering
                 \captionsetup{width=0.8\textwidth}
                 \caption{Lookup table for child orientation $\mathcal{C}\acc\mathcal{K}_c\acc\textproc{orient}$, as a function of the parent orientation $\mathcal{C}\acc\textproc{orient}$}
@@ -487,7 +518,7 @@ IMPORT TECHNICAL ABSTRACT
 
             For both the curve changes and new orientation selection, the Hilbert curve satisfies the requirement that no knowledge of the rest of the tree is required for refinement and coarsening. The Hilbert curve has been defined by a number of independent sources in N dimensions, such as Butz in \cite{butz71}, and can be adapted to the above notation and method of implementation easily retaining similar properties. 
 
-            \begin{figure}[H]
+            \begin{figure}[!htbp]
                 \centering
                 \foreach \i in {0,1,2} {
                     \begin{subfigure}[b]{.3\textwidth}
@@ -568,7 +599,7 @@ IMPORT TECHNICAL ABSTRACT
 
         A good space filling curve, such as the Hilbert Curve, leads to process' cells being closely grouped and close to square, for example the 3 processes in Figure~\ref{fig:borderline} are grouped reasonably well with few peninsulas.
 
-        \begin{figure}[H]
+        \begin{figure}[!htbp]
             \input{method/gen/borderline.tex}
             \caption{Border cells for 3 processes}
             \label{fig:borderline}
@@ -576,7 +607,7 @@ IMPORT TECHNICAL ABSTRACT
 
         For rank zero, there are ghost cells on both of the other processes as shown in Figure~\ref{fig:borders-r0}.
 
-        \begin{figure}[H]
+        \begin{figure}[!htbp]
             \input{method/gen/ghosts-r0.tex}
             \caption{Ghost cells for rank 0}
             \label{fig:borders-r0}
@@ -586,7 +617,7 @@ IMPORT TECHNICAL ABSTRACT
 
         Individual processes do not have enough information to generate their own ghost sets. As a result, the ghost sets for all processes is transferred with the initial cell distribution as outlined in Section~\ref{sec:distribution}. However, knowledge of a processes own cell and ghost sets is sufficient to generate the border set using the method in Algorithm~\ref{alg:borders-gen}.
 
-        \begin{algorithm}[H]
+        \begin{algorithm}[!htbp]
             \caption{Building the border set on process $p$}
             \label{alg:borders-gen}
 
@@ -612,7 +643,7 @@ IMPORT TECHNICAL ABSTRACT
 
         Initial distribution is performed as a single process. The tree is refined to its initial mesh, typically according the the known geometry of the problem. The number of cells to be allocated to each process is calculated by dividing the cell count for the initial tree by the number of processes as derived in Section~\ref{sec:parallel}. The procedure in Algorithm~\ref{alg:distrib-assign} then iterates over the space filling curve, setting cells to the current value of a rank counter and incrementing the counter when the processes cell count is reached.
 
-        \begin{algorithm}[H]
+        \begin{algorithm}[!htbp]
             \caption{Building the border set on process $p$}
             \label{alg:distrib-assign}
 
@@ -635,7 +666,7 @@ IMPORT TECHNICAL ABSTRACT
 
         Since it is not possible for a process to determine its own set of ghost cells without more knowledge of the tree, the starting process then generates all the ghost sets for every rank by using the poisson neighbourhood.
 
-        \begin{algorithm}[H]
+        \begin{algorithm}[!htbp]
             \caption{Generating the ghost sets for all processes}
             \label{alg:distrib-ghosts}
 
@@ -656,7 +687,7 @@ IMPORT TECHNICAL ABSTRACT
 
         The tree is then serialised into a list for every process $\vect{N}_p=\{\lambda,\rho\}^n$ containing pairs of cell identifiers $\lambda$ and ranks $\rho$ referring to either an active cell or a ghost cell of the target process. These are sent to the processes, which unpack them according to the logic in Algorithm~\ref{alg:distrib-unpack}.
 
-        \begin{algorithm}[H]
+        \begin{algorithm}[!htbp]
             \caption{Building the subset of the tree on process $p$}
             \label{alg:distrib-unpack}
 
@@ -688,7 +719,7 @@ IMPORT TECHNICAL ABSTRACT
 
         Without compression, Algorithm~\ref{alg:sync-sendrecv} is therefore the smallest transfer of information possible for this stage. Without knowledge of the contents of the data, the worst case must be assumed that $\mathcal{C}\acc\textproc{data}$ is uniformly distributed and so no compression is possible. 
 
-        \begin{algorithm}[H]
+        \begin{algorithm}[!htbp]
             \caption{Synchronisation}
             \label{alg:sync-sendrecv}
 
@@ -716,6 +747,40 @@ IMPORT TECHNICAL ABSTRACT
     % subsection ghostsync (end)
 
 
+    \subsection{Relaxation in Parallel} % (fold)
+        \label{sec:parrelax}
+
+        The relaxation method of Section~\ref{sec:relaxation} can now be executed in parallel, using the adapted loop shown in Algorithm~\ref{alg:parrelax}. Every iteration, ghost data must first be synchronised. The relaxation stage then remains unchanged. The maximum residual on every process must then be merged on rank zero, before the largest residual from any process is broadcast back to the world.
+
+        \begin{algorithm}[!htbp]
+            \caption{Relaxation in Parallel, for all processes.}
+            \label{alg:parrelax}
+
+            \begin{algorithmic}
+                \Ensure {Problem has converged}
+                \Repeat
+                    \State \Call{syncGhosts}{~}
+                    \ForEach {leaf $\mathcal{C} \in \mathbb{L}$}
+                        \State \Call{relax}{$\mathcal{C}$}
+                    \EndFor
+                    \State $r \gets \max\limits_{\mathcal{C}\in\mathbb{L}}\ \textproc{residual}(\mathcal{C})$
+                    \Statex
+                    \State \begin{tabularx}{0.8\textwidth}{XX}
+                        $\textbf{if}\ p=0$ & $\textbf{else}$ \\
+                        $\qquad\textbf{reduce}\ \hat r \gets \max\qquad\dla$ & $\qquad\textbf{send}\ r$ \\
+                        $\qquad\textbf{broadcast}\ \hat r\qquad\qquad\dra$ & $\qquad\textbf{recv}\ \hat r$
+                    \end{tabularx}
+                    \State $\textbf{end if}$
+                \Until {$\hat r < \epsilon$}
+                \Statex
+            \end{algorithmic}
+        \end{algorithm}
+
+        In practice, the residual doesn't need to be calculated at every iteration and significant savings can be made by calculating it as infrequently as possible. 
+
+    % subsection parrelax (end)
+
+
     \subsection{Rebalancing} % (fold)
         \label{sec:rebalancing}
 
@@ -727,7 +792,7 @@ IMPORT TECHNICAL ABSTRACT
 
         As a graphical demonstration of the rebalancing, 20 cells will be transferred from rank 0 to rank 1, starting from the mesh shown in Figure~\ref{fig:rebalance-init}.
 
-        \begin{figure}[H]
+        \begin{figure}[!htbp]
             \input{method/gen/init.tex}
             \caption{The starting conditions for the rebalancing example}
             \label{fig:rebalance-init}
@@ -735,7 +800,7 @@ IMPORT TECHNICAL ABSTRACT
 
         Rebalancing is split into the following subroutines: Balance Calculations, updating cell ranks, notifying rank changes, transferring cells, inserting new cells and updating the ghost and border cell sets. These are shown as an activity diagram in Figure~\ref{fig:rebalance-overview}, showing the concurrency of the processes.
 
-        \begin{figure}[H]
+        \begin{figure}[!htbp]
             \input{method/moveCells_ad}
             \caption{Activity Diagram of the rebalancing procedure for any three adjacent processes. MPI operations are shown in blue.}
             \label{fig:rebalance-overview}
@@ -749,7 +814,7 @@ IMPORT TECHNICAL ABSTRACT
 
             The loop in Algorithm~\ref{alg:rebalance-calculatepassing} can be reformulated as a proof by induction that the result is the minimum $\Delta$ satisfying the conditions imposed and $\abs{\mathbb{L}}_p=\bar c$ for all $p$.
 
-            \begin{algorithm}[H]
+            \begin{algorithm}[!htbp]
                 \caption{Rebalancing Calculations}
                 \label{alg:rebalance-calculatepassing}
 
@@ -777,13 +842,13 @@ IMPORT TECHNICAL ABSTRACT
 
             In the example case, the cells that are currently on rank 0 but will have their ranks updated to equal 1 are shown in red in Figure~\ref{fig:rebalance-ranks}.
 
-            \begin{figure}[H]
+            \begin{figure}[!htbp]
                 \input{method/gen/overlap.tex}
                 \caption{Example mesh, with 20 cells being marked to be moved from rank 0 to rank 1}
                 \label{fig:rebalance-ranks}
             \end{figure}
 
-            \begin{algorithm}[H]
+            \begin{algorithm}[!htbp]
                 \caption{Updating Cell Ranks}
                 \label{alg:rebalance-updateranks}
 
@@ -808,7 +873,7 @@ IMPORT TECHNICAL ABSTRACT
 
             In the example case, the only process not involved in the transfer already is the one at rank 2. The cells currently on rank 0, but being transferred to rank 1, that border it form the set $\vect{N}_2$ shown in Figure~\ref{fig:rebalance-notify}.
 
-            \begin{figure}[H]
+            \begin{figure}[!htbp]
                 \input{method/gen/ghostnotify.tex}
                 \caption{The example mesh, with the ghost cells of rank 2 whose rank will change following the rebalancing highlighted}
                 \label{fig:rebalance-notify}
@@ -824,7 +889,7 @@ IMPORT TECHNICAL ABSTRACT
 
             This rank change stage needs to occur before the cells are moved to the new process, as the receiving process is not guaranteed to have the relevant border data required.
 
-            \begin{algorithm}[H]
+            \begin{algorithm}[!htbp]
                 \caption{Notifying Cell Rank Changes}
                 \label{alg:rebalance-notifyranks}
 
@@ -853,13 +918,13 @@ IMPORT TECHNICAL ABSTRACT
 
             After notifying the foreign processes of rank changes, each process then generates the set of cell required to be sent. In addition to the cells being moved, cells in their poisson neighbourhoods not on the rank of the receiving process must also be included in the sets as seen in Figure~\ref{fig:rebalance-transfer}.
 
-            \begin{figure}[H]
+            \begin{figure}[!htbp]
                 \input{method/gen/Tr.tex}
                 \caption{The example mesh, with the cells of $T_r$ highlighted}
                 \label{fig:rebalance-transfer}
             \end{figure}
 
-            \begin{algorithm}[H]
+            \begin{algorithm}[!htbp]
                 \caption{Generate Send Sets}
                 \label{alg:rebalance-gensendsets}
 
@@ -884,7 +949,7 @@ IMPORT TECHNICAL ABSTRACT
 
             The two sets $T_l$ and $T_r$ are then transmitted left and right respectively, and the corresponding sets from the foreign processes $U_l$ and $U_r$ are received.
 
-            \begin{algorithm}[H]
+            \begin{algorithm}[!htbp]
                 \caption{Send Sets}
                 \label{alg:rebalance-sendsets}
 
@@ -906,7 +971,7 @@ IMPORT TECHNICAL ABSTRACT
 
             Each process then inserts the received cells in $\vect{U}$ and calculates the poisson neighbourhood. All the new cells must be inserted before calculating poisson neighbourhoods, as the correct neighbourhood may include new cells that wouldn't exist prior.
 
-            \begin{algorithm}[H]
+            \begin{algorithm}[!htbp]
                 \caption{Insert Received Cells}
                 \label{alg:rebalance-insertset}
 
@@ -934,7 +999,7 @@ IMPORT TECHNICAL ABSTRACT
 
             The subset of the tree in each process now shows the completed transfer as in Figure~\ref{fig:rebalance-final} for the example case. The ghost and border sets are now outdated however, so must be amended.
 
-            \begin{figure}[H]
+            \begin{figure}[!htbp]
                 \input{method/gen/result.tex}
                 \caption{The rebalanced example mesh}
                 \label{fig:rebalance-final}
@@ -1028,7 +1093,7 @@ IMPORT TECHNICAL ABSTRACT
     \subsection{Solving Poisson's Equation in Parallel} % (fold)
         \label{sec:results-poissons}
 
-        As a test case, Equation~\ref{equ:poisson} was solved with circle being the geometry shown in Figure~\ref{fig:pois-geometry}. 
+        As a test case, Equation~\ref{equ:poisson} was solved with circle being the geometry shown in Figure~\ref{fig:pois-geometry}. The domain boundaries were set to a constant value of zero.
 
         \begin{equation}
             \laplacian{\Phi}=\begin{cases}
@@ -1038,7 +1103,7 @@ IMPORT TECHNICAL ABSTRACT
             \label{equ:poisson}
         \end{equation}
 
-        \begin{figure}[H]
+        \begin{figure}[!htbp]
             \centering
             \begin{tikzpicture}
                 \draw[thick,black] (0,0) rectangle (4,4);
@@ -1048,9 +1113,9 @@ IMPORT TECHNICAL ABSTRACT
             \label{fig:pois-geometry}
         \end{figure}
 
-        The result with a dirichlet condition at the boundaries is shown in Figure~\ref{fig:pois-result}
+        The solution is shown in Figure~\ref{fig:pois-result}. The program was able to converge to the same solution for all configurations attempted, and for arbitrarily high world sizes. 
 
-        \begin{figure}[H]
+        \begin{figure}[!htbp]
             \centering
             \input{gen/pois-splot}
             \caption{Surface plot of the final value of $\Phi$ across the domain.}
@@ -1070,9 +1135,9 @@ IMPORT TECHNICAL ABSTRACT
         The ghost cell count increases proportionally with the cell count to the power of $0.4562$, as shown in Figure~\ref{fig:anal-scaling}. The upper limit for the exponent would be the relationship for a uniform mesh. In the simplest case to analyse, where $W$ is a power of two, this is $0.5$. 
 
         \tikzset{external/export next=false}
-        \begin{figure}[H]
+        \begin{figure}[!htbp]
             \centering
-            \input{results/gen/mbrot-scale}
+            \input{results/gen2/mbrot-scale}
             \caption{Ghost cell count against cell count for a range of world sizes. }
             \label{fig:anal-scaling}
         \end{figure}
@@ -1080,9 +1145,9 @@ IMPORT TECHNICAL ABSTRACT
         Though close, the vertical spacing between lines of world size in Figure~\ref{fig:anal-scaling} are not quite linear in $W$, most visibly the gap from $W=2$ to $W=4$ is noticeably larger. This is explored in more detail in Figure~\ref{fig:anal-borderworldsize}. Significant variations are seen in the test data, in some cases increases the number of processes has the effect of decreasing the total number of ghost cells, though this behaviour is unpredictable and so cannot be taken advantage of. The ghost cell fraction increases as a function of the world size $8.5(W^{0.52}-1.24)$, compared to the uniform mesh case with $W$ being a square number $4(\sqrt{W} - 1)$. 
 
         \tikzset{external/export next=false}
-        \begin{figure}[H]
+        \begin{figure}[!htbp]
             \centering
-            \input{results/gen/borderworldsize}
+            \input{results/gen2/borderworldsize}
             \caption{Ghost cell fraction against world size for the tree configurations refined to a maximum depth 12. The ghost cell fraction is used to normalise the differences in total cell counts between the test cases.}
             \label{fig:anal-borderworldsize}
         \end{figure}
@@ -1104,7 +1169,7 @@ IMPORT TECHNICAL ABSTRACT
 
         Table~\ref{tab:results-memusage} contains a rough breakdown of where the memory overhead is introduced. In some cases these are functions of the dimension of the tree, in which case the quadtree values are used. Fundamental type sizes are not fixed by the \CC~standard, instead the common values on modern architectures are used. Totals take into account padding required for structure alignment, and so might not be the sum of previous columns.
 
-        \begin{table}[H]
+        \begin{table}[!htbp]
             \centering
             \caption{Memory overhead within a quadtree structure, measured in bytes.}
             \label{tab:results-memusage}
@@ -1160,7 +1225,11 @@ IMPORT TECHNICAL ABSTRACT
 % section conclusion (end)
 
 
-\printbibliography
+\begingroup
+\raggedright
+\sloppy
+\printbibliography[heading=bibintoc]
+\endgroup
 
 
 \clearpage
@@ -1174,34 +1243,34 @@ IMPORT TECHNICAL ABSTRACT
 
         % \listoflistings
 
-        \begin{listing}[ht]
+        \begin{listing}[H]
             \caption{Types Header}
             \label{src:types}
-            \inputminted[mathescape,fontsize=\footnotesize]{cpp}{headers/types.h}
+            \inputminted[mathescape,fontsize=\scriptsize]{cpp}{headers/types.h}
         \end{listing}
 
-        \begin{listing}[ht]
+        \begin{listing}[H]
             \caption{CellRef Header}
             \label{src:cellref}
-            \inputminted[mathescape,fontsize=\footnotesize]{cpp}{headers/cellref.h}
+            \inputminted[mathescape,fontsize=\scriptsize]{cpp}{headers/cellref.h}
         \end{listing}
 
-        \begin{listing}[ht]
+        \begin{listing}[H]
             \caption{TreeCell Header}
             \label{src:treecell}
-            \inputminted[mathescape,fontsize=\footnotesize]{cpp}{headers/treecell.h}
+            \inputminted[mathescape,fontsize=\scriptsize]{cpp}{headers/treecell.h}
         \end{listing}
 
-        \begin{listing}[ht]
+        \begin{listing}[H]
             \caption{TreeGroup Header}
             \label{src:treegroup}
-            \inputminted[mathescape,fontsize=\footnotesize]{cpp}{headers/treegroup.h}
+            \inputminted[mathescape,fontsize=\scriptsize]{cpp}{headers/treegroup.h}
         \end{listing}
 
-        \begin{listing}[ht]
+        \begin{listing}[H]
             \caption{Tree Header}
             \label{src:tree}
-            \inputminted[mathescape,fontsize=\footnotesize]{cpp}{headers/tree.h}
+            \inputminted[mathescape,fontsize=\scriptsize]{cpp}{headers/tree.h}
         \end{listing}
 
     % subsection appendix-headers (end)
@@ -1212,10 +1281,13 @@ IMPORT TECHNICAL ABSTRACT
 
     % % subsection appendix-poissoninterp
 
+
     \subsection{Risk Assessment Retrospective} % (fold)
         \label{sec:appendix-ra}
 
-        I got rsi in a wrist, mental health gone out the window. Other than that it's all ok.
+        The project was purely computational. Appropriate precautions were taken to avoid the health issues associated with prolongued computer use. Specifically, posture was researched and corrected where necessary at the start of the project.
+
+        Despite precautions, a minor Repetitive Strain Injury (RSI) was experienced in the right wrist, exasperated by intensive sports trainings. On the advice of a physio, further changes were made to computer usage. This included the raising of the right wrist relative to the mouse, and greater use of the keyboard for repeated tasks. With corrections, the issue was resolved and no further problems were encountered. 
 
     % subsection ra (end)
 
