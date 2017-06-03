@@ -1,7 +1,18 @@
-\documentclass{beamer}
+\documentclass[handout]{beamer}
 \usepackage[utf8]{inputenc}
 
+\usepackage{ulem}
+\renewcommand<>{\sout}[1]{
+  \only#2{\beameroriginal{\sout}{#1}}
+  \invisible#2{#1}
+}
+
 \usetheme{-bjeldbak/beamerthemebjeldbak}
+\AtBeginSection[]{}
+
+\setbeameroption{show notes}
+\setbeamertemplate{note page}[plain]
+\setbeamerfont{note page}{size=\tiny}
 
 \definecolor{colorA} {rgb} {0.1686, 0.5137, 0.7294}
 \definecolor{colorB} {rgb} {0.9922, 0.6824, 0.3804}
@@ -22,14 +33,105 @@
 \begin{document}
 
 
-\section{Intro}
+\section{Introduction}
 \begin{frame}
 	\titlepage
+	
+	\note{
+		Feedback from last time was ``Looks great! What does it do?''. Hopefully will make a better attempt at explaining this time around.
+	}
 \end{frame}
 
-\section{First}
+
+\section{Motivation}
 \begin{frame}
-	\frametitle{Two Columns!}
+	\frametitle{Optimising CFD}
+	
+	\begin{itemize}
+		\item<1-3> Why make things go faster?
+			\begin{itemize}
+				\item<2> Drive down costs of testing
+				\item<3> It's possible to optimise
+			\end{itemize}
+			
+		\item<4-> How do you make things go faster?
+			\begin{itemize}
+				\item<5-6> \sout<6->{Better hardware}
+				\item<7> More hardware
+				\item<8> Better software
+			\end{itemize}
+	\end{itemize}
+	
+	\note<1>{
+		My project focused on one approach to make a specific class of CFD run faster.
+		
+		~
+		
+		Why do we need things to run faster? It's not just because we don't want to wait. If fluid simulations are faster, it drives down the cost of testing in industry, which is not only important for saving money, but also making it more accessible.
+		
+		~
+		
+		It also introduces new possibilities in the area of optimisation. Tim's earlier presentation mentioned difficulties in running CFD simulations within an optimiser, and he was really toeing the line of what was possible on todays computer systems. 
+		
+		~
+		
+		So how do you make things faster?
+		
+		~
+		
+		Option 1 is to use better hardware. Why not run our code on supercomputers? Well, as it happens, of the top 500 supercomputer systems out there most of them use very average computers. 
+		
+		~
+		
+		Option 2 is more hardware. About a decade ago cluster based computing really took off. It's cheap and not as specialised (80\% are using intel chips you'd find in high end PCs, at one point (2010, nb considering the PS3 was technology from 2006) a cluster of 1760 PS3s was the 33rd most powerful supercomputer in the world). If something breaks, you bin it and stick a new one in. PS3s are cheap in computer terms. 
+		
+		~
+		
+		So you split the problem up into loads of smaller ones, scatter and solve those on different computers, then collate all the result at the end. Problem is that the interprocess communication is slow. How do we minimise the amount of data that gets send between the nodes. Another problem is that each individual node is now not that powerful. Those PS3s only had 256Mb of RAM, we can't just collate our results on one node. 
+		
+		~
+		
+		Option 3 is better software. This is where AMR methods are used. By applying knowledge of the problem, the cell count can be massively reduced. 
+		
+		~
+		
+		This project develops methods for using AMR methods on cluster like environments.
+	}
+\end{frame}
+
+
+
+\section{TFTT}
+\begin{frame}
+	\frametitle{Trees}
+	
+	\begin{columns}
+		\column{0.5\textwidth}
+			Trees are cool. 
+			\begin{itemize}
+				\item Tree
+				\item FTT
+				\item TFTT
+			\end{itemize}
+		\column{0.5\textwidth}
+			Lorem
+	\end{columns}
+\end{frame}
+
+\begin{frame}
+	\frametitle{AMR}
+	
+	\begin{columns}
+		\column{0.5\textwidth}
+			Adaptive meshes are cool. 
+		\column{0.5\textwidth}
+			Lorem
+	\end{columns}
+\end{frame}
+
+\section{Clusters}
+\begin{frame}
+	\frametitle{Distributed Computing}
 	
 	\begin{columns}
 		\column{0.5\textwidth}
@@ -39,5 +141,29 @@
 	\end{columns}
 \end{frame}
 
+\section{TFTT on Clusters}}
+\begin{frame}
+	\frametitle{Distributed Adaptive Meshes?}
+	
+	\begin{columns}
+		\column{0.5\textwidth}
+			Lorem
+		\column{0.5\textwidth}
+			Lorem
+	\end{columns}
+\end{frame}
+
+
+\section{Stages}
+\begin{frame}
+	\frametitle{solving on AMR}
+	
+	\begin{columns}
+		\column{0.5\textwidth}
+			Lorem
+		\column{0.5\textwidth}
+			Lorem
+	\end{columns}
+\end{frame}
 
 \end{document}
