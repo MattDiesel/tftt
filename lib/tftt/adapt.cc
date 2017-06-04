@@ -131,7 +131,9 @@ bool adaptCommit()
         if (!cr.hasChildren())
             refine(cr);
     }
-    return adaptList.empty();
+    bool ret = adaptList.empty();
+    adaptList.clear();
+    return ret;
 }
 
 void adaptAddCoarsen(cell_t cr)
