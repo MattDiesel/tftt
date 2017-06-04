@@ -1,7 +1,7 @@
 
 projroot = '../../../'
-files = projroot . 'build/analysis/'
-target = 'gen/'
+files = projroot . 'build/analysis2/'
+target = 'gen2/'
 
 set key outside right box opaque spacing 1.2 height 1 width 4
 
@@ -28,8 +28,8 @@ set size ratio -1
 
 set output target."mbrot-scale.tex"
 plot \
-    target.'mbrot-total.dat' u (log($1)/log(2)):(log($23)/log(2)) w l ls 6 title '$W=32$', \
+    target.'mbrot-total.dat' u (log($1)/log(2)):(log($15)/log(2)) w l ls 6 title '$W=32$', \
     for [col=4:1:-1] target.'mbrot-total.dat' \
-        u (log($1)/log(2)):(log(column(2**col))/log(2)) w l ls (col+1) title '$W='.(2**col).'$'
+        u (log($1)/log(2)):(log(column(1+2**(col-1)))/log(2)) w l ls (col+1) title '$W='.(2**col).'$'
 
 # pause -1

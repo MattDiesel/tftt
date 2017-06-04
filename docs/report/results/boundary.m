@@ -1,7 +1,7 @@
 
 projroot = '../../../';
-files = [projroot  'build/analysis/'];
-target = 'gen/';
+files = [projroot  'build/analysis2/'];
+target = 'gen2/';
 
 
 graphics_toolkit('gnuplot')

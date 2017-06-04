@@ -1,7 +1,7 @@
 
 projroot = '../../../'
-files = projroot . 'build/analysis/'
-target = 'gen/'
+files = projroot . 'build/analysis2/'
+target = 'gen2/'
 
 set key outside right box opaque spacing 1.2 height 1 width 1
 
@@ -14,7 +14,7 @@ set style line 4 lc rgb '#78ac70'
 set style line 5 lc rgb '#d7191c'
 
 set xlabel 'World Size $W$'
-set ylabel 'Ghost Cell Fraction ${}^G/_(C^{0.4562})$'
+set ylabel 'Ghost Cell Fraction ${}^G/_{\left(C^{0.4562}\right)}$'
 
 # data = "<( cat ".files."summary.dat | awk '{mean=0; for(i=2; i<14; i+=1) mean += $i / 12; print $1, mean }' )"
 
@@ -31,5 +31,5 @@ plot target.'summ2.dat' u 1:2 w l ls 3 title 'Test Data', \
     data u 1:2 w l ls 2 lw 4 title 'Average'
 
 
-unset output
+# unset output
 # pause -1
