@@ -1,0 +1,47 @@
+
+\documentclass[12pt]{article}
+
+
+\begin{document}
+
+
+\section{Introduction}
+    My project focused on one approach to make a specific class of CFD run faster.
+
+    \subsection{Why make things go faster}
+        Why do we need things to run faster? It's not just because we don't want to wait. If fluid simulations are faster, it drives down the cost of testing in industry, which is not only important for saving money, but also making it more accessible.
+        
+        It also introduces new possibilities in the area of optimisation. Tim's earlier presentation mentioned difficulties in running CFD simulations within an optimiser, and he was really toeing the line of what was possible on todays computer systems. 
+
+    \subsection{How to make things go faster}
+        The options are: Better hardware, more hardware, and better software. Lets tackle option 3 first, because that's what I do.
+
+        \subsubsection{Clever Software - AMR}
+            Adaptive Meshes.
+
+            Let's say we wanted to draw this line, but using a mesh. We could have loads of really small pixels, in which case with just 256 squared pixels we could draw this and it looks pretty good. Or we could notice that the whole top corner here is the same colour, and treat it as a single cell. In fact we only need the tiny pixels on the line. 
+
+        \subsubsection{Better Hardware - MPP}
+            Why not run our code on supercomputers? Well, as it happens, of the top 500 supercomputer systems out there most of them use very average computers. 
+
+        \subsubsection{More Hardware - Clusters}
+            Option 2 is more hardware. About a decade ago cluster based computing really took off. It's cheap and not as specialised (80\% are using intel chips you'd find in high end PCs, at one point (2010, nb considering the PS3 was technology from 2006) a cluster of 1760 PS3s was the 33rd most powerful supercomputer in the world). If something breaks, you bin it and stick a new one in. PS3s are cheap in computer terms. 
+
+    \subsection{Distribution}
+
+    \subsection{Execution}
+        So you split the problem up into loads of smaller ones, scatter and solve those on different computers, then collate all the result at the end. Problem is that the interprocess communication is slow. How do we minimise the amount of data that gets send between the nodes. Another problem is that each individual node is now not that powerful. Those PS3s only had 256Mb of RAM, we can't just collate our results on one node. 
+
+    \subsection{Tree Subset}
+
+    \subsection{Ghosts/Borders}
+
+
+    \subsection{Relaxation in Parallel}
+
+    \subsection{Rebalancing}
+
+    \subsection{Future Work}
+
+
+\end{document}

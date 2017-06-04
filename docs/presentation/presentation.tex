@@ -61,42 +61,6 @@
 				\item<8> Better software
 			\end{itemize}
 	\end{itemize}
-	
-	\note<1>{
-		My project focused on one approach to make a specific class of CFD run faster.
-		
-		~
-		
-		Why do we need things to run faster? It's not just because we don't want to wait. If fluid simulations are faster, it drives down the cost of testing in industry, which is not only important for saving money, but also making it more accessible.
-		
-		~
-		
-		It also introduces new possibilities in the area of optimisation. Tim's earlier presentation mentioned difficulties in running CFD simulations within an optimiser, and he was really toeing the line of what was possible on todays computer systems. 
-		
-		~
-		
-		So how do you make things faster?
-		
-		~
-		
-		Option 1 is to use better hardware. Why not run our code on supercomputers? Well, as it happens, of the top 500 supercomputer systems out there most of them use very average computers. 
-		
-		~
-		
-		Option 2 is more hardware. About a decade ago cluster based computing really took off. It's cheap and not as specialised (80\% are using intel chips you'd find in high end PCs, at one point (2010, nb considering the PS3 was technology from 2006) a cluster of 1760 PS3s was the 33rd most powerful supercomputer in the world). If something breaks, you bin it and stick a new one in. PS3s are cheap in computer terms. 
-		
-		~
-		
-		So you split the problem up into loads of smaller ones, scatter and solve those on different computers, then collate all the result at the end. Problem is that the interprocess communication is slow. How do we minimise the amount of data that gets send between the nodes. Another problem is that each individual node is now not that powerful. Those PS3s only had 256Mb of RAM, we can't just collate our results on one node. 
-		
-		~
-		
-		Option 3 is better software. This is where AMR methods are used. By applying knowledge of the problem, the cell count can be massively reduced. 
-		
-		~
-		
-		This project develops methods for using AMR methods on cluster like environments.
-	}
 \end{frame}
 
 
@@ -106,16 +70,19 @@
 	\frametitle{Trees}
 	
 	\begin{columns}
-		\column{0.5\textwidth}
-			Trees are cool. 
+		\column{0.5\textwidth} 
 			\begin{itemize}
-				\item Tree
-				\item FTT
-				\item TFTT
+				\item Binary Tree
+				\item Quadtree
+				\item Octree
 			\end{itemize}
 		\column{0.5\textwidth}
 			Lorem
 	\end{columns}
+
+	\note{
+		The trees used are 
+	}
 \end{frame}
 
 \begin{frame}
@@ -141,7 +108,7 @@
 	\end{columns}
 \end{frame}
 
-\section{TFTT on Clusters}}
+\section{TFTT on Clusters}
 \begin{frame}
 	\frametitle{Distributed Adaptive Meshes?}
 	
