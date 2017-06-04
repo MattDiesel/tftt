@@ -45,7 +45,7 @@ void refineLayer()
 {
     double eps;
 
-    tftt::adaptSwBegin();
+    tftt::adaptBegin();
 
     for (auto& cl : tftt::curve) {
         for (auto& nb : cl.neighbours()) {
@@ -55,13 +55,17 @@ void refineLayer()
                 return nb->cc;
             });
             if (eps < -epsilonRef || eps > epsilonRef) {
-                tftt::adaptSwSetRefine(cl);
+                tftt::adaptAdd(cl);
                 break;
             }
         }
     }
 
-    tftt::adaptSwCommit();
+    std::cout << "."; std::cout.flush();
+
+    tftt::adaptCommit();
+
+    std::cout << "."; std::cout.flush();
 
     for (auto& cl : tftt::leaves) {
         cl->cc = mbrot(cl.centre(0)+xshift, cl.centre(1)+yshift);
@@ -72,23 +76,19 @@ void refineLayer()
 int main(int argc, char* argv[])
 {
     // Defaults:
-    int minDepth = 2, maxDepth = 12;
+    int minDepth = 10, maxDepth = 14;
     tftt::options.two2oneFlag = 3;
-    std::string outDir = "analysis";
+    std::string outDir = "analysis3";
 
     constexpr int steps = 12;
-    constexpr int numWorlds = 7;
 
     double xshiftS = -2.5;
     double yshiftS = -2;
     double xshiftStep = 0.1;
     double yshiftStep = 0.1;
 
-    std::vector<int> worldSizes {20,22,24,26,28,30,32};
+    std::vector<int> worldSizes {2,4,6,8,10,12,14,16,18,20,22,24,26,28,30,32,34,36,38,40,42,44,46,48,50,52,54,56,58,60,62,64};
 
-    double summary[steps][numWorlds];
-
-    int firstStep = 12;
     int ghostSum;
     for (int st = 0; st < steps; st++) {
         std::cout << "Step: " << st << std::endl;
@@ -111,7 +111,7 @@ int main(int argc, char* argv[])
             cl->cc = mbrot(cl.centre(0)+xshift, cl.centre(1)+yshift);
         }
 
-        std::ofstream ofs(formatString("{0}/mbrot{1}.dat", outDir, st+firstStep));
+        std::ofstream ofs(formatString("{0}/mbrot{1}.dat", outDir, st));
 
         ofs << "Cells ";
         for (auto worldSize : worldSizes) {
@@ -133,38 +133,37 @@ int main(int argc, char* argv[])
 
             ofs << tftt::gtree.ccells << " ";
 
-            std::set<tftt::cell_t> ghosts;
             int worldSize;
-            for (int w = 0; w < numWorlds; w++) {
+            for (int w = 0; w < worldSizes.size(); w++) {
                 worldSize = worldSizes[w];
 
                 std::cout << "\tWorld Size = " << worldSize; std::cout.flush();
                 tftt::distribute(worldSize);
 
-                ghosts.clear();
                 ghostSum = 0;
+                for (auto& cl : tftt::curve) {
+                    cl->seen = 0;
+                }
 
                 int node = 0;
                 for (auto& cl : tftt::curve) {
                     if (cl.rank() != node) {
                         // std::cout << "\t\tRank " << node << ", ghosts: " << ghosts.size() << "\n";
-                        ghostSum += ghosts.size();
-                        ghosts.clear();
                         node++;
                     }
 
                     for (auto& p : cl.poissonNeighbourhood()) {
                         if (p.isBoundary()) continue;
 
-                        if (p.rank() != node) {
-                            ghosts.insert(p);
+                        if (p.rank() != node && !(p->seen & (1<<node))) {
+                            ghostSum++;
+                            p->seen |= 1<<node;
                         }
                     }
                 }
 
                 // std::cout << "\t\tRank " << node << ", ghosts: " << ghosts.size() << "\n";
                 std::cout << ", Ghosts = " << ghostSum << std::endl;
-                summary[st][w] = double(ghostSum) / tftt::gtree.ccells;
 
                 ofs << ghostSum << " ";
             }
@@ -173,16 +172,6 @@ int main(int argc, char* argv[])
         }
 
         tftt::reset();
-    }
-
-    std::ofstream sm(formatString("{0}/summary2.dat", outDir));
-    for (int w = 0; w < numWorlds; w++) {
-        sm << worldSizes[w] << " ";
-        for (int s = 0; s < steps; s++) {
-            sm << summary[s][w] << " ";
-        }
-
-        sm << "\n";
     }
 }
 
