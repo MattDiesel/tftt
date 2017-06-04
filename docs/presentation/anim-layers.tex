@@ -1,0 +1,44 @@
+
+\begin{animateinline}[autoplay,poster=first]{20}
+    \multiframe{60}{n=0+1}{
+        \begin{tikzpicture}
+            \newcommand\topLayer{3}
+            \node at (0,0) {};
+            
+            \ifnum 30>\n
+                \foreach \i in {\topLayer,...,0} {
+                    \begin{scope}[
+                        yshift=2cm,every node/.append style={
+                            yslant=0.5*\n/30,xslant=-\n/30},yslant=0.5*\n/30,xslant=-\n/30
+                          ]
+                        \fill[white,fill opacity=0] (0,0) rectangle (4,4);
+                        % y = 0.3 + 6.189086*x - 6.682936*x^2 + 2.481516*x^3 - 0.2852701*x^4
+                        \draw[domain=0:3.8,smooth,variable=\x,colorA, thin] plot ({\x},
+                            {0.3 + 6.189086*\x - 6.682936*\x*\x + 2.481516*\x*\x*\x - 0.2852701*\x*\x*\x*\x});
+            
+                        \input{gen/layer\i-t0}
+            
+                    \end{scope}
+                }
+            \else
+                \foreach \i in {\topLayer,...,0} {
+                    \begin{scope}[
+                        yshift=2cm+(1.2mm*(\topLayer-\i))*(\n-30),every node/.append style={
+                            yslant=0.5,xslant=-1},yslant=0.5,xslant=-1
+                          ]
+                        \fill[white,fill opacity=0.5+0.4/30*(\n-30)] (0,0) rectangle (4,4);
+                        % y = 0.3 + 6.189086*x - 6.682936*x^2 + 2.481516*x^3 - 0.2852701*x^4
+                        \draw[domain=0:3.8,smooth,variable=\x,colorA, thin] plot ({\x},
+                            {0.3 + 6.189086*\x - 6.682936*\x*\x + 2.481516*\x*\x*\x - 0.2852701*\x*\x*\x*\x});
+            
+                        \input{gen/layer\i-t0}
+            
+                        \draw[black,line width=2.5pt] (0,4) -- (0,0) -- (4,0);
+                        \draw[black,line width=1.5pt] (0,4) -- (4,4) -- (4,0);
+            
+                    \end{scope}
+                }
+            \fi
+        \end{tikzpicture}
+    }
+\end{animateinline}
