@@ -26,6 +26,7 @@
 \fi
 \renewcommand{\abstractname}{Summary}
 \def\supervisor#1{\gdef\@supervisor{#1}\gdef\thesupervisor{#1}}
+\def\college#1{\gdef\@college{#1}\gdef\thecollege{#1}}
 
 \if@titlepage
   \renewcommand\maketitle{\begin{titlepage}%
@@ -78,7 +79,7 @@
 
 \begin{textblock*}{130mm}(33mm,122mm)
 \begin{flushright}
-Author Name: \@author{}\\
+Author Name: \@author{}\\ \ifundef\@college{}{College: \@college{}\\}
 Supervisor: \@supervisor{}\\
 \hspace{0cm}\\
 Date: \today
