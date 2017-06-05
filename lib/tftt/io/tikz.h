@@ -21,8 +21,13 @@ void meshLayer(std::string fname, int layer);
 void mesh(std::string fname, int maxDepth);
 
 void hilbert(std::string fname);
-
 void morton(std::string fname);
+
+void meshLayer_if(std::ostream& os, cell_t cl, int layer, fnCheckCell pred);
+void meshLayer_if(std::ostream& ofs, int layer, fnCheckCell pred);
+void meshLayer_if(std::string fname, int layer, fnCheckCell pred);
+
+void mesh_if(std::string fname, int maxDepth, fnCheckCell pred);
 
 
 } // namespace tikz

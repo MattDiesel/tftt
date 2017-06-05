@@ -103,5 +103,61 @@ void morton(std::string fname)
 }
 
 
+
+
+void meshLayer_if(std::ostream& os, cell_t cl, int layer, fnCheckCell pred)
+{
+    if (cl.level() == layer) {
+        if (pred(cl)) {
+            os << "\\node at ("
+               << cl.centre(0) << "," << cl.centre(1) << ") {};\n";
+        }
+    }
+    else if (cl.hasChildren()) {
+        for (auto ch : *cl.children()) {
+            meshLayer_if(os, ch, layer, pred);
+        }
+    }
+}
+
+
+void meshLayer_if(std::ostream& ofs, int layer, fnCheckCell pred)
+{
+    cell_t root = cell_t(-1);
+
+    double w = gtree.size[0] / (2 << layer);
+    double h = gtree.size[1] / (2 << layer);
+
+    // ofs << "\\begin{scope}[every node/.append style={minimum width=" << w
+    //     << "cm-\\the\\pgflinewidth,minimum height=" << h
+    //     << "cm-\\the\\pgflinewidth,inner sep=0,draw,shape=rectangle,anchor=center}]\n";
+
+    ofs << "\\begin{scope}[every node/.append style={minimum width=" << w
+        << "cm,minimum height=" << h
+        << "cm,inner sep=0,draw,shape=rectangle,anchor=center}]\n";
+
+    meshLayer_if(ofs, root, layer, pred);
+
+    ofs << "\\end{scope}\n";
+}
+
+
+void meshLayer_if(std::string fname, int layer, fnCheckCell pred)
+{
+    std::ofstream ofs(fname);
+    meshLayer_if(ofs, layer, pred);
+}
+
+
+void mesh_if(std::string fname, int maxDepth, fnCheckCell pred)
+{
+    std::ofstream ofs(fname);
+
+    for (int d = 0; d < maxDepth; d++) {
+        meshLayer_if(ofs, d, pred);
+    }
+}
+
+
 } // namespace tikz
 } // namespace tftt
