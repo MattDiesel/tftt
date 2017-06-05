@@ -1,47 +1,122 @@
 
-\documentclass[12pt]{article}
+\documentclass[10pt]{article}
+
+\usepackage[papersize={3.6in, 4.8in}, width=3.2in, height=4.4in, centering]{geometry}
+\pdfimageresolution 167
+
+\usepackage{titlesec}
+\newcommand{\sectionbreak}{\clearpage}
+\newcommand{\subsectionbreak}{\clearpage}
+\newcommand{\subsubsectionbreak}{\clearpage}
 
 
-\begin{document}
+\begin{document}\sloppy
 
+\tableofcontents
 
 \section{Introduction}
     My project focused on one approach to make a specific class of CFD run faster.
 
-    \subsection{Why make things go faster}
+    \subsection{Motivation}
         Why do we need things to run faster? It's not just because we don't want to wait. If fluid simulations are faster, it drives down the cost of testing in industry, which is not only important for saving money, but also making it more accessible.
         
-        It also introduces new possibilities in the area of optimisation. Tim's earlier presentation mentioned difficulties in running CFD simulations within an optimiser, and he was really toeing the line of what was possible on todays computer systems. 
+        It also introduces new possibilities in the area of optimisation. Tim's earlier presentation mentioned difficulties in running CFD simulations within an optimiser, and he was really toeing the line of what was possible on today's computer systems. 
 
+\section{Prior Work}
     \subsection{How to make things go faster}
-        The options are: Better hardware, more hardware, and better software. Lets tackle option 3 first, because that's what I do.
-
-        \subsubsection{Clever Software - AMR}
-            Adaptive Meshes.
-
-            Let's say we wanted to draw this line, but using a mesh. We could have loads of really small pixels, in which case with just 256 squared pixels we could draw this and it looks pretty good. Or we could notice that the whole top corner here is the same colour, and treat it as a single cell. In fact we only need the tiny pixels on the line. 
+        The options are: Better hardware, more hardware, and better software.
 
         \subsubsection{Better Hardware - MPP}
-            Why not run our code on supercomputers? Well, as it happens, of the top 500 supercomputer systems out there most of them use very average computers. 
+        	The answer to many people is: ``run it on a supercomputer''. Supercomputers in the traditional sense are expensive. They use specialist processors and architectures, which is why over 400 of the top500 computer systems at solving massively complex linear algebra aren't single computers at all. They are clusters. 
 
         \subsubsection{More Hardware - Clusters}
-            Option 2 is more hardware. About a decade ago cluster based computing really took off. It's cheap and not as specialised (80\% are using intel chips you'd find in high end PCs, at one point (2010, nb considering the PS3 was technology from 2006) a cluster of 1760 PS3s was the 33rd most powerful supercomputer in the world). If something breaks, you bin it and stick a new one in. PS3s are cheap in computer terms. 
+            About a decade ago cluster based computing really took off. It's cheap and not as specialised (at one point (2010, nb considering the PS3 was technology from 2006) a cluster of 1760 PS3s was the 33rd most powerful supercomputer in the world). If something breaks, you bin it and stick a new one in. PS3s are cheap in computer terms. 
 
-    \subsection{Distribution}
+        \subsubsection{Clever Software - AMR}
+            Let's say we wanted to integrate this function numerically. Remember doing this at school where you count the squares, and use half for any it passes through? We could have loads of really small pixels, in which case with just 1024 pixels we can get within 0.1\% of the answer.
+            
+            But there are large areas that aren't of much interest. We can use just 211 cells and get exactly the same answer, or refine it further to get closer to the true answer.
+            
+            In practice, it's not really practical to be doing finite difference numeric methods over a cell boundary like that one, so we spread the refinement level slightly (cell cost is quite small).
+            
+            This type of structured mesh is stored as a ``quadtree'' (the 3d version is an octree), each cell can have 4 similar children so you can traverse up a and down the tree. This has been in popular use since Khokhlov wrote a paper outlining the core methods in 98. Khokhlov also stored links to a cell's neighbours, making it much better suited to the finite difference methods I've been looking at.
 
-    \subsection{Execution}
-        So you split the problem up into loads of smaller ones, scatter and solve those on different computers, then collate all the result at the end. Problem is that the interprocess communication is slow. How do we minimise the amount of data that gets send between the nodes. Another problem is that each individual node is now not that powerful. Those PS3s only had 256Mb of RAM, we can't just collate our results on one node. 
 
+\section{Challenges}
+
+	\subsection{Gather+Scatter}
+	
+		Interprocess communication on clusters is slow. How do we minimise the amount of data that gets send between the nodes. Another problem is that each individual node is now not that powerful. Those PS3s only had 256Mb of RAM, we can't just have a master PC that stores everything, and a bunch of slaves to do calculations. 
+		
+	\subsection{Balancing}
+	
+		So it would be good to be able to combine the two. Have our adaptive mesh, and run it on a cluster. Should be simple enough right? Just split the cells up into thirds like this, and run each set on different computers. Done, thank you for listening. 
+		
+		Except no. Let's count the cells shall we... Green 56, red 73, and yellow 91. Yellow has to do over 50\% more calculations than green, so despite 3x the hardware, we only go (at best) 2.4x faster.
+		
+		 This problem is called ``load balancing''. Ideally you want a perfectly uniform distribution of computing between all the processes. 
+
+	\subsection{Ghosts}		
+		
+		And what about if we want to solve a finite difference problem? For this cell on the edge of the red process, it needs to know what the value is of this cell in order to work out the difference. This gives you a layer of cells where the cell resides on green, but the value is needed on red, the ``ghost cells''. This needs to be done every single iteration of the solver.
+	
+
+\section{Method}
     \subsection{Tree Subset}
+		The first alteration required is allowing a subset of the tree to exist on its own. This wasn't too hard.    
+    
+    \subsection{Distribution}
+    	So we know we have to improve on just splitting up geometrically. Splitting N cells across P processes is a one dimensional problem, so we should make it just that. We do that using space filling curves - a single curve through the mesh that maps it into one dimension. To implement this, each cell stores a pointer to the next/previous cell in the ``thread'' through the tree, essentially forming a doubly linked list. 
+    	
+    	We could index each child, then just go through like that. We have now achieved a perfect balance between green and red. Problem is the cells are all over the place, the red process doesn't even have the cells near each other necessarily. Intuitively, and correctly, this means the number of cells on those process boundaries (the ghost cells) is higher than it needs to be. 
+    	
+    	Instead I've used a Hilbert curve, an alternative which guarantees sequential cells will be neighbours, and looks a bit like this. If we distribute the cells now, we get a slightly nicer looking arrangement. We've achieved, without any kind of global optimisation, a perfect load balance and a reasonably good distribution to minimise the ghost boundary. 
+    
 
     \subsection{Ghosts/Borders}
-
+    	So we have these ghost layers and the information needs to be transferred every iteration. 
+    	
+    	To minimise the amount of information sent, I maintain lists on adjacent processes of who the ghost cells are, and who they belong to. I also keep a list of the inverted set, that is the cells on a process that are ghost cells of another. 
+    	
+    	Because these lists are equal, and sorted the same globally (using a unique global identifier that can be calculated locally), we can just pack the data into an array of values, and transmit just those values. Without compression, this is the smallest possible communication. 
+		
 
     \subsection{Relaxation in Parallel}
+    	And that's sufficient to run a finite different solver in parallel, which I did for a simple case of Poisson's equation. 
+
 
     \subsection{Rebalancing}
+    	But what happens if we need to adapt to changes in the problem. For instance, what happens if that circle moves a little bit. We've got this tree split over a bunch of different computers... And when it moves the loading on the processes is going to change as well. We've got this finely refined region moving from red to green and the cell counts are changing. 
+    	
+    	So we ``rebalance''. This turns out to be a rather convoluted process that took 9 pages of my report to cover so I'll spare you all the details.
+    	
+    	One node decides the net movement of cells between all the processes, based only on the cell count for each one. 
+    	
+    	Nodes whose ghost layer is being changed need to be notified of changes.
+    	
+    	The cells, and their ghosts, are then sent to the next process, where they are inserted into that subset of the tree.
+    	
+    	Finally all the ghost and border sets need to be updated with the changes, to be kept perfectly in sync. 
+    	
+    	Fortunately, that doesn't have to happen too often, but it's possible without returning to a single node. 
+    	
+    	
+    	
+\section{Future Work}
 
-    \subsection{Future Work}
+	Similar to rebalancing there are more operations that need to happen in parallel without any node having complete information about the tree. 
+	
+	I explored two methods for initial distribution, based on a top down approach where refinement levels are added and rebalancing done every couple of layers and a bottom up approach where you take a set of cells that you know will form the lowest level and distribute those evenly, for example in the line case roughly a third of the line would be covered by each process. 
+	
+	Refinement spreading across the process boundaries I also looked at and have proposed a method, which unfortunately didn't have time to robustly implement, based on passing refinement vectors across those process boundaries. 
 
+\section{Conclusion}
+	However, I have managed to build a robust library for working on trees in parallel. 
+	
+	In doing so it's shown that the Hilbert curve is a good method of distribution, and that we can minimise the interprocess communication effectively. 
+	
+	It's been shown to work for solving a simple equation. 
+	
+	There are ways to do everything in parallel, though maintain the ghost set equivalence is tricky.
 
 \end{document}
